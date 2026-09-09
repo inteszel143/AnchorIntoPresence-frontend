@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +11,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../../common/widgets/auth_theme.dart';
 import '../../common/widgets/button_widget.dart';
+import '../../common/widgets/loading_overlay.dart';
 import '../../helping_widgets/sociallogin-button.dart';
 import '../../utils/fonts.dart';
 import '../otp_verification/otp_verification.dart';
@@ -90,8 +90,10 @@ class _SignupScreenState extends State<SignupScreen> {
                       child: BlocBuilder<SignupBloc, SignupState>(
                         builder: (context, state) {
                           double horizontalPadding = 0;
-                          return Stack(
-                            children: [
+                          return LoadingOverlay(
+                            isLoading: state is SignupLoading,
+                            child: Stack(
+                              children: [
                               SafeArea(
                                 child: SingleChildScrollView(
                                   keyboardDismissBehavior:
@@ -648,22 +650,8 @@ class _SignupScreenState extends State<SignupScreen> {
                                                       )))))),
                                 ),
                               ),
-                              // Show loading indicator and blur background if loading
-                              if (state is SignupLoading)
-                                Positioned.fill(
-                                  child: BackdropFilter(
-                                    filter: ImageFilter.blur(
-                                        sigmaX: 5.0, sigmaY: 5.0),
-                                    child: Container(
-                                      color:
-                                          Colors.black.withValues(alpha: 0.3),
-                                      child: Center(
-                                        child: CircularProgressIndicator(),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
+                              ],
+                            ),
                           );
                         },
                       ),

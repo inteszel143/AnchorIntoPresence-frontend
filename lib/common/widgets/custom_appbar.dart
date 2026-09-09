@@ -26,19 +26,23 @@ class CustomAppbar extends StatelessWidget {
     };
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 16, 12, 0),
+      padding: const EdgeInsets.fromLTRB(0, 16, 12, 0),
       child: SizedBox(
         height: 48,
         child: Row(
           children: [
             SizedBox(
-              width: 48,
+              width: 40,
               height: 48,
               child: image == null
                   ? IconButton(
                       onPressed: onBack,
                       tooltip: 'Back',
                       padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 40,
+                        minHeight: 40,
+                      ),
                       icon: Icon(
                         Icons.arrow_back_rounded,
                         size: 21,
@@ -49,6 +53,10 @@ class CustomAppbar extends StatelessWidget {
                       onPressed: onBack,
                       tooltip: 'Back',
                       padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 40,
+                        minHeight: 40,
+                      ),
                       icon: image!,
                     ),
             ),

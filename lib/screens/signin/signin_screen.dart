@@ -1,6 +1,5 @@
 import '../../common/widgets/button_widget.dart';
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +17,7 @@ import '../../common/local_storage.dart';
 import '../../helping_widgets/sociallogin-button.dart';
 import '../../common/widgets/auth_theme.dart';
 import '../../common/widgets/auth_text_field.dart';
+import '../../common/widgets/loading_overlay.dart';
 import '../../utils/fonts.dart';
 import '../../utils/string_constants.dart';
 import '../forgot_password/forgot_password.dart';
@@ -54,9 +54,9 @@ class _SigninScreenState extends State<SigninScreen> {
         builder: (context) {
           return Scaffold(
             backgroundColor: Theme.of(context).colorScheme.surface,
-            body: Stack(
-              children: [
-                BlocListener<SigninBloc, SigninState>(
+            body: LoadingOverlay(
+              isLoading: context.watch<SigninBloc>().state is SigninLoading,
+              child: BlocListener<SigninBloc, SigninState>(
                   listener: (context, state) {
                     if (state is SigninSuccess) {
                       final isFirst = state.isFirst;
@@ -498,20 +498,6 @@ class _SigninScreenState extends State<SigninScreen> {
                     ),
                   ),
                 ),
-                // Show loading indicator if the state is SigninLoading
-                if (context.watch<SigninBloc>().state is SigninLoading)
-                  Positioned.fill(
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-                      child: Container(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        child: Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
             ),
           );
         },

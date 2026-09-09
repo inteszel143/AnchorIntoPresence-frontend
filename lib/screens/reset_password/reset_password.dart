@@ -4,10 +4,10 @@ import 'package:mindfully_evolve_app/screens/reset_password/resetpassword_bloc/r
 import 'package:mindfully_evolve_app/screens/reset_password/resetpassword_bloc/reset_password_event.dart';
 import 'package:mindfully_evolve_app/screens/reset_password/resetpassword_bloc/reset_password_state.dart';
 
-import '../../common/widgets/background_image.dart';
+import '../../common/widgets/auth_text_field.dart';
+import '../../common/widgets/auth_theme.dart';
 import '../../common/widgets/button_widget.dart';
 import '../../common/widgets/custom_appbar.dart';
-import '../../common/widgets/textfield_widget.dart';
 import '../../utils/color_constants.dart';
 import '../../utils/fonts.dart';
 import '../../utils/string_constants.dart';
@@ -33,63 +33,96 @@ class ResetPassword extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double horizontalPadding = MediaQuery.of(context).size.width * 0.06;
-    return BlocProvider(
-      create: (_) => ResetPasswordBloc(),
-      child: Scaffold(
-        body: BackgroundScaffold(
-          child: SingleChildScrollView(
-            child: Form(
-              key: _formKey,
-              child: Column(
+    return AuthTheme(
+      child: Builder(
+        builder: (context) => BlocProvider(
+          create: (_) => ResetPasswordBloc(),
+          child: Scaffold(
+          body: SafeArea(
+            child: SingleChildScrollView(
+              keyboardDismissBehavior:
+                  ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                12,
+                horizontalPadding,
+                32,
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CustomAppbar(headingTxt: ''),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 28),
+                  Center(
+                    child: Image.asset(
+                      'assets/icons/tina-logo.png',
+                      width: 110,
+                      height: 92,
+                      fit: BoxFit.contain,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Theme.of(context).colorScheme.onSurface
+                          : null,
+                      semanticLabel: 'Tina Moore',
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Center(
+                    child: Text(
+                      'A FRESH START',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11,
+                        letterSpacing: 2,
+                        fontFamily: Fonts.body,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
                   Center(
                     child: Text(
                       Strings.resetPassword,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          color: ColorCodes.bellefairheadingtextcolor,
-                          fontWeight: FontWeight.w400,
-                          fontSize: 26,
-                          letterSpacing: Fonts.headingLetterSpacing,
-                          fontFamily: Fonts.heading),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 32,
+                        height: 1.15,
+                        letterSpacing: Fonts.headingLetterSpacing,
+                        fontFamily: Fonts.heading,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 5),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 50),
-                    child: Text(
+                  const SizedBox(height: 14),
+                  Text(
                       Strings.newUniquePassword,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: ColorCodes.headerdescriptioncolor,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontWeight: FontWeight.w500,
-                        fontSize: 14,
+                        fontSize: 15,
+                        height: 1.55,
                         fontFamily: Fonts.body,
                       ),
-                    ),
                   ),
-                  const SizedBox(height: 20),
-                  Padding(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: horizontalPadding),
-                    child: const Text(
+                  const SizedBox(height: 32),
+                  Text(
                       Strings.newPassword,
                       style: TextStyle(
-                        color: ColorCodes.bellefairheadingtextcolor,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w500,
                         fontSize: 14,
                         fontFamily: Fonts.body,
                       ),
-                    ),
                   ),
-                  const SizedBox(height: 5),
-                  TextFieldWidget(
+                  const SizedBox(height: 8),
+                  AuthTextField(
                     controller: _passwordController,
                     label: Strings.enterNewPassword,
-                    widthFactor: 0.9,
+                    widthFactor: 1,
                     obscureText: true,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
@@ -103,25 +136,21 @@ class ResetPassword extends StatelessWidget {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 10),
-                  Padding(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: horizontalPadding),
-                    child: const Text(
+                  const SizedBox(height: 20),
+                  Text(
                       Strings.confirmPassword,
                       style: TextStyle(
-                        color: ColorCodes.bellefairheadingtextcolor,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w500,
                         fontSize: 14,
                         fontFamily: Fonts.body,
                       ),
-                    ),
                   ),
-                  const SizedBox(height: 5),
-                  TextFieldWidget(
+                  const SizedBox(height: 8),
+                  AuthTextField(
                     controller: _confirmPasswordController,
                     label: Strings.enterConfirmPassword,
-                    widthFactor: 0.9,
+                    widthFactor: 1,
                     obscureText: true,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
@@ -135,7 +164,7 @@ class ResetPassword extends StatelessWidget {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                   Center(
                     child: BlocConsumer<ResetPasswordBloc, ResetPasswordState>(
                       listener: (context, state) {
@@ -165,10 +194,24 @@ class ResetPassword extends StatelessWidget {
                       builder: (context, state) {
                         bool isLoading = state is ResetPasswordLoading;
 
-                        return GestureDetector(
-                          onTap: isLoading
-                              ? null
-                              : () {
+                        return AnimatedBuilder(
+                          animation: Listenable.merge([
+                            _passwordController,
+                            _confirmPasswordController,
+                          ]),
+                          builder: (context, child) {
+                            final canSubmit =
+                                _passwordController.text.trim().isNotEmpty &&
+                                    _confirmPasswordController.text
+                                        .trim()
+                                        .isNotEmpty;
+
+                            return ButtonWidget(
+                              isActive: !isLoading && canSubmit,
+                              btnTxt: isLoading ? 'Submitting...' : Strings.submit,
+                              widthFactor: 1,
+                              height: 60,
+                              onTap: () {
                                   FocusScope.of(context).unfocus();
                                   if (_formKey.currentState!.validate()) {
                                     context.read<ResetPasswordBloc>().add(
@@ -182,14 +225,9 @@ class ResetPassword extends StatelessWidget {
                                           ),
                                         );
                                   }
-                                },
-                          child: ButtonWidget(
-                            isActive: !isLoading,
-                            btnTxt:
-                                isLoading ? 'Submitting...' : Strings.submit,
-                            widthFactor: 0.9,
-                            height: 50,
-                          ),
+                              },
+                            );
+                          },
                         );
                       },
                     ),
@@ -197,6 +235,8 @@ class ResetPassword extends StatelessWidget {
                 ],
               ),
             ),
+          ),
+        ),
           ),
         ),
       ),

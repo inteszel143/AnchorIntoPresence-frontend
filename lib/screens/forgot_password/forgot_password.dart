@@ -5,6 +5,7 @@ import '../../common/widgets/auth_text_field.dart';
 import '../../common/widgets/auth_theme.dart';
 import '../../common/widgets/button_widget.dart';
 import '../../common/widgets/custom_appbar.dart';
+import '../../common/widgets/loading_overlay.dart';
 import '../../utils/color_constants.dart';
 import '../../utils/fonts.dart';
 import '../../utils/string_constants.dart';
@@ -53,18 +54,12 @@ class ForgotPassword extends StatelessWidget {
           }
         },
         builder: (context, state) {
-          if (state is ForgotPasswordLoading) {
-            return Scaffold(
-              backgroundColor: Theme.of(context).colorScheme.surface,
-              body: const Center(
-                child: CircularProgressIndicator(),
-              ),
-            );
-          }
           return Scaffold(
             backgroundColor: Theme.of(context).colorScheme.surface,
-            body: SafeArea(
-              child: SingleChildScrollView(
+            body: LoadingOverlay(
+              isLoading: state is ForgotPasswordLoading,
+              child: SafeArea(
+                child: SingleChildScrollView(
                 keyboardDismissBehavior:
                     ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: EdgeInsets.fromLTRB(
@@ -195,6 +190,7 @@ class ForgotPassword extends StatelessWidget {
                 ),
               ),
             ),
+          ),
           );
         },
       ),

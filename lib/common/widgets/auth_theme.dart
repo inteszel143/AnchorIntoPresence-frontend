@@ -30,6 +30,7 @@ class AuthTheme extends StatelessWidget {
         brightness: scheme.brightness,
         colorScheme: scheme,
         scaffoldBackgroundColor: scheme.surface,
+        canvasColor: scheme.surface,
         fontFamily: Fonts.body,
       ),
       child: child,

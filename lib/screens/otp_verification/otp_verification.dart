@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pinput/pinput.dart';
 
-import '../../common/widgets/background_image.dart';
+import '../../common/widgets/auth_theme.dart';
 import '../../common/widgets/button_widget.dart';
 import '../../common/widgets/custom_appbar.dart';
 import '../../utils/color_constants.dart';
@@ -33,37 +33,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   final TextEditingController otpController = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    final defaultPinTheme = PinTheme(
-      width: 54,
-      height: 54,
-      textStyle: const TextStyle(
-        fontSize: 14,
-        color: ColorCodes.blackcolor,
-        fontWeight: FontWeight.w500,
-        fontFamily: Fonts.body,
-      ),
-      decoration: BoxDecoration(
-        color: ColorCodes.whitecolor,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: ColorCodes.searchboxcolor),
-      ),
-    );
-
-    final focusedPinTheme = defaultPinTheme.copyWith(
-      decoration: defaultPinTheme.decoration!.copyWith(
-        border: Border.all(color: ColorCodes.searchboxcolor),
-      ),
-    );
-
-    final submittedPinTheme = defaultPinTheme.copyWith(
-      decoration: defaultPinTheme.decoration!.copyWith(
-        border: Border.all(color: ColorCodes.searchboxcolor),
-      ),
-    );
-
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: BlocProvider(
+    return AuthTheme(
+      child: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: BlocProvider(
         create: (_) => OtpVerificationBloc()..add(StartResendOtpTimer()),
         child: BlocConsumer<OtpVerificationBloc, OtpVerificationState>(
           listener: (context, state) {
@@ -112,50 +85,116 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
             }
           },
           builder: (context, state) {
+            final colors = Theme.of(context).colorScheme;
+            final defaultPinTheme = PinTheme(
+              width: 54,
+              height: 54,
+              textStyle: TextStyle(
+                fontSize: 14,
+                color: colors.onSurface,
+                fontWeight: FontWeight.w500,
+                fontFamily: Fonts.body,
+              ),
+              decoration: BoxDecoration(
+                color: colors.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: colors.outline),
+              ),
+            );
+            final focusedPinTheme = defaultPinTheme.copyWith(
+              decoration: defaultPinTheme.decoration!.copyWith(
+                border: Border.all(color: colors.primary, width: 2),
+              ),
+            );
+            final submittedPinTheme = defaultPinTheme.copyWith(
+              decoration: defaultPinTheme.decoration!.copyWith(
+                border: Border.all(color: colors.primary),
+              ),
+            );
             final bool isLoading = state is OtpVerificationLoading;
             final bool isResendLoading = state is OtpResendSuccess;
             final bool isTimerRunning = state is OtpResendTimerRunning;
             final int remainingSeconds =
                 isTimerRunning ? state.remainingSeconds : 0;
 
-            return BackgroundScaffold(
-              child: SingleChildScrollView(
-                child: Column(
+            return Scaffold(
+              backgroundColor: colors.surface,
+              body: SafeArea(
+                child: SingleChildScrollView(
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 36),
+                  child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     CustomAppbar(headingTxt: ''),
-                    const SizedBox(height: 10),
-                    const Center(
-                      child: Text(
-                        Strings.otpVerification,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: ColorCodes.bellefairheadingtextcolor,
-                          fontWeight: FontWeight.w400,
-                          fontSize: 26,
-                          letterSpacing: Fonts.headingLetterSpacing,
-                          fontFamily: Fonts.heading,
-                        ),
+                    const SizedBox(height: 28),
+                    Center(
+                      child: Image.asset(
+                        'assets/icons/tina-logo.png',
+                        width: 110,
+                        height: 92,
+                        fit: BoxFit.contain,
+                        color: colors.brightness == Brightness.dark
+                            ? colors.onSurface
+                            : null,
+                        semanticLabel: 'Tina Moore',
                       ),
                     ),
-                    const SizedBox(height: 5),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 40),
+                    const SizedBox(height: 24),
+                    Center(
                       child: Text(
-                        Strings.enterVerificationCode,
+                        'A MOMENT TO ARRIVE',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: ColorCodes.headerdescriptioncolor,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 14,
+                          color: colors.onSurfaceVariant,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 11,
+                          letterSpacing: 2,
                           fontFamily: Fonts.body,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 30),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: Center(
+                    const SizedBox(height: 14),
+                    Text(
+                        Strings.otpVerification,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: colors.onSurface,
+                          fontWeight: FontWeight.w400,
+                          fontSize: 32,
+                          height: 1.15,
+                          letterSpacing: Fonts.headingLetterSpacing,
+                          fontFamily: Fonts.heading,
+                        ),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                        Strings.enterVerificationCode,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: colors.onSurfaceVariant,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 15,
+                          height: 1.55,
+                          fontFamily: Fonts.body,
+                        ),
+                    ),
+                    const SizedBox(height: 12),
+                    Center(
+                      child: Text(
+                        widget.email,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: colors.onSurface,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          fontFamily: Fonts.body,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    Center(
                         child: Pinput(
                           controller: otpController,
                           length: 6,
@@ -175,9 +214,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                             }
                           },
                         ),
-                      ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
                     Center(
                       child: GestureDetector(
                         onTap: isLoading || isResendLoading
@@ -264,9 +302,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   ],
                 ),
               ),
+              ),
             );
           },
         ),
+      ),
       ),
     );
   }
