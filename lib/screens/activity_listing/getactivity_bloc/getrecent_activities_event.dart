@@ -10,6 +10,7 @@ abstract class ActivityEvent extends Equatable {
 
 // Requests the activity list with pagination, search, sorting, and category filtering.
 class FetchActivities extends ActivityEvent {
+  final bool useCache;
   final int page;
   final int limit;
   final String search;
@@ -17,14 +18,15 @@ class FetchActivities extends ActivityEvent {
   String? categoryId;
 
   FetchActivities(
-      {this.page = 1,
+      {this.useCache = false,
+      this.page = 1,
       this.limit = 10,
       this.search = '',
       this.sortOrder = '',
       this.categoryId});
 
   @override
-  List<Object> get props => [page, limit, search, sortOrder];
+  List<Object> get props => [page, limit, search, sortOrder, useCache];
 }
 
 // Requests details for a specific activity.

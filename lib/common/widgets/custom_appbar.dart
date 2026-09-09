@@ -1,3 +1,5 @@
+import 'app_back_button.dart';
+import 'app_circle_button.dart';
 import 'package:flutter/material.dart';
 
 import '../../utils/fonts.dart';
@@ -9,7 +11,8 @@ class CustomAppbar extends StatelessWidget {
   final void Function()? onTap;
   final Widget? image;
 
-  const CustomAppbar({super.key, 
+  const CustomAppbar({
+    super.key,
     required this.headingTxt,
     this.okimage,
     this.onOkTap,
@@ -19,48 +22,13 @@ class CustomAppbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final onBack = onTap ?? () {
-      if (Navigator.canPop(context)) {
-        Navigator.pop(context);
-      }
-    };
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 16, 12, 0),
       child: SizedBox(
         height: 48,
         child: Row(
           children: [
-            SizedBox(
-              width: 40,
-              height: 48,
-              child: image == null
-                  ? IconButton(
-                      onPressed: onBack,
-                      tooltip: 'Back',
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(
-                        minWidth: 40,
-                        minHeight: 40,
-                      ),
-                      icon: Icon(
-                        Icons.arrow_back_rounded,
-                        size: 21,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    )
-                  : IconButton(
-                      onPressed: onBack,
-                      tooltip: 'Back',
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(
-                        minWidth: 40,
-                        minHeight: 40,
-                      ),
-                      icon: image!,
-                    ),
-            ),
-
+            AppBackButton(onPressed: onTap, icon: image),
             Expanded(
               child: Center(
                 child: Text(
@@ -78,17 +46,14 @@ class CustomAppbar extends StatelessWidget {
                 ),
               ),
             ),
-
             SizedBox(
               width: 48,
               height: 48,
               child: Align(
                 alignment: Alignment.centerRight,
-                child: IconButton(
-                  onPressed: onOkTap,
-                  padding: EdgeInsets.zero,
-                  icon: okimage ?? const SizedBox(width: 32, height: 32),
-                ),
+                child: okimage == null
+                    ? const SizedBox.square(dimension: 44)
+                    : AppCircleButton(icon: okimage!, onPressed: onOkTap),
               ),
             ),
           ],

@@ -178,7 +178,7 @@ class _HomePageState extends State<HomePage> {
     return Stack(
       children: [
         Scaffold(
-          backgroundColor: ColorCodes.backgroundcolor,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: SafeArea(
             child: BlocProvider.value(
               value: _homePageBloc,

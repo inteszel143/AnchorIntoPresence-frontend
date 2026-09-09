@@ -1,3 +1,4 @@
+import '../screens/activity_listing/activity_list_cache.dart';
 import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -11,6 +12,7 @@ class LocalStorage {
   static const _purchaseKey = "for_purchase";
 
   static Future<void> saveToken(String token) async {
+    ActivityListCache.clear();
     await _storage.write(key: _tokenKey, value: token);
   }
 
@@ -19,6 +21,7 @@ class LocalStorage {
   }
 
   static Future<void> deleteToken() async {
+    ActivityListCache.clear();
     await _storage.delete(key: _tokenKey);
   }
 

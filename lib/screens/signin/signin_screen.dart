@@ -1,3 +1,4 @@
+import '../../common/widgets/auth_entrance.dart';
 import '../../common/widgets/button_widget.dart';
 import 'dart:io';
 
@@ -108,7 +109,7 @@ class _SigninScreenState extends State<SigninScreen> {
                           ScrollViewKeyboardDismissBehavior.onDrag,
                       padding:
                           EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-                      child: Center(
+                      child: AuthEntrance(child: Center(
                           child: ConstrainedBox(
                               constraints: BoxConstraints(maxWidth: 480),
                               child: LayoutBuilder(
@@ -494,7 +495,7 @@ class _SigninScreenState extends State<SigninScreen> {
                                             )),
                                           ],
                                         ),
-                                      ))))),
+                                      )))))),
                     ),
                   ),
                 ),

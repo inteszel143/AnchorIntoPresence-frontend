@@ -16,7 +16,7 @@ void main() {
       expect(find.text('Welcome back.'), findsOneWidget);
       final button = find.widgetWithText(ButtonWidget, 'Sign in');
       expect(tester.widget<ButtonWidget>(button).isActive, isFalse);
-      final fields = find.byType(TextFormField);
+      final fields = find.byType(TextField);
       await tester.enterText(fields.first, 'hello@example.com');
       await tester.enterText(fields.last, 'example-password');
       await tester.pump();

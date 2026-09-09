@@ -1,15 +1,13 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:flutter_switch/flutter_switch.dart';
 
-import '../common/logoutconfirmation_dialog.dart';
-import '../utils/color_constants.dart';
-import '../utils/string_constants.dart';
 import '../utils/fonts.dart';
 
 class SettingItemTile extends StatelessWidget {
   final String iconPath;
   final String option;
+  final String? subtitle;
+  final bool destructive;
   final bool showToggle;
   final bool? toggleValue;
   final ValueChanged<bool>? onToggle;
@@ -19,6 +17,8 @@ class SettingItemTile extends StatelessWidget {
     super.key,
     required this.iconPath,
     required this.option,
+    this.subtitle,
+    this.destructive = false,
     this.showToggle = false,
     this.toggleValue,
     this.onToggle,
@@ -27,60 +27,63 @@ class SettingItemTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        if (option == Strings.logout) {
-          showLogoutConfirmationDialog(context);
-        } else {
-          onTap?.call();
-        }
-      },
+    final colors = Theme.of(context).colorScheme;
+    final foreground = destructive ? colors.error : colors.onSurface;
+    return InkWell(
+      onTap: showToggle && onToggle != null && toggleValue != null
+          ? () => onToggle!(!toggleValue!)
+          : onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        child: Container(
-          decoration: BoxDecoration(
-            color: ColorCodes.settingDarkContainer,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: ColorCodes.searchboxcolor),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        child: Row(children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: destructive ? colors.errorContainer : colors.surface,
+              borderRadius: BorderRadius.circular(13),
+            ),
+            child: SvgPicture.asset(iconPath,
+                colorFilter: ColorFilter.mode(
+                    destructive ? colors.onErrorContainer : foreground,
+                    BlendMode.srcIn)),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                height: 43.08,
-                width: 44,
-                decoration: BoxDecoration(
-                  color: ColorCodes.settingLightContainer,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: SvgPicture.asset(iconPath),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  option,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 16,
-                    fontFamily: Fonts.body,
-                    color: ColorCodes.mainheadingcolor,
-                  ),
-                ),
-              ),
-              if (showToggle && toggleValue != null && onToggle != null)
-                FlutterSwitch(
-                  width: 50,
-                  height: 25,
-                  toggleSize: 20,
-                  activeColor: ColorCodes.settingLightContainer,
-                  inactiveColor: ColorCodes.grey300Color,
+          const SizedBox(width: 14),
+          Expanded(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(option,
+                  style: TextStyle(
+                      fontFamily: Fonts.body,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: foreground)),
+              if (subtitle != null) ...[
+                const SizedBox(height: 4),
+                Text(subtitle!,
+                    style: TextStyle(
+                        fontSize: 12,
+                        height: 1.4,
+                        color: colors.onSurfaceVariant)),
+              ],
+            ]),
+          ),
+          const SizedBox(width: 8),
+          if (showToggle && toggleValue != null && onToggle != null)
+            Semantics(
+              label: option,
+              child: Switch.adaptive(
                   value: toggleValue!,
-                  onToggle: onToggle!,
-                ),
-            ],
-          ),
-        ),
+                  onChanged: onToggle,
+                  activeTrackColor: colors.primary,
+                  activeThumbColor: colors.onPrimary),
+            )
+          else
+            Icon(Icons.chevron_right_rounded,
+                size: 20,
+                color: destructive ? colors.error : colors.onSurfaceVariant),
+        ]),
       ),
     );
   }

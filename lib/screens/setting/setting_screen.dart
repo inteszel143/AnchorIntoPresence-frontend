@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mindfully_evolve_app/common/main_screen.dart';
 import 'package:mindfully_evolve_app/screens/privacy_policy/privacy_screen.dart';
 import 'package:mindfully_evolve_app/screens/reminder/reminder_screen.dart';
 import 'package:mindfully_evolve_app/screens/subscriptionmanagement/subscription_management.dart';
@@ -18,7 +17,6 @@ import '../../utils/color_constants.dart';
 import '../../utils/global.dart' as globals;
 import '../activity_listing/favourite_activities.dart';
 import '../activity_listing/getactivity_bloc/getrecent_activities_bloc.dart';
-import '../activity_listing/getactivity_bloc/getrecent_activities_event.dart';
 import '../contact_support/contact_supportscreen.dart';
 import '../dashboard/dashboard_bloc/home_bloc.dart';
 import '../dashboard/dashboard_bloc/home_event.dart';
@@ -62,10 +60,7 @@ class SettingScreen extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => BlocProvider<ActivityBloc>(
-                create: (_) => ActivityBloc()..add(FetchActivities()),
-                child: const FavouriteActivity(),
-              ),
+              builder: (_) => const FavouriteActivity(),
             ),
           );
         } else {
@@ -204,82 +199,113 @@ class SettingScreen extends StatelessWidget {
           }
         },
         builder: (context, state) {
-          return WillPopScope(
-            onWillPop: () async {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => MainScreen(
-                          initialIndex: 0,
-                        )),
-                (route) => false,
+          final colors = Theme.of(context).colorScheme;
+          const descriptions = [
+            'Choose whether to receive notifications',
+            'Return to the practices you love',
+            'Make space for a daily pause',
+            'View and manage your reminders',
+            'Manage your plan and billing',
+            'Our terms of use',
+            'How your information is handled',
+            'We’re here to help',
+            'Find answers to common questions',
+            'Permanently remove your account',
+            'Sign out of this account',
+          ];
+
+          Widget tile(int index) {
+            final item = settings[index];
+            if (index == 0) {
+              return ValueListenableBuilder<bool>(
+                valueListenable: notificationToggle,
+                builder: (context, value, child) => SettingItemTile(
+                  iconPath: item['icon']!,
+                  option: item['option']!,
+                  subtitle: descriptions[index],
+                  showToggle: true,
+                  toggleValue: value,
+                  onToggle: (val) {
+                    notificationToggle.value = val;
+                    _saveNotificationState(val);
+                    context
+                        .read<NotificationToggleBloc>()
+                        .add(ToggleNotificationEvent(val));
+                  },
+                ),
               );
-              return false;
-            },
-            child: Scaffold(
-              backgroundColor: ColorCodes.backgroundcolor,
-              body: SafeArea(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.only(bottom: 100),
-                  child: Column(
+            }
+            return SettingItemTile(
+              iconPath: item['icon']!,
+              option: item['option']!,
+              subtitle: descriptions[index],
+              destructive: index == 9,
+              onTap: () => _handleSettingTap(context, item['option']!),
+            );
+          }
+
+          Widget section(String title, List<int> indices) => Padding(
+                padding: const EdgeInsets.only(bottom: 24),
+                child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      CustomAppbar(
-                        headingTxt: Strings.settings,
-                        onTap: () {
-                          Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => MainScreen(
-                                        initialIndex: 0,
-                                      )));
-                        },
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4, bottom: 10),
+                        child: Text(title,
+                            style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: colors.onSurfaceVariant)),
                       ),
-                      ListView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: settings.length,
-                        itemBuilder: (context, index) {
-                          final item = settings[index];
-                          final isNotificationToggle =
-                              item['option'] == Strings.notificationAlert;
+                      Material(
+                        color: colors.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(22),
+                        clipBehavior: Clip.antiAlias,
+                        child: Column(children: [
+                          for (var i = 0; i < indices.length; i++) ...[
+                            if (i > 0)
+                              Divider(
+                                  height: 1,
+                                  indent: 72,
+                                  endIndent: 16,
+                                  color: colors.outlineVariant
+                                      .withValues(alpha: .45)),
+                            tile(indices[i]),
+                          ],
+                        ]),
+                      ),
+                    ]),
+              );
 
-                          if (isNotificationToggle) {
-                            return ValueListenableBuilder<bool>(
-                              valueListenable: notificationToggle,
-                              builder: (context, value, child) {
-                                return SettingItemTile(
-                                  key: ValueKey(item['option']),
-                                  iconPath: item['icon']!,
-                                  option: item['option']!,
-                                  showToggle: true,
-                                  toggleValue: value,
-                                  onToggle: (val) {
-                                    notificationToggle.value = val;
-                                    _saveNotificationState(
-                                        val); // Save state when toggled
-                                    BlocProvider.of<NotificationToggleBloc>(
-                                            context)
-                                        .add(ToggleNotificationEvent(val));
-                                  },
-                                  onTap: () => _handleSettingTap(
-                                      context, item['option']!),
-                                );
-                              },
-                            );
-                          } else {
-                            return SettingItemTile(
-                              key: ValueKey(item['option']),
-                              iconPath: item['icon']!,
-                              option: item['option']!,
-                              onTap: () =>
-                                  _handleSettingTap(context, item['option']!),
-                            );
-                          }
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                    ],
+          return Scaffold(
+            body: SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 560),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const CustomAppbar(headingTxt: ''),
+                        const SizedBox(height: 20),
+                        Text(Strings.settings,
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineLarge
+                                ?.copyWith(fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 8),
+                        Text('A little space to make this yours.',
+                            style: TextStyle(
+                                fontSize: 15, color: colors.onSurfaceVariant)),
+                        const SizedBox(height: 28),
+                        section('Your practice', [1, 2, 3]),
+                        section('Preferences', [0]),
+                        section('Membership', [4]),
+                        section('Help & information', [7, 8, 6, 5]),
+                        section('Account', [10, 9]),
+                      ],
+                    ),
                   ),
                 ),
               ),

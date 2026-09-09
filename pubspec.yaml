@@ -73,6 +73,7 @@ dependencies:
   in_app_purchase_android: ^0.5.2
   in_app_purchase_storekit: ^0.4.10+1
   flutter_launcher_icons: ^0.14.4
+  adaptive_platform_ui: ^0.1.111
 
 
 

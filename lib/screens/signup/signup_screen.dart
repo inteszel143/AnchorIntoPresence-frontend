@@ -1,3 +1,4 @@
+import '../../common/widgets/auth_entrance.dart';
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -101,7 +102,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                       ScrollViewKeyboardDismissBehavior.onDrag,
                                   padding: EdgeInsets.symmetric(
                                       horizontal: 24, vertical: 24),
-                                  child: Center(
+                                  child: AuthEntrance(child: Center(
                                       child: ConstrainedBox(
                                           constraints:
                                               BoxConstraints(maxWidth: 480),
@@ -650,7 +651,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                                             )),
                                                           ],
                                                         ),
-                                                      )))))),
+                                                      ))))))),
                                 ),
                               ),
                               ],

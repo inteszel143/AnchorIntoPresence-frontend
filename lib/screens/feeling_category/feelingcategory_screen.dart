@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import '../../common/widgets/app_back_button.dart';
 import 'package:mindfully_evolve_app/common/main_screen.dart';
 import 'package:mindfully_evolve_app/utils/image_constants.dart';
 
@@ -80,12 +80,10 @@ class CategoryScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          GestureDetector(
-                            onTap: () => _goToSignin(context),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: SvgPicture.asset(
-                                  ImageConstants.svgBackCircle),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: AppBackButton(
+                              onPressed: () => _goToSignin(context),
                             ),
                           ),
                           const SizedBox(height: 24),

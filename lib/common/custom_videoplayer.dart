@@ -33,6 +33,7 @@ class _OnlineVideoPlayerState extends State<OnlineVideoPlayer> {
     super.initState();
     _controller = VideoPlayerController.network(widget.videoUrl);
     _initializeVideoPlayerFuture = _controller.initialize().then((_) async {
+      if (!mounted) return;
       setState(() {});
       if (widget.initialPosition > Duration.zero) {
         await _controller.seekTo(widget.initialPosition);
@@ -88,6 +89,7 @@ class _OnlineVideoPlayerState extends State<OnlineVideoPlayer> {
       ),
     );
 
+    if (!mounted) return;
     if (position != null && position is Duration) {
       await _controller.seekTo(position);
       _controller.play();
@@ -125,6 +127,11 @@ class _OnlineVideoPlayerState extends State<OnlineVideoPlayer> {
                     children: [
                       // Video fills the AspectRatio box exactly
                       VideoPlayer(_controller),
+                      if (_showControls)
+                        const Positioned.fill(
+                          child: IgnorePointer(
+                              child: ColoredBox(color: Color(0x55000000))),
+                        ),
 
                       // Played / total duration label — sits just above the
                       // progress bar, centered.
@@ -144,7 +151,7 @@ class _OnlineVideoPlayerState extends State<OnlineVideoPlayer> {
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
                                   color: ColorCodes.whitecolor,
-                                  fontSize: 10,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                   shadows: [
                                     Shadow(
@@ -182,13 +189,19 @@ class _OnlineVideoPlayerState extends State<OnlineVideoPlayer> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              iconSize: 36,
+                              tooltip: 'Back 10 seconds',
+                              iconSize: 30,
+                              style: IconButton.styleFrom(
+                                  backgroundColor: Colors.black38),
                               color: ColorCodes.whitecolor,
                               icon: const Icon(Icons.replay_10),
                               onPressed: () =>
                                   _seekRelative(const Duration(seconds: -10)),
                             ),
                             IconButton(
+                              tooltip: _controller.value.isPlaying
+                                  ? 'Pause'
+                                  : 'Play',
                               iconSize: 64,
                               color: ColorCodes.whitecolor,
                               icon: Icon(
@@ -199,7 +212,10 @@ class _OnlineVideoPlayerState extends State<OnlineVideoPlayer> {
                               onPressed: _togglePlayPause,
                             ),
                             IconButton(
-                              iconSize: 36,
+                              tooltip: 'Forward 10 seconds',
+                              iconSize: 30,
+                              style: IconButton.styleFrom(
+                                  backgroundColor: Colors.black38),
                               color: ColorCodes.whitecolor,
                               icon: const Icon(Icons.forward_10),
                               onPressed: () =>
@@ -214,6 +230,9 @@ class _OnlineVideoPlayerState extends State<OnlineVideoPlayer> {
                           top: 8,
                           right: 8,
                           child: IconButton(
+                            tooltip: 'Full screen',
+                            style: IconButton.styleFrom(
+                                backgroundColor: Colors.black38),
                             icon: Icon(
                               Icons.fullscreen,
                               color: ColorCodes.whitecolor,
@@ -229,9 +248,40 @@ class _OnlineVideoPlayerState extends State<OnlineVideoPlayer> {
             ),
           );
         } else if (snapshot.hasError) {
-          return const Center(child: Text('Error loading video'));
+          return const ColoredBox(
+            color: Color(0xFF211F1C),
+            child: Center(
+                child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                Icon(Icons.videocam_off_outlined,
+                    color: Colors.white70, size: 32),
+                SizedBox(height: 12),
+                Text('Video unavailable',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600)),
+                SizedBox(height: 6),
+                Text('Please check your connection and reopen this practice.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white70, fontSize: 12)),
+              ]),
+            )),
+          );
         } else {
-          return const Center(child: CircularProgressIndicator());
+          return Stack(fit: StackFit.expand, children: [
+            if (widget.thumbnail != null && widget.thumbnail!.isNotEmpty)
+              Image.memory(widget.thumbnail!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+            const ColoredBox(color: Colors.black54),
+            const Center(
+                child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                    semanticsLabel: 'Loading meditation video')),
+          ]);
         }
       },
     );

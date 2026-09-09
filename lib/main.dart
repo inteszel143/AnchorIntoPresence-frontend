@@ -1,5 +1,4 @@
-import 'package:mindfully_evolve_app/common/widgets/button_widget.dart';
-import 'package:mindfully_evolve_app/utils/fonts.dart';
+import 'common/app_theme.dart';
 import 'dart:async';
 
 import 'package:app_links/app_links.dart';
@@ -170,20 +169,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         navigatorKey: navigatorKey,
         title: 'Anchor Into Presence',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
-          fontFamily: Fonts.body,
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ButtonWidget.primaryStyle,
-          ),
-          filledButtonTheme: FilledButtonThemeData(
-            style: ButtonWidget.primaryStyle,
-          ),
-          textTheme: Fonts.textTheme(
-            ThemeData(useMaterial3: true, fontFamily: Fonts.body).textTheme,
-          ),
-        ),
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: ThemeMode.system,
         builder: (context, child) {
           return ConnectivityHandler(child: child ?? Container());
         },

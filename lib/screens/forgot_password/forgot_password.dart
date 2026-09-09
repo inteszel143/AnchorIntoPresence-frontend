@@ -1,3 +1,4 @@
+import '../../common/widgets/auth_entrance.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -68,7 +69,7 @@ class ForgotPassword extends StatelessWidget {
                   horizontalPadding,
                   32,
                 ),
-                child: Center(
+                child: AuthEntrance(child: Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 480),
                     child: Form(
@@ -187,7 +188,7 @@ class ForgotPassword extends StatelessWidget {
                       ),
                     ),
                   ),
-                ),
+                )),
               ),
             ),
           ),

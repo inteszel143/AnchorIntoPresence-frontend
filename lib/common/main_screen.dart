@@ -1,13 +1,12 @@
-import 'dart:ui';
+import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 
 import 'package:flutter/material.dart';
 import 'package:mindfully_evolve_app/common/widgets/buy_subscription_dialog.dart';
 
 import '../screens/community/community_screen.dart';
 import '../screens/dashboard/home_screen.dart';
-import '../screens/setting/setting_screen.dart';
+import '../screens/profile/profile_screen.dart';
 import '../screens/track/track_screen.dart';
-import '../utils/color_constants.dart';
 import '../utils/global.dart' as globals;
 
 class MainScreen extends StatefulWidget {
@@ -32,7 +31,7 @@ class _MainScreenState extends State<MainScreen> {
     HomePage(),
     CommunityScreen(),
     TrackScreen(),
-    SettingScreen(),
+    const ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -42,6 +41,8 @@ class _MainScreenState extends State<MainScreen> {
       });
     } else {
       if (index == 1 || index == 2) {
+        // Rebuild so the native tab bar restores the permitted selection.
+        setState(() {});
         showSubscriptionDialog(context);
       } else {
         setState(() {
@@ -53,78 +54,39 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
-      ),
-      bottomNavigationBar: SafeArea(
-        top: false,
-        minimum: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(28),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Theme.of(context)
-                        .colorScheme
-                        .surfaceContainerHighest
-                        .withValues(alpha: 0.72)
-                    : ColorCodes.backgroundcolor.withValues(alpha: 0.78),
-                border: Border.all(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.12),
-                ),
-                borderRadius: BorderRadius.circular(28),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.12),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: NavigationBar(
-                selectedIndex: _selectedIndex,
-                onDestinationSelected: _onItemTapped,
-                height: 76,
-                backgroundColor: Colors.transparent,
-                surfaceTintColor: Colors.transparent,
-                indicatorColor: Theme.of(context)
-                    .colorScheme
-                    .primary
-                    .withValues(alpha: 0.16),
-                elevation: 0,
-                destinations: const [
-              NavigationDestination(
-                icon: Icon(Icons.home_rounded),
-                selectedIcon: Icon(Icons.home_rounded),
-                label: 'Home',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.groups_rounded),
-                selectedIcon: Icon(Icons.groups_rounded),
-                label: 'Community',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.insights_rounded),
-                selectedIcon: Icon(Icons.insights_rounded),
-                label: 'Track',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.person_rounded),
-                selectedIcon: Icon(Icons.person_rounded),
-                label: 'Profile',
-              ),
-                ],
-              ),
-            ),
-          ),
+    final nativeIcons = PlatformInfo.isIOS26OrHigher();
+    return AdaptiveScaffold(
+      minimizeBehavior: TabBarMinimizeBehavior.never,
+      // The native bar overlays its body; reserve room for page controls.
+      body: Padding(
+        padding: EdgeInsets.only(bottom: nativeIcons ? 64 : 0),
+        child: IndexedStack(
+          index: _selectedIndex,
+          children: _pages,
         ),
+      ),
+      bottomNavigationBar: AdaptiveBottomNavigationBar(
+        useNativeBottomBar: true,
+        selectedIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        items: [
+          AdaptiveNavigationDestination(
+            icon: nativeIcons ? 'house.fill' : Icons.home_rounded,
+            label: 'Home',
+          ),
+          AdaptiveNavigationDestination(
+            icon: nativeIcons ? 'person.3.fill' : Icons.groups_rounded,
+            label: 'Community',
+          ),
+          AdaptiveNavigationDestination(
+            icon: nativeIcons ? 'chart.xyaxis.line' : Icons.insights_rounded,
+            label: 'Track',
+          ),
+          AdaptiveNavigationDestination(
+            icon: nativeIcons ? 'person.fill' : Icons.person_rounded,
+            label: 'Profile',
+          ),
+        ],
       ),
     );
   }

@@ -203,7 +203,7 @@ class CommunityScreen extends StatelessWidget {
             return false;
           },
           child: Scaffold(
-            backgroundColor: ColorCodes.backgroundcolor,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             body: Column(
               children: [
                 SizedBox(

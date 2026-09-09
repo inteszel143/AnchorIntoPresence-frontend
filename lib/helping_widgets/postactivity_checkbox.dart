@@ -65,12 +65,12 @@ class MarkAsCompleteCheckbox extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    side: const BorderSide(
-                      color: ColorCodes.canceltextcolor,
+                    side: BorderSide(
+                      color: Theme.of(context).colorScheme.outline,
                       width: 1.5,
                     ),
-                    activeColor: ColorCodes.settingDarkContainer,
-                    checkColor: ColorCodes.whitecolor,
+                    activeColor: Theme.of(context).colorScheme.primary,
+                    checkColor: Theme.of(context).colorScheme.onPrimary,
                     value: isComplete,
                     onChanged: (value) {
                       context
@@ -91,15 +91,16 @@ class MarkAsCompleteCheckbox extends StatelessWidget {
                   ),
                 ),
               ),
-              Text(
+              Expanded(
+                  child: Text(
                 isComplete ? Strings.markedAsComplete : Strings.markAsComplete,
-                style: const TextStyle(
-                  color: ColorCodes.canceltextcolor,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.w500,
                   fontSize: 14,
                   fontFamily: Fonts.body,
                 ),
-              ),
+              )),
             ],
           );
         },

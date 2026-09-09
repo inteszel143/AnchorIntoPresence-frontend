@@ -1,3 +1,4 @@
+import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:mindfully_evolve_app/utils/fonts.dart';
 import 'package:mindfully_evolve_app/utils/color_constants.dart';
@@ -36,6 +37,43 @@ class ButtonWidget extends StatelessWidget {
         isActive ? ColorCodes.buttonActive : ColorCodes.buttonInactive;
     final screenWidth = MediaQuery.of(context).size.width;
     final borderRadius = BorderRadius.circular(14);
+    if (PlatformInfo.isIOS) {
+      return IgnorePointer(
+        ignoring: !isActive,
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            width: screenWidth * widthFactor,
+            height: height,
+            // Some callers attach their gesture to the parent widget.
+            child: IgnorePointer(
+              ignoring: onTap == null,
+              child: AdaptiveButton.child(
+                onPressed: isActive ? (onTap ?? () {}) : null,
+                enabled: isActive,
+                style: PlatformInfo.isIOS26OrHigher()
+                    ? AdaptiveButtonStyle.prominentGlass
+                    : AdaptiveButtonStyle.filled,
+                size: AdaptiveButtonSize.large,
+                color: bgColor,
+                borderRadius: borderRadius,
+                minSize: Size(0, height),
+                child: Text(
+                  btnTxt,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: Fonts.body,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     final content = Container(
       alignment: Alignment.center,
       width: screenWidth * widthFactor,

@@ -1,3 +1,4 @@
+import '../../common/widgets/auth_entrance.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mindfully_evolve_app/screens/reset_password/resetpassword_bloc/reset_password_bloc.dart';
@@ -48,7 +49,7 @@ class ResetPassword extends StatelessWidget {
                 horizontalPadding,
                 32,
               ),
-              child: Form(
+              child: AuthEntrance(child: Form(
                 key: _formKey,
                 child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,7 +235,7 @@ class ResetPassword extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
+            )),
           ),
         ),
           ),

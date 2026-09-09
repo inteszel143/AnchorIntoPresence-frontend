@@ -31,7 +31,7 @@ class TrackScreen extends StatelessWidget {
         return false;
       },
       child: Scaffold(
-        backgroundColor: ColorCodes.backgroundcolor,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: SafeArea(
           child: SingleChildScrollView(
             child: Padding(

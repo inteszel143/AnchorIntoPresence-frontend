@@ -1,3 +1,4 @@
+import '../../common/widgets/auth_entrance.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -124,7 +125,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   keyboardDismissBehavior:
                       ScrollViewKeyboardDismissBehavior.onDrag,
                   padding: const EdgeInsets.fromLTRB(24, 12, 24, 36),
-                  child: Column(
+                  child: AuthEntrance(child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     CustomAppbar(headingTxt: ''),
@@ -300,7 +301,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       ),
                     const SizedBox(height: 100),
                   ],
-                ),
+                )),
               ),
               ),
             );
