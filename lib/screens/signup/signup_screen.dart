@@ -11,6 +11,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../../common/widgets/auth_theme.dart';
 import '../../common/widgets/button_widget.dart';
+import '../../common/widgets/custom_appbar.dart';
 import '../../common/widgets/loading_overlay.dart';
 import '../../helping_widgets/sociallogin-button.dart';
 import '../../utils/fonts.dart';
@@ -125,6 +126,8 @@ class _SignupScreenState extends State<SignupScreen> {
                                                               CrossAxisAlignment
                                                                   .start,
                                                           children: [
+                                                            CustomAppbar(
+                                                              headingTxt: ''),
                                                             Center(
                                                                 child: Image.asset(
                                                                     'assets/icons/tina-logo.png',

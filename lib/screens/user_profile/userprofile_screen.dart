@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:mindfully_evolve_app/utils/image_constants.dart';
 import 'package:mindfully_evolve_app/utils/string_constants.dart';
 
+import '../../common/widgets/auth_theme.dart';
 import '../../common/widgets/custom_appbar.dart';
 import '../../utils/color_constants.dart';
 import '../../utils/fonts.dart';
@@ -19,10 +20,12 @@ class UserprofileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => UserProfileBloc()..add(FetchUserProfile()),
-      child: Scaffold(
-        backgroundColor: ColorCodes.backgroundcolor,
+    return AuthTheme(
+      child: Builder(
+        builder: (context) => BlocProvider(
+          create: (_) => UserProfileBloc()..add(FetchUserProfile()),
+          child: Scaffold(
+            backgroundColor: Theme.of(context).colorScheme.surface,
         body: SafeArea(
           child: BlocBuilder<UserProfileBloc, UserProfileState>(
             builder: (context, state) {
@@ -85,7 +88,7 @@ class UserprofileScreen extends StatelessWidget {
                                 fontWeight: FontWeight.w400,
                                 letterSpacing: Fonts.headingLetterSpacing,
                                 fontFamily: Fonts.heading,
-                                color: ColorCodes.mainheadingcolor,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                           ],
@@ -97,7 +100,7 @@ class UserprofileScreen extends StatelessWidget {
                         child: Text(
                           Strings.accountDetails,
                           style: TextStyle(
-                            color: ColorCodes.mainheadingcolor,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.w400,
                             letterSpacing: Fonts.headingLetterSpacing,
                             fontFamily: Fonts.heading,
@@ -111,10 +114,12 @@ class UserprofileScreen extends StatelessWidget {
                         child: Container(
                           width: double.infinity,
                           decoration: BoxDecoration(
-                            color: ColorCodes.whitecolor,
+                            color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
-                                color: ColorCodes.whiteNewReplacement),
+                                color: Theme.of(context).colorScheme.outline),
                           ),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
@@ -128,7 +133,9 @@ class UserprofileScreen extends StatelessWidget {
                                       fontWeight: FontWeight.w500,
                                       fontSize: 14,
                                       fontFamily: Fonts.body,
-                                      color: ColorCodes.selecteddatetextcolor,
+                                        color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
                                     )),
                                 Text(user.name,
                                     maxLines: 2,
@@ -137,7 +144,9 @@ class UserprofileScreen extends StatelessWidget {
                                       fontWeight: FontWeight.w500,
                                       fontSize: 14,
                                       fontFamily: Fonts.body,
-                                      color: ColorCodes.mainheadingcolor,
+                                        color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
                                     )),
                                 SizedBox(
                                   height: 10,
@@ -147,7 +156,9 @@ class UserprofileScreen extends StatelessWidget {
                                       fontWeight: FontWeight.w500,
                                       fontSize: 14,
                                       fontFamily: Fonts.body,
-                                      color: ColorCodes.selecteddatetextcolor,
+                                        color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
                                     )),
                                 Text(user.email,
                                     maxLines: 2,
@@ -155,7 +166,9 @@ class UserprofileScreen extends StatelessWidget {
                                       fontWeight: FontWeight.w500,
                                       fontSize: 14,
                                       fontFamily: Fonts.body,
-                                      color: ColorCodes.mainheadingcolor,
+                                        color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
                                     )),
                               ],
                             ),
@@ -171,6 +184,8 @@ class UserprofileScreen extends StatelessWidget {
 
               return Center(child: Text(Strings.somethingWentWrong));
             },
+          ),
+        ),
           ),
         ),
       ),

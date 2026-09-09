@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mindfully_evolve_app/utils/fonts.dart';
 
-import '../../utils/color_constants.dart';
-
 class CustomBottomBar extends StatelessWidget {
   final int selectedIndex;
   final void Function(int) onItemTapped;
@@ -25,57 +23,82 @@ class CustomBottomBar extends StatelessWidget {
 
     return SafeArea(
       top: false,
-      child: Container(
-        height: 80,
-        padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
-        decoration: BoxDecoration(
-          color: ColorCodes.whiteNewReplacement,
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black12, blurRadius: 6, offset: Offset(0, -1)),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(items.length, (index) {
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        child: Container(
+          height: 86,
+          padding: const EdgeInsets.fromLTRB(8, 8, 8, 6),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outline,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            children: List.generate(items.length, (index) {
             final isActive = index == selectedIndex;
-            return GestureDetector(
-              onTap: () => onItemTapped(index),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SvgPicture.asset(
-                    items[index]['icon']!,
-                    //height: 24,
-                    color: isActive
-                        ? const Color(0xff9C8F84)
-                        : const Color(0xff8D8D8D),
+            final itemColor = isActive
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.onSurfaceVariant;
+
+            return Expanded(
+              child: Semantics(
+                button: true,
+                selected: isActive,
+                label: items[index]['label'],
+                child: InkWell(
+                  onTap: () => onItemTapped(index),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SvgPicture.asset(
+                        items[index]['icon']!,
+                        width: 25,
+                        height: 25,
+                        colorFilter: ColorFilter.mode(
+                          itemColor,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        items[index]['label']!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight:
+                              isActive ? FontWeight.w700 : FontWeight.w500,
+                          fontFamily: Fonts.body,
+                          color: itemColor,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        height: 3,
+                        width: isActive ? 28 : 0,
+                        decoration: BoxDecoration(
+                          color: itemColor,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    items[index]['label']!,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      fontFamily: Fonts.body,
-                      color: isActive
-                          ? const Color(0xff9C8F84)
-                          : const Color(0xff8D8D8D),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Container(
-                    height: 3,
-                    width: 70,
-                    decoration: BoxDecoration(
-                      color: isActive ? Color(0xff9C8F84) : Colors.transparent,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ],
+                ),
               ),
             );
-          }),
+            }),
+          ),
         ),
       ),
     );
