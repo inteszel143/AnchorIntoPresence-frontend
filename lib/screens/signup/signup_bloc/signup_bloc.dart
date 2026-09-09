@@ -65,7 +65,7 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
           password: event.password,
         ));
       }
-    } on SocketException catch (e) {
+    } on SocketException {
       emit(SignupFailure(
         error: 'Please check your internet connection',
         name: event.name,

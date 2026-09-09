@@ -30,7 +30,7 @@ class ResetPasswordBloc extends Bloc<ResetPasswordEvent, ResetPasswordState> {
         emit(ResetPasswordFailure(
             resetPasswordResponse.message ?? 'Failed to reset password'));
       }
-    } on SocketException catch (e) {
+    } on SocketException {
       emit(ResetPasswordFailure('Please check your internet connection'));
     } catch (e) {
       emit(ResetPasswordFailure("An error occurred: $e"));

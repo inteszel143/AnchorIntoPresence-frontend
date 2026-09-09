@@ -20,10 +20,10 @@ class OtpVerificationScreen extends StatefulWidget {
   final String flow;
 
   const OtpVerificationScreen({
-    Key? key,
+    super.key,
     required this.email,
     required this.flow,
-  }) : super(key: key);
+  });
 
   @override
   State<OtpVerificationScreen> createState() => _OtpVerificationScreenState();

@@ -21,7 +21,7 @@ class ActivityBloc extends Bloc<ActivityEvent, ActivityState> {
       final activities = await ApiService.fetchActivities(event.page,
           event.limit, event.search, event.sortOrder, event.categoryId, null);
       emit(ActivityLoaded(activities));
-    } on SocketException catch (e) {
+    } on SocketException {
       emit(ActivityError('Please check your internet connection'));
     } catch (e) {
       emit(ActivityError("Error: $e"));
@@ -35,7 +35,7 @@ class ActivityBloc extends Bloc<ActivityEvent, ActivityState> {
     try {
       final activities = await ApiService.fetchActivity(event.activityId);
       emit(ActivityLoad(activities));
-    } on SocketException catch (e) {
+    } on SocketException {
       emit(ActivityError('Please check your internet connection'));
     } catch (e) {
       emit(ActivityError("Error: $e"));

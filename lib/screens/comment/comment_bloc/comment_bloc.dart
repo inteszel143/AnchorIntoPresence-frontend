@@ -27,7 +27,7 @@ class CommentBloc extends Bloc<CommentEvent, CommentState> {
       final errorMessage = e is Exception
           ? e.toString().replaceFirst('Exception: ', '')
           : e.toString();
-      emit(CommentError(message: 'Failed to load comments: ${errorMessage}'));
+      emit(CommentError(message: 'Failed to load comments: $errorMessage'));
     }
   }
 

@@ -23,11 +23,11 @@ class UserprofileEditScreen extends StatelessWidget {
   final String? image;
 
   const UserprofileEditScreen({
-    Key? key,
+    super.key,
     required this.name,
     required this.email,
     this.image,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -54,11 +54,11 @@ class _UserProfileEditForm extends StatelessWidget {
   final String? initialImage;
 
   const _UserProfileEditForm({
-    Key? key,
+    super.key,
     required this.initialName,
     required this.email,
     this.initialImage,
-  }) : super(key: key);
+  });
 
   Future<void> _pickImage(BuildContext context) async {
     final ImagePicker picker = ImagePicker();

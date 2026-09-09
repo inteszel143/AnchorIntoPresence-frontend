@@ -50,5 +50,5 @@ class PostDeleted extends CommunityState {}
 // Indicates that deleting the community post failed.
 class PostDeleteError extends CommunityState {
   final String message;
-  PostDeleteError({required this.message});
+  const PostDeleteError({required this.message});
 }

@@ -27,7 +27,7 @@ class ActivityItemTile extends StatefulWidget {
   final String? categoryId;
 
   const ActivityItemTile({
-    Key? key,
+    super.key,
     required this.videoUrl,
     required this.videoDuration,
     this.isLiked = false,
@@ -37,7 +37,7 @@ class ActivityItemTile extends StatefulWidget {
     required this.id,
     required this.thumbnail,
     this.categoryId,
-  }) : super(key: key);
+  });
 
   @override
   _ActivityItemTileState createState() => _ActivityItemTileState();
@@ -207,7 +207,7 @@ class _ActivityItemTileState extends State<ActivityItemTile> {
                                           horizontal: 6, vertical: 2),
                                       decoration: BoxDecoration(
                                         color: ColorCodes.black54color
-                                            .withOpacity(0.6),
+                                            .withValues(alpha: 0.6),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Text(

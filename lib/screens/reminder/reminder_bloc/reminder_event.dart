@@ -41,7 +41,7 @@ class UpdateReminder extends ReminderEvent {
 }
 class DeleteReminder extends ReminderEvent {
   final String id;
-  DeleteReminder(this.id);
+  const DeleteReminder(this.id);
   @override
   List<Object?> get props => [id];
 }

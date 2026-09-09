@@ -125,7 +125,6 @@ class ReminderTile extends StatelessWidget {
   String getFormattedDate(DateTime? dt) {
     final formattedTime = formatTime12Hour(reminder.time);
     if (dt == null) return formattedTime;
-    ;
 
     // Convert from UTC to local time to get the correct date for the user
     final localDate = dt.toLocal();

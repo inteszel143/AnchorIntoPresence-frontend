@@ -23,7 +23,7 @@ class ResetPassword extends StatelessWidget {
       RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$');
   final RegExp _letterRegex = RegExp(r'[A-Za-z]');
   final RegExp _numberRegex = RegExp(r'\d');
-  ResetPassword({required this.email, Key? key}) : super(key: key);
+  ResetPassword({required this.email, super.key});
 
   void dispose() {
     _passwordController.dispose();

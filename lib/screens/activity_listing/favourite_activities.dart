@@ -12,7 +12,7 @@ import 'getactivity_bloc/getrecent_activities_state.dart';
 
 // Displays the activities that the user has marked as favorites.
 class FavouriteActivity extends StatelessWidget {
-  const FavouriteActivity({Key? key}) : super(key: key);
+  const FavouriteActivity({super.key});
 
   @override
   Widget build(BuildContext context) {

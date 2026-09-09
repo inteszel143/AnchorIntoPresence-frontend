@@ -14,9 +14,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     emit(CategoryLoading());
     try {
       final responseData = await ApiService.selectCategory(event.mood);
-      if (responseData != null) {
-        emit(CategorySuccess());
-      }
+      emit(CategorySuccess());
     } catch (e) {
       final errorMessage = e is Exception
           ? e.toString().replaceFirst('Exception: ', '')

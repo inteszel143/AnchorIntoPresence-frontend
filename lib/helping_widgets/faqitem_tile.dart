@@ -7,10 +7,10 @@ class FAQItemTile extends StatelessWidget {
   final String answer;
 
   const FAQItemTile({
-    Key? key,
+    super.key,
     required this.question,
     required this.answer,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,10 +26,10 @@ class _StatelessFAQTile extends StatelessWidget {
   final String answer;
 
   const _StatelessFAQTile({
-    Key? key,
+    super.key,
     required this.question,
     required this.answer,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

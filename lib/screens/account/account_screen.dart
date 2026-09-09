@@ -94,8 +94,7 @@ class AccountOnboardingScreen extends StatelessWidget {
                     child: TextButton(
                       onPressed: () {
                         // Users with an existing purchase can proceed to signup; otherwise, they are directed to subscription management.
-                        if (globals.alreadyPurchasedProductId != null &&
-                            globals.alreadyPurchasedProductId.isNotEmpty) {
+                        if (globals.alreadyPurchasedProductId.isNotEmpty) {
                           Navigator.push(
                             context,
                             MaterialPageRoute(

@@ -31,5 +31,5 @@ class DeletePostEvent extends CommunityEvent {
 class FetchCommunityPost extends CommunityEvent {
   final String shareId;
 
-  FetchCommunityPost({required this.shareId});
+  const FetchCommunityPost({required this.shareId});
 }

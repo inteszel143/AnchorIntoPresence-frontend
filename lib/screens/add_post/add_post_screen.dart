@@ -16,7 +16,7 @@ import 'add_post_bloc/add_post_event.dart';
 
 // Screen for creating and submitting a new community post.
 class CreatePostScreen extends StatefulWidget {
-  CreatePostScreen({super.key});
+  const CreatePostScreen({super.key});
 
   @override
   _CreatePostScreenState createState() => _CreatePostScreenState();
@@ -532,7 +532,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   ? Switch(
                       value: value ?? false,
                       onChanged: onChanged,
-                      activeColor: Colors.blue,
+                      activeThumbColor: Colors.blue,
                     )
                   : Image.asset('assets/images/forward_arrow_icon.png'),
             ],
@@ -551,12 +551,12 @@ class PostTypeButton extends StatelessWidget {
   final Function(int) onTap;
 
   const PostTypeButton({
-    Key? key,
+    super.key,
     required this.label,
     required this.index,
     required this.selectedPostIndex,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

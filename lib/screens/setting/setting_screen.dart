@@ -36,7 +36,7 @@ class SettingScreen extends StatelessWidget {
   final ValueNotifier<bool> notificationToggle =
       ValueNotifier<bool>(true); // Default state
 
-  SettingScreen({Key? key}) : super(key: key);
+  SettingScreen({super.key});
 
   // Load notification toggle state from SharedPreferences
   static Future<void> _loadNotificationState(

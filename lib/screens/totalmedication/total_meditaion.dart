@@ -16,7 +16,7 @@ import '../../utils/color_constants.dart';
 import '../../utils/fonts.dart';
 
 class TotalMeditationScreen extends StatelessWidget {
-  const TotalMeditationScreen({Key? key}) : super(key: key);
+  const TotalMeditationScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -160,7 +160,7 @@ class _TotalMeditationBody extends StatelessWidget {
                                 border: Border.all(
                                   color: ColorCodes
                                       .calendergridcontainerbordercolor
-                                      .withOpacity(0.12),
+                                      .withValues(alpha: 0.12),
                                 ),
                               ),
                               child: CalendarGrid(loginDates: loginDates),
@@ -246,7 +246,7 @@ class _TotalMeditationBody extends StatelessWidget {
 class CalendarGrid extends StatefulWidget {
   final List<dynamic> loginDates;
 
-  const CalendarGrid({Key? key, required this.loginDates}) : super(key: key);
+  const CalendarGrid({super.key, required this.loginDates});
 
   @override
   _CalendarGridState createState() => _CalendarGridState();
@@ -402,13 +402,13 @@ class DonutChartWithLegend extends StatelessWidget {
   final String centerText2;
 
   const DonutChartWithLegend({
-    Key? key,
+    super.key,
     required this.percentages,
     required this.colors,
     required this.labels,
     required this.centerText1,
     required this.centerText2,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

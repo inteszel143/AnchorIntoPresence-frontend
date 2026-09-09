@@ -36,7 +36,7 @@ import 'dashboard_bloc/home_event.dart';
 import 'dashboard_bloc/home_state.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -201,7 +201,7 @@ class _HomePageState extends State<HomePage> {
                         homePageData.data['Daily Anchor']?.activities ?? [];
                     final String profileImageUrl =
                         profileData.image != null ? '${profileData.image}' : '';
-                    final String? userName = profileData.name;
+                    final String userName = profileData.name;
                     final DateTime createdAtDate = profileData.createdAt;
                     final String? subscriptionStatus =
                         profileData.subscriptionStatus;
@@ -252,7 +252,7 @@ class _HomePageState extends State<HomePage> {
                                                     backgroundImage: profileImageUrl
                                                             .isNotEmpty
                                                         ? NetworkImage(
-                                                            '${Urls.baseUrlimages}${profileImageUrl}')
+                                                            '${Urls.baseUrlimages}$profileImageUrl')
                                                         : AssetImage(
                                                                 ImageConstants
                                                                     .userProfile)
@@ -532,7 +532,7 @@ class _HomePageState extends State<HomePage> {
                                                                           12),
                                                               child:
                                                                   Image.network(
-                                                                '${Urls.baseUrlimages}${item.thumbnail!}',
+                                                                '${Urls.baseUrlimages}${item.thumbnail}',
                                                                 fit: BoxFit
                                                                     .cover,
                                                                 width: double

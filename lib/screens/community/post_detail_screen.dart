@@ -19,7 +19,7 @@ import 'community_bloc/community_state.dart';
 class PostDetailScreen extends StatelessWidget {
   final String shareId;
 
-  PostDetailScreen({super.key, required this.shareId});
+  const PostDetailScreen({super.key, required this.shareId});
 
   @override
   Widget build(BuildContext context) {
@@ -113,8 +113,7 @@ class PostDetailScreen extends StatelessWidget {
                                 ],
                               ),
                               const SizedBox(height: 10),
-                              post.images.isNotEmpty &&
-                                      post.images.first != null
+                              post.images.isNotEmpty
                                   ? Container(
                                       padding:
                                           EdgeInsets.symmetric(vertical: 8),

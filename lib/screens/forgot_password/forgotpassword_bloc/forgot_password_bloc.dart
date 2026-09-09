@@ -21,7 +21,7 @@ class ForgotPasswordBloc
           emit(ForgotPasswordFailure(
               responseBody['message'] ?? 'Unknown error'));
         }
-      } on SocketException catch (e) {
+      } on SocketException {
         emit(ForgotPasswordFailure('Please check your internet connection'));
       } catch (e) {
         emit(ForgotPasswordFailure('Please check your internet connection'));

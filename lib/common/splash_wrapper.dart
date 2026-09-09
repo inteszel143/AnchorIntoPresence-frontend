@@ -12,7 +12,7 @@ import '../utils/global.dart' as globals;
 import 'local_storage.dart';
 
 class SplashWrapper extends StatefulWidget {
-  const SplashWrapper({Key? key}) : super(key: key);
+  const SplashWrapper({super.key});
 
   @override
   State<SplashWrapper> createState() => _SplashWrapperState();
@@ -57,8 +57,8 @@ class _SplashWrapperState extends State<SplashWrapper> {
         final userProfileFuture = ApiService.fetchProfileData(token);
         final results = await Future.wait([userProfileFuture]);
 
-        if (results.isNotEmpty && results[0] is ProfileDataModel) {
-          final profileData = results[0] as ProfileDataModel;
+        if (results.isNotEmpty) {
+          final profileData = results[0];
 
           globals.alreadyPurchasedProductId = profileData.productId ?? '';
           globals.isSubscribed = profileData.subscriptionStatus == 'active';

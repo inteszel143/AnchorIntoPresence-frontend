@@ -25,13 +25,10 @@ abstract class SignupState extends Equatable {
 
 class SignupFormState extends SignupState {
   const SignupFormState({
-    String? name = '',
-    String email = '',
-    String password = '',
+    super.name,
+    super.email,
+    super.password,
   }) : super(
-    name: name,
-    email: email,
-    password: password,
     isSubmitting: false,
     isSuccess: false,
     isFailure: false,
@@ -52,13 +49,10 @@ class SignupFormState extends SignupState {
 
 class SignupLoading extends SignupState {
   const SignupLoading({
-    String? name,
-    required String email,
-    required String password,
+    super.name = null,
+    required super.email,
+    required super.password,
   }) : super(
-    name: name,
-    email: email,
-    password: password,
     isSubmitting: true,
     isSuccess: false,
     isFailure: false,
@@ -67,13 +61,10 @@ class SignupLoading extends SignupState {
 
 class SignupSuccess extends SignupState {
   const SignupSuccess({
-    String? name,
-    required String email,
-    required String password,
+    super.name = null,
+    required super.email,
+    required super.password,
   }) : super(
-    name: name,
-    email: email,
-    password: password,
     isSubmitting: false,
     isSuccess: true,
     isFailure: false,
@@ -85,13 +76,10 @@ class SignupFailure extends SignupState {
 
   const SignupFailure({
     required this.error,
-    String? name,
-    required String email,
-    required String password,
+    super.name = null,
+    required super.email,
+    required super.password,
   }) : super(
-    name: name,
-    email: email,
-    password: password,
     isSubmitting: false,
     isSuccess: false,
     isFailure: true,

@@ -17,8 +17,7 @@ class MeditationListingCode extends StatelessWidget {
   final List? gracefulGrounding;
   final List? dailyTouchstone;
   MeditationListingCode(
-      {Key? key, this.gracefulGrounding, this.dailyTouchstone})
-      : super(key: key);
+      {super.key, this.gracefulGrounding, this.dailyTouchstone});
 
   final TextEditingController searchController = TextEditingController();
   bool isDescSort = true;

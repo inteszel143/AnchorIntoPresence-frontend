@@ -15,7 +15,7 @@ import 'userprofile_bloc/user_profile_event.dart';
 import 'userprofile_bloc/user_profile_state.dart';
 
 class UserprofileScreen extends StatelessWidget {
-  const UserprofileScreen({Key? key}) : super(key: key);
+  const UserprofileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -29,8 +29,7 @@ class UserprofileScreen extends StatelessWidget {
               if (state is UserProfileLoading) {
                 return Center(child: CircularProgressIndicator());
               } else if (state is UserProfileLoaded) {
-                final user = (state.user == null ||
-                        state.user.name.isEmpty ||
+                final user = (state.user.name.isEmpty ||
                         state.user.email.isEmpty ||
                         state.user.id.isEmpty ||
                         state.user.provider.isEmpty)

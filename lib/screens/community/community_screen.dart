@@ -21,7 +21,7 @@ import 'community_bloc/community_state.dart';
 import 'post_likes_bottom_sheet.dart';
 
 class CommunityScreen extends StatelessWidget {
-  CommunityScreen({super.key});
+  const CommunityScreen({super.key});
   void _sharePost(BuildContext context, String postMessage, String postUrl) {
     Share.share('$postMessage\n$postUrl');
   }
@@ -347,7 +347,7 @@ class CommunityScreen extends StatelessWidget {
                                                 padding: EdgeInsets.symmetric(
                                                     vertical: 8),
                                                 child: Image.network(
-                                                  '${Urls.baseUrlimages}${post.images?.first}',
+                                                  '${Urls.baseUrlimages}${post.images.first}',
                                                   width: double.infinity,
                                                   height: 200,
                                                   fit: BoxFit.cover,

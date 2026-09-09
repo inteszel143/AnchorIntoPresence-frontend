@@ -19,15 +19,15 @@ class ReminderScreen extends StatelessWidget {
   final String? reminderId;
 
   ReminderScreen({
-    Key? key,
+    super.key,
     this.initialDate,
     this.initialDays,
     this.initialHour,
     this.initialMinute,
     this.reminderId,
-  }) : super(key: key);
+  });
 
-  final Set<int> selectedDays = Set<int>();
+  final Set<int> selectedDays = <int>{};
   DateTime? selectedDate;
   int selectedHour = 0;
   int selectedMinute = 0;
@@ -317,12 +317,12 @@ class TimePickerGroup extends StatelessWidget {
   final ValueChanged<int> onMinuteChanged;
 
   const TimePickerGroup({
-    Key? key,
+    super.key,
     required this.selectedHour,
     required this.selectedMinute,
     required this.onHourChanged,
     required this.onMinuteChanged,
-  }) : super(key: key);
+  });
 
   int get _hour12 {
     final h = selectedHour % 12;

@@ -21,7 +21,7 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
     try {
       final user = await ApiService.fetchUserProfile();
       emit(UserProfileLoaded(user: user));
-    } on SocketException catch (e) {
+    } on SocketException {
       emit(UserProfileError(message: 'Please check your internet connection'));
     } catch (e) {
       final errorMessage = e is Exception

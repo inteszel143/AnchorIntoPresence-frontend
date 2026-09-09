@@ -11,13 +11,13 @@ class OnlineVideoPlayer extends StatefulWidget {
   final Function(Duration)? onProgress;
 
   const OnlineVideoPlayer({
-    Key? key,
+    super.key,
     required this.videoUrl,
     this.thumbnail,
     this.isFullscreen = false,
     this.initialPosition = Duration.zero,
     this.onProgress,
-  }) : super(key: key);
+  });
 
   @override
   _OnlineVideoPlayerState createState() => _OnlineVideoPlayerState();
@@ -250,12 +250,12 @@ class FullscreenVideoScreen extends StatefulWidget {
   final double aspectRatio;
 
   const FullscreenVideoScreen({
-    Key? key,
+    super.key,
     required this.videoUrl,
     this.thumbnail,
     this.initialPosition = Duration.zero,
     this.aspectRatio = 16 / 9,
-  }) : super(key: key);
+  });
 
   @override
   State<FullscreenVideoScreen> createState() => _FullscreenVideoScreenState();
@@ -331,10 +331,10 @@ class _CustomVideoProgressBar extends StatefulWidget {
       onDragPositionChanged;
 
   const _CustomVideoProgressBar({
-    Key? key,
+    super.key,
     required this.controller,
     this.onDragPositionChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<_CustomVideoProgressBar> createState() =>

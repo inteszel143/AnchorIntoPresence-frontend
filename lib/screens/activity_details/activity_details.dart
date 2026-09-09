@@ -28,7 +28,7 @@ class ActivityDetailScreen extends StatefulWidget {
   final bool isFavorite;
 
   const ActivityDetailScreen({
-    Key? key,
+    super.key,
     required this.videoUrl,
     required this.thumbnail,
     required this.name,
@@ -37,7 +37,7 @@ class ActivityDetailScreen extends StatefulWidget {
     required this.description,
     required this.activityId,
     required this.isFavorite,
-  }) : super(key: key);
+  });
 
   @override
   State<ActivityDetailScreen> createState() => _ActivityDetailScreenState();

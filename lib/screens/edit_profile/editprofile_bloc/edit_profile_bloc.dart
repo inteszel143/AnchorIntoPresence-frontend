@@ -44,7 +44,7 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
         isLoading: false,
         successMessage: model.message ?? 'Profile updated successfully',
       ));
-    } on SocketException catch (e) {
+    } on SocketException {
       // Handle network connectivity error
       emit(state.copyWith(
           isLoading: false, error: 'Please check your internet connection'));

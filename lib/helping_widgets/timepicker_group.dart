@@ -10,12 +10,12 @@ class TimePickerGroup extends StatelessWidget {
   final ValueChanged<int> onMinuteChanged;
 
   const TimePickerGroup({
-    Key? key,
+    super.key,
     required this.selectedHour,
     required this.selectedMinute,
     required this.onHourChanged,
     required this.onMinuteChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +59,7 @@ class TimePickerGroup extends StatelessWidget {
                     final isSelected = index == selectedHour;
                     return Center(
                       child: Text(
-                        '${index.toString().padLeft(2, '0')}',
+                        index.toString().padLeft(2, '0'),
                         style: TextStyle(
                           color: isSelected
                               ? ColorCodes.selectedtimepickertextcolor
@@ -95,7 +95,7 @@ class TimePickerGroup extends StatelessWidget {
                     final isSelected = index == selectedMinute;
                     return Center(
                       child: Text(
-                        '${index.toString().padLeft(2, '0')}',
+                        index.toString().padLeft(2, '0'),
                         style: TextStyle(
                           color: isSelected
                               ? ColorCodes.selectedtimepickertextcolor

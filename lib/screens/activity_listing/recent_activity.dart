@@ -13,9 +13,9 @@ class RecentActivity extends StatelessWidget {
   final List<RecentlyPlayedActivity> recentlyPlayedActivities;
 
   const RecentActivity({
-    Key? key,
+    super.key,
     required this.recentlyPlayedActivities,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -26,7 +26,7 @@ final class ReminderLoaded extends ReminderState {
 final class ReminderFailed extends ReminderState {
   final String error;
 
-  ReminderFailed({required this.error});
+  const ReminderFailed({required this.error});
 
   @override
   List<Object> get props => [error];
@@ -35,7 +35,7 @@ final class TimeChangedState extends ReminderState {
   final int hour;
   final int minute;
 
-  TimeChangedState({required this.hour, required this.minute});
+  const TimeChangedState({required this.hour, required this.minute});
 
   @override
   List<Object> get props => [hour,minute];
@@ -44,7 +44,7 @@ final class TimeChangedState extends ReminderState {
 final class ReminderFetchSuccess extends ReminderState {
   final List<ReminderModel> reminders;
 
-  ReminderFetchSuccess({required this.reminders});
+  const ReminderFetchSuccess({required this.reminders});
 
   @override
   List<Object> get props => [reminders];
@@ -52,7 +52,7 @@ final class ReminderFetchSuccess extends ReminderState {
 class ReminderUpdateSuccess extends ReminderState {
   final String message;
 
-  ReminderUpdateSuccess({required this.message});
+  const ReminderUpdateSuccess({required this.message});
   @override
   List<Object> get props => [message];
 }
@@ -68,7 +68,7 @@ class ReminderDeleteSuccess extends ReminderState {
 
 class ReminderDeleteFailure extends ReminderState {
   final String error;
-  ReminderDeleteFailure(this.error);
+  const ReminderDeleteFailure(this.error);
   @override
   List<Object> get props => [error];
 }

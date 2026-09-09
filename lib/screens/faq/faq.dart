@@ -13,7 +13,7 @@ import 'faq_bloc/faq_state.dart';
 import 'faq_model.dart';
 
 class FrequentlyAskedQuestionsScreen extends StatelessWidget {
-  const FrequentlyAskedQuestionsScreen({Key? key}) : super(key: key);
+  const FrequentlyAskedQuestionsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

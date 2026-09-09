@@ -11,7 +11,7 @@ import '../utils/global.dart' as globals;
 class MainScreen extends StatefulWidget {
   final int initialIndex;
 
-  const MainScreen({Key? key, this.initialIndex = 0}) : super(key: key);
+  const MainScreen({super.key, this.initialIndex = 0});
 
   @override
   State<MainScreen> createState() => _MainScreenState();

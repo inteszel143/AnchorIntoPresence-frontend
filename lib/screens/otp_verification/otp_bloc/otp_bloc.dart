@@ -90,7 +90,7 @@ class OtpVerificationBloc
         emit(
             OtpVerificationFailure(body['message'] ?? 'Failed to resend OTP.'));
       }
-    } on SocketException catch (e) {
+    } on SocketException {
       emit(OtpVerificationFailure('Please check your internet connection'));
     } catch (e) {
       emit(OtpVerificationFailure('Failed to resend OTP.'));

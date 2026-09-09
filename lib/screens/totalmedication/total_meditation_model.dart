@@ -34,7 +34,7 @@ class TotalMeditationData {
       average:
           (json['average'] is num) ? (json['average'] as num).toDouble() : 0.0,
       categories: (json['categories'] as List?)
-              ?.where((item) => item is Map<String, dynamic>)
+              ?.whereType<Map<String, dynamic>>()
               .map((category) =>
                   Category.fromJson(category as Map<String, dynamic>))
               .toList() ??

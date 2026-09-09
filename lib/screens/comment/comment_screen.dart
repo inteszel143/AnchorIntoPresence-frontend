@@ -19,7 +19,7 @@ import 'comment_model.dart';
 
 class CommentScreen extends StatefulWidget {
   final Post post;
-  const CommentScreen({Key? key, required this.post}) : super(key: key);
+  const CommentScreen({super.key, required this.post});
 
   @override
   _CommentScreenState createState() => _CommentScreenState();
@@ -106,7 +106,7 @@ class _CommentScreenState extends State<CommentScreen> {
                             ? Container(
                                 padding: EdgeInsets.symmetric(vertical: 8),
                                 child: Image.network(
-                                  '${Urls.baseUrlimages}${widget.post.images?.first}',
+                                  '${Urls.baseUrlimages}${widget.post.images.first}',
                                   width: double.infinity,
                                   height: 200,
                                   fit: BoxFit.cover,
@@ -202,7 +202,7 @@ class _CommentScreenState extends State<CommentScreen> {
                                             _focusNode.requestFocus();
                                           },
                                         );
-                                      }).toList(),
+                                      }),
                                   ],
                                 );
                               } else if (state is ParentCommentUpdated) {
@@ -261,7 +261,7 @@ class CommentSection extends StatefulWidget {
   final String userid;
   final VoidCallback onReply;
 
-  CommentSection({
+  const CommentSection({super.key, 
     required this.comment,
     required this.post,
     required this.userid,
@@ -441,7 +441,7 @@ class _CommentSectionState extends State<CommentSection> {
                   post: widget.post,
                 ),
               );
-            }).toList(),
+            }),
         ],
       ),
     );
@@ -452,7 +452,7 @@ class SubCommentSection extends StatelessWidget {
   final Reply reply;
   final Post post;
 
-  const SubCommentSection({
+  const SubCommentSection({super.key, 
     required this.reply,
     required this.post,
   });
@@ -546,10 +546,10 @@ class MessageInput extends StatefulWidget {
   final FocusNode focusNode;
 
   const MessageInput({
-    Key? key,
+    super.key,
     required this.postId,
     required this.focusNode,
-  }) : super(key: key);
+  });
 
   @override
   State<MessageInput> createState() => _MessageInputState();

@@ -9,10 +9,10 @@ class ReminderCalendarPicker extends StatefulWidget {
   final ValueChanged<DateTime> onDateSelected;
 
   const ReminderCalendarPicker({
-    Key? key,
+    super.key,
     required this.selectedDate,
     required this.onDateSelected,
-  }) : super(key: key);
+  });
 
   @override
   State<ReminderCalendarPicker> createState() => _ReminderCalendarPickerState();

@@ -14,11 +14,11 @@ class ProfileImagePicker extends StatelessWidget {
   final void Function(File?) onImagePicked;
 
   const ProfileImagePicker({
-    Key? key,
+    super.key,
     required this.imageUrl,
     required this.pickedImage,
     required this.onImagePicked,
-  }) : super(key: key);
+  });
 
   Future<void> _pickImage(BuildContext context) async {
     final picker = ImagePicker();

@@ -10,7 +10,7 @@ import 'notification_bloc/notification_event.dart';
 import 'notification_bloc/notification_state.dart';
 
 class NotificatonScreen extends StatelessWidget {
-  const NotificatonScreen({Key? key}) : super(key: key);
+  const NotificatonScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

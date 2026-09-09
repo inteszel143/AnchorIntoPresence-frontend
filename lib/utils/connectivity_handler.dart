@@ -9,7 +9,7 @@ import 'color_constants.dart';
 class ConnectivityHandler extends StatefulWidget {
   final Widget child;
 
-  const ConnectivityHandler({Key? key, required this.child}) : super(key: key);
+  const ConnectivityHandler({super.key, required this.child});
 
   @override
   State<ConnectivityHandler> createState() => _ConnectivityHandlerState();

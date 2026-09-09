@@ -18,7 +18,7 @@ class TotalMeditationBloc
     try {
       final responseData = await ApiService.fetchTotalMeditationData();
       emit(TotalMeditationLoadedState(responseData));
-    } on SocketException catch (e) {
+    } on SocketException {
       emit(TotalMeditationErrorState('Please check your internet connection'));
     } catch (e) {
       emit(TotalMeditationErrorState('Error occurred: $e'));

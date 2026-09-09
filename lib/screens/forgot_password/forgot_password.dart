@@ -14,7 +14,7 @@ import 'forgotpassword_bloc/forgot_password_event.dart';
 import 'forgotpassword_bloc/forgot_password_state.dart';
 
 class ForgotPassword extends StatelessWidget {
-  ForgotPassword({Key? key}) : super(key: key);
+  ForgotPassword({super.key});
 
   final TextEditingController _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();

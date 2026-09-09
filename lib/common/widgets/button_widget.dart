@@ -10,13 +10,13 @@ class ButtonWidget extends StatelessWidget {
   final VoidCallback? onTap;
 
   const ButtonWidget({
-    Key? key,
+    super.key,
     required this.btnTxt,
     required this.widthFactor,
     required this.height,
     this.isActive = true,
     this.onTap,
-  }) : super(key: key);
+  });
 
   static ButtonStyle get primaryStyle => ElevatedButton.styleFrom(
         backgroundColor: ColorCodes.buttonActive,
@@ -32,11 +32,8 @@ class ButtonWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
-    final scheme = Theme.of(context).colorScheme;
-    final bgColor = dark
-        ? (isActive ? scheme.primary : scheme.surfaceContainerHighest)
-        : (isActive ? ColorCodes.buttonActive : ColorCodes.buttonInactive);
+    final bgColor =
+        isActive ? ColorCodes.buttonActive : ColorCodes.buttonInactive;
     final screenWidth = MediaQuery.of(context).size.width;
     final borderRadius = BorderRadius.circular(14);
     final content = Container(
@@ -59,9 +56,7 @@ class ButtonWidget extends StatelessWidget {
         btnTxt,
         textAlign: TextAlign.center,
         style: TextStyle(
-          color: dark
-              ? (isActive ? scheme.onPrimary : scheme.onSurfaceVariant)
-              : Colors.white,
+          color: Colors.white,
           fontSize: 16,
           fontWeight: FontWeight.w700,
           fontFamily: Fonts.body,

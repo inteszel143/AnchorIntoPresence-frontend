@@ -16,14 +16,14 @@ class SettingItemTile extends StatelessWidget {
   final VoidCallback? onTap;
 
   const SettingItemTile({
-    Key? key,
+    super.key,
     required this.iconPath,
     required this.option,
     this.showToggle = false,
     this.toggleValue,
     this.onToggle,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

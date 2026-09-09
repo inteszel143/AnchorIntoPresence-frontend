@@ -27,7 +27,7 @@ class ContactSupportBloc
         description: event.description,
       );
       emit(ContactSupportSuccess(response));
-    } on SocketException catch (e) {
+    } on SocketException {
       // Network connectivity error
       emit(ContactSupportFailure('Please check your internet connection'));
     } catch (e) {

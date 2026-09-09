@@ -16,7 +16,7 @@ import 'getactivity_bloc/getrecent_activities_state.dart';
 class ActivityDetail extends StatelessWidget {
   final String activityId;
 
-  ActivityDetail({Key? key, required this.activityId}) : super(key: key);
+  const ActivityDetail({super.key, required this.activityId});
   @override
   Widget build(BuildContext context) {
     // Fetches the selected activity details when the screen is opened.

@@ -16,12 +16,12 @@ class MarkAsCompleteCheckbox extends StatelessWidget {
   final bool isChecked;
 
   const MarkAsCompleteCheckbox({
-    Key? key,
+    super.key,
     required this.activityId,
     required this.videoTimestamp,
     required this.totalVideoTime,
     required this.isChecked,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

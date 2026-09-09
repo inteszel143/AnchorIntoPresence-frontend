@@ -23,8 +23,7 @@ import 'getactivity_bloc/getrecent_activities_state.dart';
 class MeditationListing extends StatefulWidget {
   final String categoryId;
 
-  const MeditationListing({Key? key, required this.categoryId})
-      : super(key: key);
+  const MeditationListing({super.key, required this.categoryId});
 
   @override
   State<MeditationListing> createState() => _MeditationListingState();

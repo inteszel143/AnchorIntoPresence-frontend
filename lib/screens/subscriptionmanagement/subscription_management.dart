@@ -21,8 +21,7 @@ import '../signup/signup_screen.dart';
 class SubscriptionManagementScreen extends StatefulWidget {
   final bool? isSubscribed;
 
-  const SubscriptionManagementScreen({Key? key, this.isSubscribed = true})
-      : super(key: key);
+  const SubscriptionManagementScreen({super.key, this.isSubscribed = true});
 
   @override
   State<SubscriptionManagementScreen> createState() =>
@@ -314,7 +313,7 @@ class _SubscriptionManagementScreenState
             _bloc.add(FetchSubscriptionPlans(productIds: _productIds));
           } else if (state is SubscriptionError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("${state.message}")),
+              SnackBar(content: Text(state.message)),
             );
 
             _bloc.add(FetchSubscriptionPlans(productIds: _productIds));
@@ -400,7 +399,7 @@ class _SubscriptionManagementScreenState
                                         color: isBillingTab
                                             ? ColorCodes.blackcolor
                                             : ColorCodes.blackcolor
-                                                .withOpacity(0.7),
+                                                .withValues(alpha: 0.7),
                                         fontWeight: FontWeight.w400,
                                         fontSize: 14,
                                         fontFamily: Fonts.body,
@@ -631,7 +630,7 @@ class _SubscriptionManagementScreenState
                                         fontWeight: FontWeight.w400,
                                         fontFamily: Fonts.body,
                                         color: ColorCodes.mainheadingcolor
-                                            .withOpacity(0.5),
+                                            .withValues(alpha: 0.5),
                                         decoration: TextDecoration.lineThrough,
                                       ),
                                     ),
@@ -713,7 +712,7 @@ class _SubscriptionManagementScreenState
                 ),
               ),
             );
-          }).toList(),
+          }),
 
           // ── Redeem / Offer Code button ──────────────────────────────────
           const SizedBox(height: 4),
@@ -751,7 +750,7 @@ class _SubscriptionManagementScreenState
       return Center(
         child: Column(
           children: [
-            Text("${state.message}"),
+            Text(state.message),
             const SizedBox(height: 12),
             ElevatedButton(
               onPressed: () =>
@@ -816,8 +815,8 @@ class _SubscriptionManagementScreenState
 
           final statusText = isActive ? 'Active' : 'Expired';
           final statusColor = isActive
-              ? ColorCodes.tag1color.withOpacity(0.4)
-              : ColorCodes.tag2color.withOpacity(0.4);
+              ? ColorCodes.tag1color.withValues(alpha: 0.4)
+              : ColorCodes.tag2color.withValues(alpha: 0.4);
           final statusTextColor = ColorCodes.blackcolor;
 
           return Container(
@@ -829,7 +828,7 @@ class _SubscriptionManagementScreenState
               border: Border.all(color: ColorCodes.searchboxcolor),
               boxShadow: [
                 BoxShadow(
-                  color: ColorCodes.greyColor.withOpacity(0.1),
+                  color: ColorCodes.greyColor.withValues(alpha: 0.1),
                   spreadRadius: 1,
                   blurRadius: 4,
                   offset: const Offset(0, 2),

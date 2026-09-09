@@ -15,7 +15,7 @@ import 'contactsupport_bloc/contact_support_state.dart';
 
 /// Screen for submitting contact support requests
 class ContactSupportscreen extends StatelessWidget {
-  ContactSupportscreen({Key? key}) : super(key: key);
+  ContactSupportscreen({super.key});
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -172,7 +172,7 @@ class ContactSupportscreen extends StatelessWidget {
                           child: BackdropFilter(
                             filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                             child: Container(
-                              color: Colors.black.withOpacity(0.3),
+                              color: Colors.black.withValues(alpha: 0.3),
                               child: const Center(
                                 child: CircularProgressIndicator(
                                   color: ColorCodes.buttoncolor,

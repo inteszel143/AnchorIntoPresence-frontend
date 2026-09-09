@@ -32,7 +32,7 @@ class SigninBloc extends Bloc<SigninEvent, SigninState> {
       if (data.data?.email != null) {
         final userProfileFuture = ApiService.fetchProfileData(data.token);
         final results = await Future.wait([userProfileFuture]);
-        final profileData = results[0] as ProfileDataModel;
+        final profileData = results[0];
         globals.alreadyPurchasedProductId = profileData.productId ?? '';
         globals.isSubscribed = profileData.subscriptionStatus == 'active';
         await LocalStorage.clearPurchase();
@@ -48,7 +48,7 @@ class SigninBloc extends Bloc<SigninEvent, SigninState> {
         emit(SigninFailure(
             data.message.isNotEmpty ? data.message : 'Login failed'));
       }
-    } on SocketException catch (e) {
+    } on SocketException {
       emit(SigninFailure('Please check your internet connection'));
     } catch (e) {
       emit(SigninFailure('Please check your internet connection'));
@@ -72,7 +72,7 @@ class SigninBloc extends Bloc<SigninEvent, SigninState> {
       if (data.data?.email != null) {
         final userProfileFuture = ApiService.fetchProfileData(data.token);
         final results = await Future.wait([userProfileFuture]);
-        final profileData = results[0] as ProfileDataModel;
+        final profileData = results[0];
         globals.alreadyPurchasedProductId = profileData.productId ?? '';
         globals.isSubscribed = profileData.subscriptionStatus == 'active';
         emit(SocialSigninSuccess(
@@ -81,7 +81,7 @@ class SigninBloc extends Bloc<SigninEvent, SigninState> {
           data.data?.image,
         ));
       }
-    } on SocketException catch (e) {
+    } on SocketException {
       emit(SigninFailure('Please check your internet connection'));
     } catch (e) {
       emit(SigninFailure('Please check your internet connection'));

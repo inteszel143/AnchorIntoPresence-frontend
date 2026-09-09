@@ -10,7 +10,7 @@ class CustomAppbar extends StatelessWidget {
   final void Function()? onTap;
   final Widget? image;
 
-  CustomAppbar({
+  const CustomAppbar({super.key, 
     required this.headingTxt,
     this.okimage,
     this.onOkTap,

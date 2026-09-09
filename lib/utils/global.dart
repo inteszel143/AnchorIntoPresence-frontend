@@ -1,4 +1,4 @@
-library my_app.globals;
+library;
 
 String alreadyPurchasedProductId = '';
 bool isSubscribed=false;

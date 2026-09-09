@@ -10,13 +10,13 @@ class TextFieldWidget extends StatelessWidget {
   final double widthFactor;
 
   const TextFieldWidget({
-    Key? key,
+    super.key,
     required this.label,
     this.obscureText = false,
     this.validator,
     this.controller,
     required this.widthFactor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -72,11 +72,11 @@ class _PasswordField extends StatefulWidget {
   final TextEditingController? controller;
 
   const _PasswordField({
-    Key? key,
+    super.key,
     required this.label,
     this.validator,
     this.controller,
-  }) : super(key: key);
+  });
 
   @override
   State<_PasswordField> createState() => _PasswordFieldState();

@@ -44,7 +44,7 @@ class TrackScreen extends StatelessWidget {
                       return Stack(
                         children: [
                           Container(
-                            color: Colors.black.withOpacity(0.3),
+                            color: Colors.black.withValues(alpha: 0.3),
                           ),
                           const Center(
                             child: CircularProgressIndicator(),
@@ -255,7 +255,7 @@ class TrackScreen extends StatelessWidget {
                                     border: Border.all(
                                       color: ColorCodes
                                           .calendergridcontainerbordercolor
-                                          .withOpacity(0.12),
+                                          .withValues(alpha: 0.12),
                                     ),
                                   ),
                                   child: CalendarGrid(loginDates: loginDates),
@@ -292,7 +292,7 @@ class TrackScreen extends StatelessWidget {
 class CalendarGrid extends StatefulWidget {
   final List<dynamic> loginDates;
 
-  const CalendarGrid({Key? key, required this.loginDates}) : super(key: key);
+  const CalendarGrid({super.key, required this.loginDates});
 
   @override
   _CalendarGridState createState() => _CalendarGridState();

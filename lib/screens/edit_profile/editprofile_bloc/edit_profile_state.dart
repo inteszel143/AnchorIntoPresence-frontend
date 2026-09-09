@@ -67,6 +67,7 @@ class EditProfileSuccess extends EditProfileState {
 
 /// Failure state with error message
 class EditProfileFailure extends EditProfileState {
+  @override
   final String error;
   EditProfileFailure({required this.error})
       : super(
