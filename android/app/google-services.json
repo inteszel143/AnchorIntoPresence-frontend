@@ -1,0 +1,62 @@
+{
+  "project_info": {
+    "project_number": "935021721863",
+    "project_id": "mindfull-yoga-project",
+    "storage_bucket": "mindfull-yoga-project.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:935021721863:android:2db430c9a59ec0c011eda2",
+        "android_client_info": {
+          "package_name": "com.mediation.mindfullyevolve.mindfully_evolve_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "935021721863-2mibfip8rhlgb27ofruubc16vo1fk51i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mediation.mindfullyevolve.mindfully_evolve_app",
+            "certificate_hash": "9d04ce2f3c3453c6b2f8d09fc261e37cd0266491"
+          }
+        },
+        {
+          "client_id": "935021721863-eaofsqbc3llguohg1b59pkaj5eqnfi1d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mediation.mindfullyevolve.mindfully_evolve_app",
+            "certificate_hash": "4f9d6c94974852ac45da30d5f0c7d0b14bffb327"
+          }
+        },
+        {
+          "client_id": "935021721863-u0i7q4d1r5rit8o396minrdfo75rq554.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWox43DoNYa0FC2ioIJQx1F25-8PEoKLM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "935021721863-2l6c9o808su522f6c8rh4uti20rm0m48.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "935021721863-l48mfchnelul946np3s2ua03m2tehhcl.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mindfull.minfullyevolveapp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

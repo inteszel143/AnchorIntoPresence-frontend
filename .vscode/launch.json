@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Anchor Into Presence (Flutter)",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "program": "lib/main.dart",
+      "flutterMode": "debug"
+    }
+  ]
+}
