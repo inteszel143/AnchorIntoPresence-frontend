@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../utils/fonts.dart';
 
@@ -20,38 +19,40 @@ class CustomAppbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final onBack = onTap ?? () {
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+    };
+
     return Padding(
-      padding: const EdgeInsets.only(top: 30),
+      padding: const EdgeInsets.fromLTRB(4, 16, 12, 0),
       child: SizedBox(
-        height: 40,
+        height: 48,
         child: Row(
           children: [
-            // Left icon
             SizedBox(
-              width: 60,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 15),
-                  child: GestureDetector(
-                    onTap: onTap ??
-                        () {
-                          if (Navigator.canPop(context)) {
-                            Navigator.pop(context);
-                          }
-                        },
-                    child: image ??
-                        SvgPicture.asset(
-                          'assets/images/back_icon_new.svg',
-                          width: 28,
-                          height: 28,
-                        ),
-                  ),
-                ),
-              ),
+              width: 48,
+              height: 48,
+              child: image == null
+                  ? IconButton(
+                      onPressed: onBack,
+                      tooltip: 'Back',
+                      padding: EdgeInsets.zero,
+                      icon: Icon(
+                        Icons.arrow_back_rounded,
+                        size: 21,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    )
+                  : IconButton(
+                      onPressed: onBack,
+                      tooltip: 'Back',
+                      padding: EdgeInsets.zero,
+                      icon: image!,
+                    ),
             ),
 
-            // Title
             Expanded(
               child: Center(
                 child: Text(
@@ -60,9 +61,9 @@ class CustomAppbar extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 22,
-                    color: const Color(0xff12150E),
-                    fontWeight: FontWeight.w400,
+                    fontSize: 21,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
                     letterSpacing: Fonts.headingLetterSpacing,
                     fontFamily: Fonts.heading,
                   ),
@@ -70,21 +71,15 @@ class CustomAppbar extends StatelessWidget {
               ),
             ),
 
-            // Right icon
             SizedBox(
-              width: 60,
+              width: 48,
+              height: 48,
               child: Align(
                 alignment: Alignment.centerRight,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 15),
-                  child: GestureDetector(
-                    onTap: onOkTap,
-                    child: okimage ??
-                        const SizedBox(
-                          width: 32,
-                          height: 32,
-                        ),
-                  ),
+                child: IconButton(
+                  onPressed: onOkTap,
+                  padding: EdgeInsets.zero,
+                  icon: okimage ?? const SizedBox(width: 32, height: 32),
                 ),
               ),
             ),

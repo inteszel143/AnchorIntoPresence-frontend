@@ -360,56 +360,67 @@ class _SignupScreenState extends State<SignupScreen> {
                                                                 height: 20),
                                                             Center(
                                                               child:
-                                                                  GestureDetector(
-                                                                onTap: () {
-                                                                  FocusScope.of(
-                                                                          context)
-                                                                      .unfocus();
-
-                                                                  if (_formKey
-                                                                      .currentState!
-                                                                      .validate()) {
-                                                                    // Prepare the data to send
-                                                                    final signupData =
-                                                                        {
-                                                                      if (_nameController
-                                                                          .text
-                                                                          .trim()
-                                                                          .isNotEmpty)
-                                                                        'name': _nameController
-                                                                            .text
-                                                                            .trim(),
-                                                                      'email': _emailController
-                                                                          .text
-                                                                          .trim(),
-                                                                      'password':
+                                                                  AnimatedBuilder(
+                                                                animation:
+                                                                    Listenable.merge([
+                                                                  _emailController,
+                                                                  _passwordController,
+                                                                ]),
+                                                                builder: (context,
+                                                                    child) {
+                                                                  final canSubmit =
+                                                                      _emailController
+                                                                              .text
+                                                                              .trim()
+                                                                              .isNotEmpty &&
                                                                           _passwordController
-                                                                              .text,
-                                                                    };
+                                                                              .text
+                                                                              .trim()
+                                                                              .isNotEmpty;
 
-                                                                    context
-                                                                        .read<
-                                                                            SignupBloc>()
-                                                                        .add(
-                                                                          SignupSubmitted(
-                                                                            name:
-                                                                                signupData['name'], // will be null if not included
-                                                                            email:
-                                                                                signupData['email']!,
-                                                                            password:
-                                                                                signupData['password']!,
-                                                                          ),
-                                                                        );
-                                                                  }
+                                                                  return ButtonWidget(
+                                                                    btnTxt:
+                                                                        'Create free account',
+                                                                    widthFactor:
+                                                                        1,
+                                                                    height: 60,
+                                                                    isActive:
+                                                                        canSubmit,
+                                                                    onTap: () {
+                                                                      FocusScope.of(
+                                                                              context)
+                                                                          .unfocus();
+
+                                                                      if (_formKey
+                                                                          .currentState!
+                                                                          .validate()) {
+                                                                        final signupData =
+                                                                            {
+                                                                          if (_nameController
+                                                                              .text
+                                                                              .trim()
+                                                                              .isNotEmpty)
+                                                                            'name': _nameController.text.trim(),
+                                                                          'email': _emailController
+                                                                              .text
+                                                                              .trim(),
+                                                                          'password':
+                                                                              _passwordController.text,
+                                                                        };
+
+                                                                        context
+                                                                            .read<SignupBloc>()
+                                                                            .add(
+                                                                              SignupSubmitted(
+                                                                                name: signupData['name'],
+                                                                                email: signupData['email']!,
+                                                                                password: signupData['password']!,
+                                                                              ),
+                                                                            );
+                                                                      }
+                                                                    },
+                                                                  );
                                                                 },
-                                                                child:
-                                                                    ButtonWidget(
-                                                                  btnTxt:
-                                                                      'Create free account',
-                                                                  widthFactor:
-                                                                      1,
-                                                                  height: 60,
-                                                                ),
                                                               ),
                                                             ),
                                                             SizedBox(

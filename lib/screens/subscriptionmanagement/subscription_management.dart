@@ -13,6 +13,7 @@ import 'package:mindfully_evolve_app/utils/string_constants.dart';
 
 import '../../common/local_storage.dart';
 import '../../common/widgets/custom_appbar.dart';
+import '../../common/widgets/auth_theme.dart';
 import '../../utils/color_constants.dart';
 import '../../utils/fonts.dart';
 import '../../utils/global.dart' as globals;
@@ -98,7 +99,8 @@ class _SubscriptionManagementScreenState
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         return Dialog(
-          backgroundColor: ColorCodes.whiteNewReplacement,
+          backgroundColor:
+              Theme.of(context).colorScheme.surfaceContainerHighest,
           insetPadding: const EdgeInsets.symmetric(horizontal: 24),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -117,16 +119,16 @@ class _SubscriptionManagementScreenState
                         width: 28,
                         height: 28,
                         alignment: Alignment.center,
-                        child: const Icon(
+                        child: Icon(
                           Icons.close,
                           size: 22,
-                          color: ColorCodes.blackcolor,
+                          color: Theme.of(dialogContext).colorScheme.onSurface,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const Text(
+                Text(
                   "Confirm Purchase",
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -134,7 +136,7 @@ class _SubscriptionManagementScreenState
                     fontWeight: FontWeight.w400,
                     letterSpacing: Fonts.headingLetterSpacing,
                     fontFamily: Fonts.heading,
-                    color: Colors.black,
+                    color: Theme.of(dialogContext).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -144,7 +146,9 @@ class _SubscriptionManagementScreenState
                     style: TextStyle(
                       fontSize: 14,
                       fontFamily: Fonts.body,
-                      color: ColorCodes.descriptioncolor,
+                        color: Theme.of(dialogContext)
+                          .colorScheme
+                          .onSurfaceVariant,
                       letterSpacing: 2,
                       height: 1.0,
                     ),
@@ -153,7 +157,7 @@ class _SubscriptionManagementScreenState
                       TextSpan(
                         text: "purchase:",
                         style: TextStyle(
-                          color: ColorCodes.buttoncolor,
+                          color: Theme.of(dialogContext).colorScheme.primary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -211,7 +215,7 @@ class _SubscriptionManagementScreenState
                         child: Text(
                           'Cancel',
                           style: TextStyle(
-                            color: Colors.black87,
+                            color: Theme.of(dialogContext).colorScheme.onSurface,
                             fontFamily: Fonts.body,
                             fontWeight: FontWeight.w500,
                             fontSize: 15,
@@ -234,7 +238,8 @@ class _SubscriptionManagementScreenState
                           Navigator.of(dialogContext).pop();
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: ColorCodes.buttoncolor,
+                            backgroundColor:
+                              Theme.of(dialogContext).colorScheme.primary,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           elevation: 0,
                           shape: RoundedRectangleBorder(
@@ -244,7 +249,7 @@ class _SubscriptionManagementScreenState
                         child: Text(
                           'Confirm',
                           style: TextStyle(
-                            color: ColorCodes.whitecolor,
+                            color: Theme.of(dialogContext).colorScheme.onPrimary,
                             fontFamily: Fonts.body,
                             fontWeight: FontWeight.w600,
                             fontSize: 15,
@@ -272,9 +277,10 @@ class _SubscriptionManagementScreenState
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<SubscriptionBloc>.value(
-      value: _bloc,
-      child: BlocConsumer<SubscriptionBloc, SubscriptionState>(
+    return AuthTheme(
+      child: BlocProvider<SubscriptionBloc>.value(
+        value: _bloc,
+        child: BlocConsumer<SubscriptionBloc, SubscriptionState>(
         listener: (context, state) async {
           if (state is SubscriptionPurchasing) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -321,25 +327,71 @@ class _SubscriptionManagementScreenState
         },
         builder: (context, state) {
           return Scaffold(
-            backgroundColor: ColorCodes.backgroundcolor,
+            backgroundColor: Theme.of(context).colorScheme.surface,
             body: SafeArea(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.only(bottom: 100),
+                padding: const EdgeInsets.only(bottom: 48),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     CustomAppbar(headingTxt: Strings.subscriptionManagement),
 
-                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 22),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'MAKE SPACE FOR WHAT MATTERS',
+                            style: TextStyle(
+                              fontFamily: Fonts.body,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 2,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Choose your plan',
+                            style: TextStyle(
+                              fontFamily: Fonts.heading,
+                              fontSize: 30,
+                              height: 1.15,
+                              fontWeight: FontWeight.w500,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Go deeper with guided practices and a calmer space to return to every day.',
+                            style: TextStyle(
+                              fontFamily: Fonts.body,
+                              fontSize: 15,
+                              height: 1.5,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
 
                     // ── Tab switcher ────────────────────────────────────────
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: ColorCodes.whitecolor,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: ColorCodes.searchboxcolor),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
                         ),
                         child: Row(
                           children: [
@@ -351,22 +403,23 @@ class _SubscriptionManagementScreenState
                                       productIds: _productIds));
                                 },
                                 child: Container(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 12),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 13),
                                   decoration: BoxDecoration(
                                     color: !isBillingTab
-                                        ? ColorCodes.buttoncolor
+                                      ? Theme.of(context).colorScheme.primary
                                         : Colors.transparent,
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(8)),
+                                    borderRadius: BorderRadius.circular(11),
                                   ),
                                   alignment: Alignment.center,
                                   child: Text(
                                     Strings.plans,
                                     style: TextStyle(
-                                      color: !isBillingTab
-                                          ? ColorCodes.blackcolor
-                                          : ColorCodes.blackcolor,
+                                        color: !isBillingTab
+                                          ? Theme.of(context).colorScheme.onPrimary
+                                          : Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant,
                                       fontWeight: FontWeight.w400,
                                       fontSize: 14,
                                       fontFamily: Fonts.body,
@@ -387,19 +440,21 @@ class _SubscriptionManagementScreenState
                                         vertical: 12),
                                     decoration: BoxDecoration(
                                       color: isBillingTab
-                                          ? ColorCodes.buttoncolor
+                                          ? Theme.of(context).colorScheme.primary
                                           : Colors.transparent,
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(8)),
+                                      borderRadius: BorderRadius.circular(11),
                                     ),
                                     alignment: Alignment.center,
                                     child: Text(
                                       Strings.billingHistory,
                                       style: TextStyle(
                                         color: isBillingTab
-                                            ? ColorCodes.blackcolor
-                                            : ColorCodes.blackcolor
-                                                .withValues(alpha: 0.7),
+                                          ? Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary
+                                          : Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant,
                                         fontWeight: FontWeight.w400,
                                         fontSize: 14,
                                         fontFamily: Fonts.body,
@@ -413,7 +468,7 @@ class _SubscriptionManagementScreenState
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
 
                     // ── Content ─────────────────────────────────────────────
                     Padding(
@@ -428,6 +483,7 @@ class _SubscriptionManagementScreenState
             ),
           );
         },
+        ),
       ),
     );
   }
@@ -550,198 +606,68 @@ class _SubscriptionManagementScreenState
 
       return Column(
         children: [
-          // ── Plan cards ──────────────────────────────────────────────────
-          ...uniquePlans.map((plan) {
-            final bool isActive = plan.id.split(':').first ==
-                    (globals.alreadyPurchasedProductId ?? '')
-                        .split(':')
-                        .first &&
-                isSubscriptionActive();
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final columns = constraints.maxWidth >= 720 ? 3 : 1;
+              final gap = columns == 1 ? 0.0 : 16.0;
+              final cardWidth = columns == 1
+                  ? constraints.maxWidth
+                  : (constraints.maxWidth - gap * (columns - 1)) / columns;
 
-            // Resolve which price(s) to display for this plan.
-            final priceInfo = _resolveOfferPrice(plan);
-            final bool hasDiscount = priceInfo.originalPrice != null;
+              return Wrap(
+                spacing: gap,
+                runSpacing: 16,
+                children: uniquePlans.map((plan) {
+                  final isActive = plan.id.split(':').first ==
+                          (globals.alreadyPurchasedProductId ?? '')
+                              .split(':')
+                              .first &&
+                      isSubscriptionActive();
+                  final priceInfo = _resolveOfferPrice(plan);
+                  final features = _featuresForPlan(plan);
 
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: ColorCodes.whitecolor,
-                  border: Border.all(color: ColorCodes.searchboxcolor),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 15),
-                          child: GestureDetector(
-                            onTap: isActive
-                                ? null
-                                : () => _showConfirmationDialog(context, plan),
-                            child: Row(
-                              children: [
-                                SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: Radio<String>(
-                                    value: plan.id.split(':').first,
-                                    groupValue:
-                                        (globals.alreadyPurchasedProductId ??
-                                                '')
-                                            .split(':')
-                                            .first,
-                                    activeColor: ColorCodes.buttoncolor,
-                                    onChanged: isActive
-                                        ? null
-                                        : (_) => _showConfirmationDialog(
-                                            context, plan),
-                                  ),
-                                ),
-                                const SizedBox(width: 7),
-                                Text(
-                                  _cleanPlanTitle(plan.title),
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w400,
-                                    fontFamily: Fonts.body,
-                                    color: ColorCodes.mainheadingcolor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        // ── Price display: discounted or standard ──────────
-                        Padding(
-                          padding: const EdgeInsets.only(right: 15),
-                          child: hasDiscount
-                              ? Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    // Original price — struck through
-                                    Text(
-                                      priceInfo.originalPrice!,
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w400,
-                                        fontFamily: Fonts.body,
-                                        color: ColorCodes.mainheadingcolor
-                                            .withValues(alpha: 0.5),
-                                        decoration: TextDecoration.lineThrough,
-                                      ),
-                                    ),
-                                    // Discounted (new) price — prominent
-                                    Text(
-                                      priceInfo.displayPrice,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        fontFamily: Fonts.body,
-                                        color: ColorCodes.mainheadingcolor,
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              : Text(
-                                  priceInfo.displayPrice,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w400,
-                                    fontFamily: Fonts.body,
-                                    color: ColorCodes.mainheadingcolor,
-                                  ),
-                                ),
-                        ),
-                      ],
+                  return SizedBox(
+                    width: cardWidth,
+                    child: _buildPlanCard(
+                      context,
+                      plan,
+                      isActive,
+                      priceInfo,
+                      features,
                     ),
-
-                    const SizedBox(height: 7),
-
-                    // ── Purchase / Restore button ──────────────────────────
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: GestureDetector(
-                        onTap: isActive
-                            ? () => _bloc.add(RestorePurchasesEvent())
-                            : () => _showConfirmationDialog(context, plan),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color: ColorCodes.buttoncolor,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            isActive ? 'Restore Purchases' : 'Purchase',
-                            style: const TextStyle(
-                              color: ColorCodes.blackcolor,
-                              fontWeight: FontWeight.w400,
-                              fontSize: 14,
-                              fontFamily: Fonts.body,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    if (isActive)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(right: 15, top: 4),
-                            child: Text(
-                              "Already Purchased",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontFamily: Fonts.body,
-                                fontWeight: FontWeight.w400,
-                                color: ColorCodes.tag1color,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                    const SizedBox(height: 12),
-                  ],
-                ),
-              ),
-            );
-          }),
+                  );
+                }).toList(),
+              );
+            },
+          ),
 
           // ── Redeem / Offer Code button ──────────────────────────────────
-          const SizedBox(height: 4),
+          const SizedBox(height: 20),
           if (Platform.isIOS)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: GestureDetector(
-                onTap: () => _bloc.add(const RedeemOfferCode()),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    color: ColorCodes.buttoncolor,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: ColorCodes.buttoncolor),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: OutlinedButton.icon(
+                onPressed: () => _bloc.add(const RedeemOfferCode()),
+                icon: const Icon(Icons.local_offer_outlined, size: 18),
+                label: const Text('Redeem Code'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.onSurface,
+                  side: BorderSide(
+                    color: Theme.of(context).colorScheme.outline,
                   ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    Platform.isIOS ? 'Redeem Code' : 'Redeem Promo Code',
-                    style: TextStyle(
-                      color: ColorCodes.blackcolor,
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14,
-                      fontFamily: Fonts.body,
-                    ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  textStyle: const TextStyle(
+                    fontFamily: Fonts.body,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
             ),
-          const SizedBox(height: 8),
+            const SizedBox(height: 12),
         ],
       );
     }
@@ -766,6 +692,234 @@ class _SubscriptionManagementScreenState
         child: CircularProgressIndicator(
       color: ColorCodes.buttoncolor,
     ));
+  }
+
+  List<String> _featuresForPlan(ProductDetails plan) {
+    final id = plan.id.split(':').first;
+    if (id.contains('founding')) {
+      return [
+        'Founding member pricing',
+        'All guided practices',
+        'Progress tracking and favorites',
+        'Access across devices',
+      ];
+    }
+    if (id.contains('year')) {
+      return [
+        'All guided practices',
+        'Progress tracking and favorites',
+        'Access across devices',
+        'Best value for the year',
+      ];
+    }
+    return [
+      'All guided practices',
+      'Progress tracking and favorites',
+      'Access across devices',
+    ];
+  }
+
+  Widget _buildPlanCard(
+    BuildContext context,
+    ProductDetails plan,
+    bool isActive,
+    ({String displayPrice, String? originalPrice, String? bestOfferToken})
+        priceInfo,
+    List<String> features,
+  ) {
+    final colors = Theme.of(context).colorScheme;
+    final hasDiscount = priceInfo.originalPrice != null;
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerHighest,
+        border: Border.all(color: colors.outline),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: isActive
+                      ? null
+                      : () => _showConfirmationDialog(context, plan),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: Radio<String>(
+                          value: plan.id.split(':').first,
+                          groupValue: (globals.alreadyPurchasedProductId ?? '')
+                              .split(':')
+                              .first,
+                          activeColor: colors.primary,
+                          onChanged: isActive
+                              ? null
+                              : (_) => _showConfirmationDialog(context, plan),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          _cleanPlanTitle(plan.title),
+                          style: TextStyle(
+                            fontSize: 19,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: Fonts.body,
+                            color: colors.onSurface,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              if (isActive)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: colors.primary,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'Current',
+                    style: TextStyle(
+                      color: colors.onPrimary,
+                      fontFamily: Fonts.body,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Your space to slow down, with more room to return to yourself.',
+            style: TextStyle(
+              fontFamily: Fonts.body,
+              fontSize: 13,
+              height: 1.4,
+              color: colors.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                priceInfo.displayPrice,
+                style: TextStyle(
+                  fontFamily: Fonts.heading,
+                  fontSize: 30,
+                  height: 1,
+                  fontWeight: FontWeight.w600,
+                  color: colors.onSurface,
+                ),
+              ),
+              if (hasDiscount) ...[
+                const SizedBox(width: 8),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 2),
+                  child: Text(
+                    priceInfo.originalPrice!,
+                    style: TextStyle(
+                      fontFamily: Fonts.body,
+                      fontSize: 13,
+                      color: colors.onSurfaceVariant,
+                      decoration: TextDecoration.lineThrough,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 5),
+          Text(
+            plan.id.split(':').first.contains('month') ? 'per month' : 'per year',
+            style: TextStyle(
+              fontFamily: Fonts.body,
+              fontSize: 12,
+              color: colors.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 20),
+          GestureDetector(
+            onTap: isActive
+                ? () => _bloc.add(RestorePurchasesEvent())
+                : () => _showConfirmationDialog(context, plan),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                color: colors.primary,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                isActive ? 'Restore Purchases' : 'Choose plan',
+                style: TextStyle(
+                  color: colors.onPrimary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                  fontFamily: Fonts.body,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 22),
+          Text(
+            'EVERYTHING INCLUDED',
+            style: TextStyle(
+              fontFamily: Fonts.body,
+              fontSize: 11,
+              letterSpacing: 1.2,
+              fontWeight: FontWeight.w700,
+              color: colors.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...features.map(
+            (feature) => Padding(
+              padding: const EdgeInsets.only(bottom: 11),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.check_circle, size: 17, color: colors.primary),
+                  const SizedBox(width: 9),
+                  Expanded(
+                    child: Text(
+                      feature,
+                      style: TextStyle(
+                        fontFamily: Fonts.body,
+                        fontSize: 13,
+                        height: 1.25,
+                        color: colors.onSurface,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   // Billing history tab
@@ -814,18 +968,19 @@ class _SubscriptionManagementScreenState
                   item.purchaseDate.isAfter(oneYearAgo));
 
           final statusText = isActive ? 'Active' : 'Expired';
-          final statusColor = isActive
-              ? ColorCodes.tag1color.withValues(alpha: 0.4)
-              : ColorCodes.tag2color.withValues(alpha: 0.4);
-          final statusTextColor = ColorCodes.blackcolor;
+            final statusColor = isActive
+              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.25)
+              : Theme.of(context).colorScheme.outline.withValues(alpha: 0.35);
+            final statusTextColor = Theme.of(context).colorScheme.onSurface;
 
           return Container(
             margin: const EdgeInsets.only(bottom: 16),
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             decoration: BoxDecoration(
-              color: ColorCodes.whitecolor,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: ColorCodes.searchboxcolor),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline),
               boxShadow: [
                 BoxShadow(
                   color: ColorCodes.greyColor.withValues(alpha: 0.1),
@@ -843,7 +998,7 @@ class _SubscriptionManagementScreenState
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                     decoration: BoxDecoration(
-                      color: ColorCodes.buttoncolor,
+                      color: Theme.of(context).colorScheme.primary,
                       borderRadius: const BorderRadius.only(
                         bottomLeft: Radius.circular(8),
                         bottomRight: Radius.circular(8),
@@ -852,8 +1007,8 @@ class _SubscriptionManagementScreenState
                     child: Text(
                       toBeginningOfSentenceCase(item.planType ?? 'Monthly') ??
                           'Monthly',
-                      style: const TextStyle(
-                        color: ColorCodes.blackcolor,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         fontFamily: Fonts.body,
@@ -867,20 +1022,20 @@ class _SubscriptionManagementScreenState
                     Text(
                       toBeginningOfSentenceCase(item.planType ?? 'Monthly') ??
                           'Monthly',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w400,
                         fontSize: 16,
                         fontFamily: Fonts.body,
-                        color: ColorCodes.mainheadingcolor,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     Text(
                       'Price: $price',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w400,
                         fontSize: 16,
                         fontFamily: Fonts.body,
-                        color: ColorCodes.mainheadingcolor,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ],
@@ -916,11 +1071,11 @@ class _SubscriptionManagementScreenState
                   children: [
                     Text(
                       'Next Billing: $nextFormattedDate',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w500,
                         fontSize: 14,
                         fontFamily: Fonts.body,
-                        color: ColorCodes.mainheadingcolor,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ],

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../common/widgets/background_image.dart';
+import '../../common/widgets/auth_text_field.dart';
+import '../../common/widgets/auth_theme.dart';
 import '../../common/widgets/button_widget.dart';
 import '../../common/widgets/custom_appbar.dart';
-import '../../common/widgets/textfield_widget.dart';
 import '../../utils/color_constants.dart';
 import '../../utils/fonts.dart';
 import '../../utils/string_constants.dart';
@@ -21,9 +21,10 @@ class ForgotPassword extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double horizontalPadding = MediaQuery.of(context).size.width * 0.06;
-    return BlocProvider(
-      create: (_) => ForgotPasswordBloc(),
-      child: BlocConsumer<ForgotPasswordBloc, ForgotPasswordState>(
+    return AuthTheme(
+      child: BlocProvider(
+        create: (_) => ForgotPasswordBloc(),
+        child: BlocConsumer<ForgotPasswordBloc, ForgotPasswordState>(
         listener: (context, state) {
           if (state is ForgotPasswordSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -53,77 +54,104 @@ class ForgotPassword extends StatelessWidget {
         },
         builder: (context, state) {
           if (state is ForgotPasswordLoading) {
-            return Stack(
-              children: [
-                Positioned.fill(
-                  child: Container(
-                    color: ColorCodes.backgroundcolor,
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        color: ColorCodes.buttoncolor,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+            return Scaffold(
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              body: const Center(
+                child: CircularProgressIndicator(),
+              ),
             );
           }
-          return BackgroundScaffold(
-            child: SingleChildScrollView(
-              child: Form(
-                key: _formKey,
-                child: Column(
+          return Scaffold(
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            body: SafeArea(
+              child: SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: EdgeInsets.fromLTRB(
+                  horizontalPadding,
+                  12,
+                  horizontalPadding,
+                  32,
+                ),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 480),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     CustomAppbar(headingTxt: ''),
-                    const SizedBox(height: 10),
-                    const Center(
+                    const SizedBox(height: 28),
+                    Center(
+                      child: Image.asset(
+                        'assets/icons/tina-logo.png',
+                        width: 110,
+                        height: 92,
+                        fit: BoxFit.contain,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Theme.of(context).colorScheme.onSurface
+                            : null,
+                        semanticLabel: 'Tina Moore',
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Center(
+                      child: Text(
+                        'RESET YOUR PASSWORD',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 11,
+                          letterSpacing: 2,
+                          fontFamily: Fonts.body,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Center(
                       child: Text(
                         Strings.forgotPassword,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: ColorCodes.bellefairheadingtextcolor,
-                          fontWeight: FontWeight.w400,
-                          fontSize: 26,
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 32,
+                          height: 1.15,
                           letterSpacing: Fonts.headingLetterSpacing,
                           fontFamily: Fonts.heading,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 5),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 50),
-                      child: Text(
-                        Strings.forgotPasswordHeader,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: ColorCodes.headerdescriptioncolor,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 14,
-                          fontFamily: Fonts.body,
-                        ),
+                    const SizedBox(height: 14),
+                    Text(
+                      Strings.forgotPasswordHeader,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w400,
+                        fontSize: 15,
+                        height: 1.55,
+                        fontFamily: Fonts.body,
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: horizontalPadding),
-                      child: const Text(
-                        Strings.emailAddress,
-                        style: TextStyle(
-                          color: ColorCodes.bellefairheadingtextcolor,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 14,
-                          fontFamily: Fonts.body,
-                        ),
+                    const SizedBox(height: 32),
+                    Text(
+                      Strings.emailAddress,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        fontFamily: Fonts.body,
                       ),
                     ),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 8),
                     Center(
-                      child: TextFieldWidget(
+                      child: AuthTextField(
                         label: Strings.enterYourEmailAddress,
                         controller: _emailController,
-                        widthFactor: 0.9,
+                        widthFactor: 1,
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return 'Please enter your email address';
@@ -135,31 +163,41 @@ class ForgotPassword extends StatelessWidget {
                         },
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
                     Center(
-                      child: GestureDetector(
-                        onTap: () {
-                          FocusScope.of(context).unfocus();
-                          final email = _emailController.text.trim();
-                          if (_formKey.currentState!.validate()) {
-                            context.read<ForgotPasswordBloc>().add(
-                                  SubmitForgotPassword(email),
-                                );
-                          }
+                      child: AnimatedBuilder(
+                        animation: _emailController,
+                        builder: (context, child) {
+                          final canSubmit =
+                              _emailController.text.trim().isNotEmpty;
+                          return ButtonWidget(
+                            btnTxt: Strings.sendCode,
+                            widthFactor: 1,
+                            height: 60,
+                            isActive: canSubmit,
+                            onTap: () {
+                              FocusScope.of(context).unfocus();
+                              final email = _emailController.text.trim();
+                              if (_formKey.currentState!.validate()) {
+                                context.read<ForgotPasswordBloc>().add(
+                                      SubmitForgotPassword(email),
+                                    );
+                              }
+                            },
+                          );
                         },
-                        child: ButtonWidget(
-                          btnTxt: Strings.sendCode,
-                          widthFactor: 0.9,
-                          height: 50,
-                        ),
                       ),
                     ),
                   ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
           );
         },
+      ),
       ),
     );
   }

@@ -18,13 +18,13 @@ class SocialLoginButton extends StatelessWidget {
     return GestureDetector(
       onTap: onPressed,
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.92,
-        height: 52,
+        width: double.infinity,
+        height: 60,
         decoration: BoxDecoration(
           color: Theme.of(context).brightness == Brightness.dark
               ? Theme.of(context).colorScheme.surfaceContainerHighest
               : ColorCodes.whitecolor,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: ColorCodes.searchboxcolor,
           ),
