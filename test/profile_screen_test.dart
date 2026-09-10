@@ -1,3 +1,4 @@
+import 'package:mindfully_evolve_app/screens/user_profile/userprofile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -57,6 +58,13 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.text('804'), findsOneWidget);
       expect(find.text('Your profile'), findsOneWidget);
+      await tester.tap(find.bySemanticsLabel('Open profile'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.byType(UserprofileScreen), findsOneWidget);
+      tester.state<NavigatorState>(find.byType(Navigator).first).pop();
+      await tester.pumpAndSettle();
+      expect(find.byType(ProfileScreen), findsOneWidget);
       await tester.ensureVisible(find.byTooltip('Previous month'));
       await tester.tap(find.byTooltip('Previous month'));
       await tester.pumpAndSettle();

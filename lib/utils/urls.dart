@@ -1,4 +1,5 @@
 class Urls {
+  static const String logout = '$baseUrl/api/auth/logout';
   static const String baseUrl = 'https://admin.anchorintopresence.net';
   static const String baseUrlimages = 'https://d1ckq51qwp5orx.cloudfront.net';
   static const String postActivity = '$baseUrl/api/users/activities/';

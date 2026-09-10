@@ -1,3 +1,4 @@
+import '../user_profile/userprofile_screen.dart';
 import '../../common/widgets/app_circle_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -102,14 +103,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(children: [
-                    ClipOval(
-                      child: photoUrl == null
-                          ? _avatar(colors)
-                          : Image.network(photoUrl,
-                              width: 52,
-                              height: 52,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => _avatar(colors)),
+                    Semantics(
+                      button: true,
+                      label: 'Open profile',
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (_) => const UserprofileScreen()),
+                        ),
+                        child: ClipOval(
+                          child: photoUrl == null
+                              ? _avatar(colors)
+                              : Image.network(photoUrl,
+                                  width: 52,
+                                  height: 52,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) =>
+                                      _avatar(colors)),
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(

@@ -5,7 +5,7 @@ import 'package:mindfully_evolve_app/utils/api_service.dart';
 
 import '../../../common/local_storage.dart';
 import '../../../utils/global.dart' as globals;
-import '../../dashboard/home_model.dart';
+import '../../../utils/fcm_service.dart';
 import 'signin_event.dart';
 import 'signin_state.dart';
 
@@ -20,15 +20,13 @@ class SigninBloc extends Bloc<SigninEvent, SigninState> {
     emit(SigninLoading());
 
     try {
-      final fcmToken = await LocalStorage.getFCMToken();
-      print('fcm:$fcmToken');
+      final fcmToken = await getFCMTokenForSignin();
       final data = await ApiService.login(
         email: event.email,
         password: event.password,
         fcmToken: fcmToken,
       );
       await LocalStorage.saveToken(data.token);
-      print('data:${data.data}');
       if (data.data?.email != null) {
         final userProfileFuture = ApiService.fetchProfileData(data.token);
         final results = await Future.wait([userProfileFuture]);
@@ -41,10 +39,9 @@ class SigninBloc extends Bloc<SigninEvent, SigninState> {
           data.token,
           data.data?.name,
           data.data?.image,
-          data.isFirst ?? false,
+          data.isFirst,
         ));
       } else {
-        print('message:${data.message}');
         emit(SigninFailure(
             data.message.isNotEmpty ? data.message : 'Login failed'));
       }
@@ -59,7 +56,7 @@ class SigninBloc extends Bloc<SigninEvent, SigninState> {
       SocialSigninSubmitted event, Emitter<SigninState> emit) async {
     emit(SigninLoading());
     try {
-      final fcmToken = await LocalStorage.getFCMToken();
+      final fcmToken = await getFCMTokenForSignin();
 
       final data = await ApiService.socialLogin(
         email: event.email,

@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -13,6 +15,28 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
 }
 
+StreamSubscription<String>? _tokenRefreshSubscription;
+
+/// Refresh before sign-in; lack of push support must not stop password login.
+Future<String?> getFCMTokenForSignin() async {
+  try {
+    final messaging = FirebaseMessaging.instance;
+    if (!Platform.isIOS ||
+        await messaging.getAPNSToken().timeout(const Duration(seconds: 3)) !=
+            null) {
+      final token =
+          await messaging.getToken().timeout(const Duration(seconds: 3));
+      if (token != null && token.isNotEmpty) {
+        await LocalStorage.saveFCMToken(token);
+        return token;
+      }
+    }
+  } catch (_) {
+    debugPrint('Push token is not available yet.');
+  }
+  return LocalStorage.getFCMToken();
+}
+
 Future<void> initializeFCM() async {
   final FirebaseMessaging messaging = FirebaseMessaging.instance;
   await messaging.requestPermission(
@@ -20,19 +44,18 @@ Future<void> initializeFCM() async {
     badge: true,
     sound: true,
   );
-  if (Platform.isIOS) {
-    String? apnsToken = await messaging.getAPNSToken();
-    if (apnsToken == null) {
-      return; // do NOT call getToken yet
-    }
-  }
-
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-
-  String? fcmToken = await messaging.getToken();
-  if (fcmToken != null) {
-    await LocalStorage.saveFCMToken(fcmToken);
-  }
+  await _tokenRefreshSubscription?.cancel();
+  _tokenRefreshSubscription = messaging.onTokenRefresh.listen((token) async {
+    try {
+      await LocalStorage.saveFCMToken(token);
+    } catch (_) {
+      debugPrint('Unable to cache the refreshed push token.');
+    }
+  }, onError: (Object _) {
+    debugPrint('Push token refresh is not available yet.');
+  });
+  await getFCMTokenForSignin();
 
   const AndroidInitializationSettings initializationSettingsAndroid =
       AndroidInitializationSettings('@mipmap/ic_launcher');

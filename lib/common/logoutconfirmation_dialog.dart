@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../screens/signin/signin_screen.dart';
 import '../utils/string_constants.dart';
-import 'local_storage.dart';
+import 'logout_session.dart';
 
 Future<void> showLogoutConfirmationDialog(BuildContext context) async {
   await showModalBottomSheet<void>(
@@ -39,7 +39,7 @@ class _LogoutSheetState extends State<_LogoutSheet> {
     });
     try {
       await WidgetsBinding.instance.endOfFrame;
-      await LocalStorage.deleteToken();
+      await logoutSession();
       if (!navigator.mounted) return;
       navigator.pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const SigninScreen()),
