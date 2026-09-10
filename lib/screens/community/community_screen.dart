@@ -1,459 +1,202 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:mindfully_evolve_app/common/main_screen.dart';
-import 'package:mindfully_evolve_app/common/widgets/postdeletionconfirmation_dialog.dart';
-import 'package:mindfully_evolve_app/screens/comment/comment_screen.dart';
-import 'package:mindfully_evolve_app/utils/fonts.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:timeago/timeago.dart' as timeago;
-
-import '../../common/widgets/custom_appbar.dart';
-import '../../utils/color_constants.dart';
+import '../../common/widgets/tab_content_page.dart';
+import '../../common/widgets/postdeletionconfirmation_dialog.dart';
 import '../../utils/global.dart';
-import '../../utils/image_constants.dart';
-import '../../utils/string_constants.dart';
 import '../../utils/urls.dart';
+import '../comment/comment_screen.dart';
 import '../add_post/add_post_screen.dart';
 import 'community_bloc/community_bloc.dart';
 import 'community_bloc/community_event.dart';
 import 'community_bloc/community_state.dart';
+import 'community_model.dart';
 import 'post_likes_bottom_sheet.dart';
 
 class CommunityScreen extends StatelessWidget {
   const CommunityScreen({super.key});
-  void _sharePost(BuildContext context, String postMessage, String postUrl) {
-    Share.share('$postMessage\n$postUrl');
-  }
 
-  // Show custom bottom sheet with share options
-  void _showShareOptions(
-      BuildContext context, String postMessage, String postUrl) {
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          color: ColorCodes.whiteNewReplacement,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Share Via',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 10),
-              // WhatsApp Share Button
-              SingleChildScrollView(
-                child: Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        _sharePost(context, postMessage, postUrl);
-                        Navigator.pop(
-                            context); // Close the bottom sheet after sharing
-                      },
-                      child: Column(
-                        children: [
-                          Image.asset(ImageConstants.whatsappIcon,
-                              width: 46, height: 46),
-                          const SizedBox(width: 10),
-                          Text(
-                            'WhatsApp',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 20),
-                    // Facebook Share Button
-                    GestureDetector(
-                      onTap: () {
-                        _sharePost(context, postMessage, postUrl);
-                        Navigator.pop(context);
-                      },
-                      child: Column(
-                        children: [
-                          Image.asset(ImageConstants.facebookIcon,
-                              width: 46, height: 46),
-                          const SizedBox(width: 10),
-                          Text(
-                            'Facebook',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 20),
-                    // Instagram Share Button
-                    GestureDetector(
-                      onTap: () {
-                        _sharePost(context, postMessage, postUrl);
-                        Navigator.pop(context);
-                      },
-                      child: Column(
-                        children: [
-                          Image.asset(ImageConstants.instaIcon,
-                              width: 46, height: 46),
-                          const SizedBox(width: 10),
-                          Text(
-                            'Instagram',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 20),
+  @override
+  Widget build(BuildContext context) => BlocProvider(
+        create: (_) => CommunityBloc()..add(FetchPostsEvent()),
+        child: BlocConsumer<CommunityBloc, CommunityState>(
+          listener: (context, state) {
+            if (state is PostDeleted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Post deleted successfully!')));
+              context.read<CommunityBloc>().add(FetchPostsEvent());
+            }
+          },
+          builder: (context, state) => CommunityFeed(state: state),
+        ),
+      );
+}
 
-                    GestureDetector(
-                      onTap: () {
-                        Share.share(postUrl);
-                        Navigator.pop(context);
-                      },
-                      child: Column(
-                        children: [
-                          Image.asset(ImageConstants.copylinkIcon,
-                              width: 46, height: 46),
-                          const SizedBox(height: 10),
-                          Text(
-                            'Copy Link',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 20),
+class CommunityFeed extends StatelessWidget {
+  const CommunityFeed({super.key, required this.state});
+  final CommunityState state;
 
-                    GestureDetector(
-                      onTap: () {
-                        Share.share(postUrl);
-                        Navigator.pop(context);
-                      },
-                      child: Column(
-                        children: [
-                          Image.asset(ImageConstants.twitterIcon,
-                              width: 46, height: 46),
-                          const SizedBox(height: 10),
-                          Text(
-                            'Twitter',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+  @override
+  Widget build(BuildContext context) => TabContentPage(
+        title: 'Community',
+        subtitle: 'A space to connect and grow together.',
+        bottomAction: FloatingActionButton(
+            heroTag: 'community-create-post',
+            tooltip: 'Create post',
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            elevation: 2,
+            shape: const CircleBorder(),
+            onPressed: () async {
+              final created = await Navigator.push<bool>(context,
+                  MaterialPageRoute(builder: (_) => const CreatePostScreen()));
+              if (created == true && context.mounted) {
+                context.read<CommunityBloc>().add(FetchPostsEvent());
+              }
+            },
+            child: const Icon(Icons.add_rounded)),
+        slivers: [
+          if (state is CommunityLoaded &&
+              (state as CommunityLoaded).posts.isNotEmpty)
+            SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: SliverList.builder(
+                    itemCount: (state as CommunityLoaded).posts.length,
+                    itemBuilder: (context, index) => CommunityPostCard(
+                        post: (state as CommunityLoaded).posts[index])))
+          else
+            SliverFillRemaining(
+                hasScrollBody: false,
+                child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Center(
+                        child: state is CommunityLoading
+                            ? const CircularProgressIndicator()
+                            : Column(mainAxisSize: MainAxisSize.min, children: [
+                                Icon(Icons.forum_outlined,
+                                    size: 40,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant),
+                                const SizedBox(height: 16),
+                                Text(
+                                    state is CommunityError
+                                        ? (state as CommunityError).message
+                                        : 'No posts yet',
+                                    textAlign: TextAlign.center,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium),
+                              ])))),
+        ],
+      );
+}
 
-  String mapTabToPostType(String tab) {
-    return tab == 'All' ? tab.toLowerCase() : tab;
-  }
+class CommunityPostCard extends StatelessWidget {
+  const CommunityPostCard({super.key, required this.post});
+  final Post post;
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => CommunityBloc()..add(FetchPostsEvent()),
-      child: BlocListener<CommunityBloc, CommunityState>(
-        listener: (context, state) {
-          if (state is PostDeleted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Post deleted successfully!'),
-                backgroundColor: ColorCodes.buttoncolor,
-              ),
-            );
-            context.read<CommunityBloc>().add(FetchPostsEvent());
-          }
-        },
-        child: WillPopScope(
-          onWillPop: () async {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => MainScreen(
-                        initialIndex: 0,
-                      )),
-              (route) => false,
-            );
-            return false;
-          },
-          child: Scaffold(
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            body: Column(
-              children: [
-                SizedBox(
-                  height: 15,
-                ),
-                CustomAppbar(
-                  headingTxt: Strings.community,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => MainScreen(
-                                initialIndex: 0,
-                              )),
-                    );
-                  },
-                  okimage:
-                      Icon(Icons.add, color: ColorCodes.buttoncolor, size: 30),
-                  onOkTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => CreatePostScreen()),
-                    );
-                  },
-                ),
-                Row(
-                  children: [],
-                ),
-                Expanded(
-                  child: GestureDetector(
-                    onVerticalDragUpdate: (details) {
-                      Navigator.of(context).pop();
-                    },
-                    child: BlocBuilder<CommunityBloc, CommunityState>(
-                      builder: (context, state) {
-                        if (state is CommunityLoading) {
-                          return Center(child: CircularProgressIndicator());
-                        } else if (state is CommunityError) {
-                          return Center(child: Text('Error: ${state.message}'));
-                        } else if (state is CommunityLoaded) {
-                          if (state.posts.isEmpty) {
-                            return Center(
-                              child: Text(
-                                "No data found",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            );
-                          }
-                          return ListView.builder(
-                            itemCount: state.posts.length,
-                            itemBuilder: (context, index) {
-                              final post = state.posts[index];
-                              final timeAgo = timeago.format(post.createdAt);
-                              return GestureDetector(
-                                child: Container(
-                                  margin:
-                                      const EdgeInsets.fromLTRB(15, 0, 15, 10),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    color: ColorCodes.whiteNewReplacement,
-                                    boxShadow: [],
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.fromLTRB(
-                                        16, 16, 16, 16),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        // Profile Info
-                                        Row(
-                                          children: [
-                                            CircleAvatar(
-                                              backgroundImage: post.image !=
-                                                          '' &&
-                                                      post.image!.isNotEmpty
-                                                  ? NetworkImage(post.image!)
-                                                  : AssetImage(ImageConstants
-                                                      .userProfile),
-                                            ),
-                                            const SizedBox(width: 10),
-                                            Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  post.userName,
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.w700,
-                                                    fontFamily: Fonts.body,
-                                                    color: ColorCodes.nameColor,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  timeAgo,
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w400,
-                                                    fontFamily: Fonts.body,
-                                                    color: Color(0xff51585C),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            Spacer(),
-                                            if (post.userId == userId)
-                                              PopupMenuButton<String>(
-                                                padding: EdgeInsets.zero,
-                                                icon: Icon(Icons.more_vert,
-                                                    size: 20,
-                                                    color: Colors.black87),
-                                                onSelected: (value) {
-                                                  String postId = post.id;
-                                                  if (value == 'delete') {
-                                                    showPostDeleteConfirmationDialog(
-                                                        context, postId);
-                                                  }
-                                                },
-                                                itemBuilder: (BuildContext
-                                                        context) =>
-                                                    <PopupMenuEntry<String>>[
-                                                  const PopupMenuItem<String>(
-                                                    value: 'delete',
-                                                    child: Text('Delete'),
-                                                  ),
-                                                ],
-                                              ),
-                                          ],
-                                        ),
-
-                                        const SizedBox(height: 10),
-
-                                        post.imagesList.isNotEmpty
-                                            ? Container(
-                                                padding: EdgeInsets.symmetric(
-                                                    vertical: 8),
-                                                child: Image.network(
-                                                  '${Urls.baseUrlimages}${post.images.first}',
-                                                  width: double.infinity,
-                                                  height: 200,
-                                                  fit: BoxFit.cover,
-                                                ),
-                                              )
-                                            : Container(),
-                                        // Post content
-                                        Text(
-                                          post.message,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w400,
-                                            fontFamily: Fonts.body,
-                                            height: 2,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 5),
-                                        Divider(),
-                                        const SizedBox(height: 5),
-                                        // Interaction buttons
-                                        Row(
-                                          children: [
-                                            GestureDetector(
-                                              onTap: () {
-                                                String postId = post.id;
-                                                BlocProvider.of<CommunityBloc>(
-                                                        context)
-                                                    .add(LikePostEvent(postId));
-                                              },
-                                              onLongPress: () {
-                                                showPostLikesBottomSheet(
-                                                    context, post.id);
-                                              },
-                                              child: Row(
-                                                children: [
-                                                  SvgPicture.asset(
-                                                    post.liked
-                                                        ? ImageConstants
-                                                            .svgRedLikeIcon
-                                                        : ImageConstants
-                                                            .postLikeIcon,
-                                                  ),
-                                                  const SizedBox(width: 5),
-                                                  Text(
-                                                    post.likesCount.toString(),
-                                                    style: TextStyle(
-                                                      fontSize: 10,
-                                                      fontWeight:
-                                                          FontWeight.w700,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            const SizedBox(width: 10),
-                                            GestureDetector(
-                                              onTap: () {
-                                                Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          CommentScreen(
-                                                            post: post,
-                                                          )),
-                                                );
-                                              },
-                                              child: Row(
-                                                children: [
-                                                  SvgPicture.asset(
-                                                      ImageConstants
-                                                          .commentIcon),
-                                                  const SizedBox(width: 5),
-                                                  Text(
-                                                    post.commentsCount
-                                                        .toString(),
-                                                    style: TextStyle(
-                                                      fontSize: 10,
-                                                      fontWeight:
-                                                          FontWeight.w700,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            const SizedBox(width: 10),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 5),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        }
-                        return Center(child: Text('No posts available.'));
-                      },
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    final colors = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+          color: colors.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(24)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          ClipOval(
+              child: (post.image?.isNotEmpty ?? false)
+                  ? Image.network(post.image!,
+                      width: 44,
+                      height: 44,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _avatar(colors))
+                  : _avatar(colors)),
+          const SizedBox(width: 12),
+          Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                Text(post.userName,
+                    style:
+                        text.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 3),
+                Text(timeago.format(post.createdAt),
+                    style: text.bodySmall
+                        ?.copyWith(color: colors.onSurfaceVariant)),
+              ])),
+          if (post.userId == userId)
+            PopupMenuButton<String>(
+                tooltip: 'Post options',
+                icon: const Icon(Icons.more_horiz_rounded),
+                onSelected: (value) {
+                  if (value == 'delete') {
+                    showPostDeleteConfirmationDialog(context, post.id);
+                  }
+                },
+                itemBuilder: (_) => [
+                      const PopupMenuItem(
+                          value: 'delete', child: Text('Delete'))
+                    ]),
+        ]),
+        if (post.imagesList.isNotEmpty) ...[
+          const SizedBox(height: 18),
+          ClipRRect(
+              borderRadius: BorderRadius.circular(18),
+              child: Image.network(
+                  post.images.first.startsWith('http')
+                      ? post.images.first
+                      : '${Urls.baseUrlimages}${post.images.first}',
+                  width: double.infinity,
+                  height: 220,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                      height: 160,
+                      color: colors.surfaceContainerLow,
+                      alignment: Alignment.center,
+                      child: Icon(Icons.image_outlined,
+                          color: colors.onSurfaceVariant)))),
+        ],
+        const SizedBox(height: 16),
+        Text(post.message, style: text.bodyLarge?.copyWith(height: 1.6)),
+        const SizedBox(height: 16),
+        Divider(height: 1, color: colors.outlineVariant.withValues(alpha: .4)),
+        const SizedBox(height: 8),
+        Wrap(spacing: 16, children: [
+          TextButton.icon(
+              style: TextButton.styleFrom(
+                  foregroundColor:
+                      post.liked ? colors.error : colors.onSurfaceVariant,
+                  minimumSize: const Size(48, 48)),
+              onPressed: () =>
+                  context.read<CommunityBloc>().add(LikePostEvent(post.id)),
+              onLongPress: () => showPostLikesBottomSheet(context, post.id),
+              icon: Icon(
+                  post.liked
+                      ? Icons.favorite_rounded
+                      : Icons.favorite_border_rounded,
+                  size: 21),
+              label: Text('${post.likesCount}')),
+          TextButton.icon(
+              style: TextButton.styleFrom(
+                  foregroundColor: colors.onSurfaceVariant,
+                  minimumSize: const Size(48, 48)),
+              onPressed: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => CommentScreen(post: post))),
+              icon: const Icon(Icons.chat_bubble_outline_rounded, size: 21),
+              label: Text('${post.commentsCount}')),
+        ]),
+      ]),
     );
   }
+
+  Widget _avatar(ColorScheme colors) => Container(
+      width: 44,
+      height: 44,
+      color: colors.surfaceContainerLow,
+      child: Icon(Icons.person_outline_rounded, color: colors.primary));
 }

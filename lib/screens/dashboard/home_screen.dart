@@ -1,25 +1,28 @@
+import 'home_dashboard.dart';
+import 'home_model.dart';
+import '../activity_listing/favourite_activities.dart';
+import '../activity_listing/getactivity_bloc/getrecent_activities_bloc.dart';
+import '../feeling_category/feelingcategory_bloc/feeling_categories_bloc.dart';
+import '../feeling_category/feelingcategory_bloc/feeling_categories_event.dart';
+import '../feeling_category/feelingcategory_bloc/feeling_categories_state.dart';
+import 'dashboard_bloc/recently_played_model.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:mindfully_evolve_app/screens/subscriptionmanagement/subscription_management.dart';
-import 'package:mindfully_evolve_app/utils/urls.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../utils/color_constants.dart';
 import '../../utils/fonts.dart';
 import '../../utils/global.dart' as globals;
-import '../../utils/image_constants.dart';
 import '../../utils/share_options.dart';
 import '../activity_details/activity_bloc/post_activity_bloc.dart';
 import '../activity_details/activity_details.dart';
@@ -36,7 +39,8 @@ import 'dashboard_bloc/home_event.dart';
 import 'dashboard_bloc/home_state.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({super.key, this.onMeditate});
+  final VoidCallback? onMeditate;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -44,7 +48,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final TextEditingController searchController = TextEditingController();
-  bool isDescSort = true;
   String currentSortOrder = 'desc';
   Timer? _debounce;
 
@@ -56,6 +59,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _homePageBloc = HomePageBloc()
       ..add(FetchHomePageDataEvent(context: context));
+    context.read<SubscriptionBloc>().add(FetchBillingHistory());
   }
 
   @override
@@ -87,27 +91,8 @@ class _HomePageState extends State<HomePage> {
           duration.inSeconds.remainder(60).toString().padLeft(2, '0');
       return '$minutes:$seconds';
     } catch (e) {
-      print("Error fetching video duration: $e");
+      debugPrint("Unable to read the video duration.");
       return "--:--";
-    }
-  }
-
-  Future<XFile?> getWidgetImagea(GlobalKey key, String fileName) async {
-    try {
-      RenderRepaintBoundary boundary =
-          key.currentContext!.findRenderObject() as RenderRepaintBoundary;
-      final image = await boundary.toImage(pixelRatio: 3);
-      final byteData = await image.toByteData(format: ImageByteFormat.png);
-      final pngBytes = byteData!.buffer.asUint8List();
-
-      final directory = await getTemporaryDirectory();
-      final file = File('${directory.path}/$fileName.png');
-      await file.writeAsBytes(pngBytes);
-
-      return XFile(file.path);
-    } catch (e) {
-      debugPrint('Error capturing image: $e');
-      return null;
     }
   }
 
@@ -135,46 +120,162 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<XFile?> getWidgetImaged(GlobalKey key, String fileName) async {
-    try {
-      RenderRepaintBoundary boundary =
-          key.currentContext!.findRenderObject() as RenderRepaintBoundary;
-      final ui.Image originalImage = await boundary.toImage(pixelRatio: 3);
+  Future<void> _openPage(Widget page) async {
+    await Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
+    if (!mounted) return;
+    _homePageBloc.add(FetchHomePageDataEvent(context: context, isSearch: true));
+  }
 
-      final recorder = ui.PictureRecorder();
-      final canvas = Canvas(recorder);
-
-      final paint = Paint();
-      final size =
-          Size(originalImage.width.toDouble(), originalImage.height.toDouble());
-
-      canvas.translate(0, size.height);
-      canvas.scale(1, -1);
-      canvas.drawImage(originalImage, Offset.zero, paint);
-
-      final picture = recorder.endRecording();
-      final flippedImage =
-          await picture.toImage(originalImage.width, originalImage.height);
-      final byteData =
-          await flippedImage.toByteData(format: ui.ImageByteFormat.png);
-      final pngBytes = byteData!.buffer.asUint8List();
-
-      final directory = await getTemporaryDirectory();
-      final file = File('${directory.path}/$fileName.png');
-      await file.writeAsBytes(pngBytes);
-
-      return XFile(file.path);
-    } catch (e) {
-      debugPrint('Error capturing image: $e');
-      return null;
+  Future<void> _showMood() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (_) => BlocProvider(
+        create: (_) => CategoryBloc(),
+        child: BlocConsumer<CategoryBloc, CategoryState>(
+          listener: (context, state) {
+            if (state is CategorySuccess) Navigator.pop(context);
+          },
+          builder: (context, state) => SafeArea(
+            top: false,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text('How are you feeling today?',
+                        style: Theme.of(context).textTheme.headlineSmall),
+                    const SizedBox(height: 20),
+                    if (state is CategoryFailure)
+                      Text(state.error,
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.error)),
+                    if (state is CategoryLoading)
+                      const Center(child: CircularProgressIndicator())
+                    else
+                      Wrap(spacing: 10, runSpacing: 10, children: [
+                        for (final mood in [
+                          'Grounded',
+                          'Aligned',
+                          'Calm',
+                          'Steady',
+                          'Connected'
+                        ])
+                          ActionChip(
+                              label: Text(mood),
+                              onPressed: () => context
+                                  .read<CategoryBloc>()
+                                  .add(SelectCategory(mood: mood))),
+                      ]),
+                  ]),
+            ),
+          ),
+        ),
+      ),
+    );
+    if (mounted) {
+      _homePageBloc
+          .add(FetchHomePageDataEvent(context: context, isSearch: true));
     }
+  }
+
+  Future<void> _openRecent(RecentlyPlayedActivity item) => _openVideo(
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        thumbnail: item.thumbnail,
+        video: item.video,
+        tags: item.tagNames,
+        isFavorite: item.isFavorite,
+        duration: item.totalVideoTime,
+      );
+
+  Future<void> _openActivity(ActivityData item) async {
+    if (item.categoryName == 'Daily Pause' ||
+        item.video == null ||
+        item.video!.isEmpty) {
+      final key = GlobalKey();
+      await showDialog<void>(
+          context: context,
+          builder: (dialogContext) => Dialog(
+                clipBehavior: Clip.antiAlias,
+                child: SingleChildScrollView(
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                    IconButton(
+                        tooltip: 'Share',
+                        icon: const Icon(Icons.share_outlined),
+                        onPressed: () async {
+                          final file = await captureWidget(key, 'daily-pause');
+                          if (file != null && dialogContext.mounted) {
+                            ShareUtils.showShareOptionsWithImage(
+                                dialogContext, file);
+                          }
+                        }),
+                    IconButton(
+                        tooltip: 'Close',
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: () => Navigator.pop(dialogContext)),
+                  ]),
+                  RepaintBoundary(
+                      key: key,
+                      child: Image.network(
+                          HomeDashboard.imageUrl(item.thumbnail),
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => const Padding(
+                              padding: EdgeInsets.all(24),
+                              child: Text('This image couldn’t load.')))),
+                ])),
+              ));
+      return;
+    }
+    await _openVideo(
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        thumbnail: item.thumbnail,
+        video: item.video!,
+        tags: item.tagName ?? [],
+        isFavorite: item.isFavorite);
+  }
+
+  Future<void> _openVideo(
+      {required String id,
+      required String name,
+      required String description,
+      required String thumbnail,
+      required String video,
+      required List<String> tags,
+      required bool isFavorite,
+      String? duration}) async {
+    Uint8List bytes = Uint8List(0);
+    try {
+      bytes = await fetchImageBytes(HomeDashboard.imageUrl(thumbnail));
+    } catch (_) {}
+    final videoUrl = HomeDashboard.imageUrl(video);
+    final length = duration ?? await _getVideoDuration(videoUrl);
+    if (!mounted) return;
+    await _openPage(MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => PostActivityBloc()),
+          BlocProvider(create: (_) => ActivityBloc()),
+        ],
+        child: ActivityDetailScreen(
+            videoUrl: videoUrl,
+            thumbnail: bytes,
+            name: name,
+            duration: length,
+            tags: tags,
+            description: description,
+            activityId: id,
+            isFavorite: isFavorite)));
   }
 
   @override
   Widget build(BuildContext context) {
-    Future.delayed(Duration.zero, () {
-      BlocProvider.of<SubscriptionBloc>(context).add(FetchBillingHistory());
-    });
     return Stack(
       children: [
         Scaffold(
@@ -193,758 +294,30 @@ class _HomePageState extends State<HomePage> {
                   } else if (state is HomePageErrorState) {
                     return Center(child: Text('Error: ${state.errorMessage}'));
                   } else if (state is HomePageLoadedState) {
-                    final homePageData = state.homePageData;
-                    final profileData = state.profileData;
-                    final gracefulGrounding =
-                        homePageData.data['Daily Pause']?.activities ?? [];
-                    final soulfulMeditations =
-                        homePageData.data['Daily Anchor']?.activities ?? [];
-                    final String profileImageUrl =
-                        profileData.image != null ? '${profileData.image}' : '';
-                    final String userName = profileData.name;
-                    final DateTime createdAtDate = profileData.createdAt;
-                    final String? subscriptionStatus =
-                        profileData.subscriptionStatus;
-                    return LayoutBuilder(
-                      builder: (context, constraints) {
-                        return Stack(
-                          children: [
-                            SingleChildScrollView(
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  minHeight: constraints.maxHeight,
-                                ),
-                                child: Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 20, vertical: 20),
-                                      decoration: BoxDecoration(
-                                        color: ColorCodes.settingDarkContainer,
-                                        borderRadius: BorderRadius.circular(20),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: ColorCodes.black12color,
-                                            blurRadius: 8,
-                                            offset: Offset(0, 3),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: [
-                                              GestureDetector(
-                                                  onTap: () {
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                          builder: (context) =>
-                                                              const UserprofileScreen()),
-                                                    );
-                                                  },
-                                                  child: CircleAvatar(
-                                                    radius: 30,
-                                                    backgroundImage: profileImageUrl
-                                                            .isNotEmpty
-                                                        ? NetworkImage(
-                                                            '${Urls.baseUrlimages}$profileImageUrl')
-                                                        : AssetImage(
-                                                                ImageConstants
-                                                                    .userProfile)
-                                                            as ImageProvider,
-                                                  )),
-                                              const SizedBox(width: 12),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Row(
-                                                      children: [
-                                                        Text(
-                                                          'Good Morning, ',
-                                                          style: TextStyle(
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight.w400,
-                                                            fontFamily:
-                                                                Fonts.body,
-                                                            color: ColorCodes
-                                                                .blackcolor,
-                                                          ),
-                                                        ),
-                                                        Flexible(
-                                                          child: Text(
-                                                            (userName != null &&
-                                                                    userName
-                                                                        .trim()
-                                                                        .isNotEmpty)
-                                                                ? userName
-                                                                    .trim()
-                                                                    .split(' ')
-                                                                    .first
-                                                                : 'Anderson',
-                                                            maxLines: 1,
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
-                                                            style: TextStyle(
-                                                              fontSize: 14,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400,
-                                                              letterSpacing: Fonts.headingLetterSpacing,
-                                                              fontFamily: Fonts.heading,
-                                                              color: ColorCodes
-                                                                  .blackcolor,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    SizedBox(height: 10),
-                                                    Text(
-                                                      'What is true for you in this moment?',
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.w400,
-                                                        letterSpacing: Fonts.headingLetterSpacing,
-                                                        fontFamily:
-                                                            Fonts.heading,
-                                                        color: ColorCodes
-                                                            .blackcolor,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              GestureDetector(
-                                                onTap: () {
-                                                  final notificationBloc =
-                                                      BlocProvider.of<
-                                                              NotificationBloc>(
-                                                          context);
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (_) =>
-                                                          BlocProvider.value(
-                                                        value: notificationBloc,
-                                                        child:
-                                                            NotificatonScreen(),
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                                child: SvgPicture.asset(
-                                                  ImageConstants.bellIcon,
-                                                  width: 30,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 16, top: 20),
-                                          child: Text(
-                                            "Daily Anchor",
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
-                                              color:
-                                                  ColorCodes.mainheadingcolor,
-                                              // fontFamily: Fonts.heading,
-                                              letterSpacing: Fonts.headingLetterSpacing,
-                                              fontFamily: Fonts.heading,
-                                            ),
-                                          ),
-                                        ),
-                                        const Spacer(),
-                                        GestureDetector(
-                                          onTap: () async {
-                                            await Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (_) =>
-                                                      MeditationListingDaily(
-                                                        categoryId: soulfulMeditations
-                                                                .isNotEmpty
-                                                            ? soulfulMeditations
-                                                                .first
-                                                                .categoryId
-                                                            : "68652bd4f1726792092bffaf",
-                                                      )),
-                                            );
-                                            if (!mounted) return;
-                                            _homePageBloc.add(
-                                              FetchHomePageDataEvent(
-                                                context: context,
-                                                isSearch: true,
-                                              ),
-                                            );
-                                          },
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(
-                                                right: 10, top: 20),
-                                            child: Text(
-                                              "Browse All >",
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w400,
-                                                color:
-                                                    ColorCodes.mainheadingcolor,
-                                                fontFamily: Fonts.body,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(
-                                      height: 10,
-                                    ),
-                                    SizedBox(
-                                      height: 152,
-                                      child: soulfulMeditations.isEmpty
-                                          ? Center(
-                                              child: Text(
-                                                "Today’s Meditation is on its way. \nPlease check back shortly.",
-                                                textAlign: TextAlign.center,
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w400,
-                                                  color: ColorCodes
-                                                      .mainheadingcolor,
-                                                  fontFamily: Fonts.body,
-                                                ),
-                                              ),
-                                            )
-                                          : Center(
-                                              child: ListView.builder(
-                                                scrollDirection:
-                                                    Axis.horizontal,
-                                                itemCount:
-                                                    soulfulMeditations.length,
-                                                shrinkWrap: true,
-                                                physics:
-                                                    const AlwaysScrollableScrollPhysics(),
-                                                itemBuilder: (context, index) {
-                                                  final item =
-                                                      soulfulMeditations[index];
-                                                  final createdDate = item
-                                                              .createdAt !=
-                                                          null
-                                                      ? DateFormat('MMM d')
-                                                          .format(
-                                                              item.createdAt!)
-                                                      : '--';
-                                                  return Padding(
-                                                    padding: const EdgeInsets
-                                                        .fromLTRB(0, 2, 0, 10),
-                                                    child: GestureDetector(
-                                                      onTap: () async {
-                                                        final String imageUrl =
-                                                            '${Urls.baseUrlimages}${item.thumbnail}';
-                                                        try {
-                                                          final Uint8List
-                                                              thumbBytes =
-                                                              await fetchImageBytes(
-                                                                  imageUrl);
-                                                          final String
-                                                              duration =
-                                                              await _getVideoDuration(
-                                                                  '${Urls.baseUrlimages}${item.video}');
-                                                          await Navigator.push(
-                                                            context,
-                                                            MaterialPageRoute(
-                                                              builder: (context) =>
-                                                                  BlocProvider(
-                                                                create: (_) =>
-                                                                    PostActivityBloc(),
-                                                                child:
-                                                                    ActivityDetailScreen(
-                                                                  videoUrl:
-                                                                      '${Urls.baseUrlimages}${item.video}',
-                                                                  thumbnail:
-                                                                      thumbBytes,
-                                                                  name:
-                                                                      item.name,
-                                                                  duration:
-                                                                      duration,
-                                                                  tags:
-                                                                      item.tagName ??
-                                                                          [],
-                                                                  description: item
-                                                                      .description,
-                                                                  activityId:
-                                                                      item.id,
-                                                                  isFavorite: item
-                                                                      .isFavorite,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          );
-                                                          // Refresh so Recently
-                                                          // Played reflects what was
-                                                          // just watched, without
-                                                          // requiring an app restart.
-                                                          if (!mounted) return;
-                                                          _homePageBloc.add(
-                                                            FetchHomePageDataEvent(
-                                                              context: context,
-                                                              isSearch: true,
-                                                            ),
-                                                          );
-                                                        } catch (e) {
-                                                          debugPrint(
-                                                              'Failed to fetch image: $e');
-                                                        }
-                                                      },
-                                                      child: Container(
-                                                        width: 245,
-                                                        margin: const EdgeInsets
-                                                            .only(left: 12),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(12),
-                                                        ),
-                                                        child: Stack(
-                                                          children: [
-                                                            ClipRRect(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          12),
-                                                              child:
-                                                                  Image.network(
-                                                                '${Urls.baseUrlimages}${item.thumbnail}',
-                                                                fit: BoxFit
-                                                                    .cover,
-                                                                width: double
-                                                                    .infinity,
-                                                                height: double
-                                                                    .infinity,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                              ),
-                                            ),
-                                    ),
-                                    Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 16, top: 20),
-                                          child: Text(
-                                            "Daily Pause",
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
-                                              color:
-                                                  ColorCodes.mainheadingcolor,
-                                              letterSpacing: Fonts.headingLetterSpacing,
-                                              fontFamily: Fonts.heading,
-                                            ),
-                                          ),
-                                        ),
-                                        const Spacer(),
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 16, top: 20),
-                                          child: GestureDetector(
-                                            onTap: () async {
-                                              await Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (_) => MeditationListing(
-                                                        categoryId: gracefulGrounding
-                                                                .isNotEmpty
-                                                            ? gracefulGrounding
-                                                                .first
-                                                                .categoryId
-                                                            : "686ccd3394924299a04db877")),
-                                              );
-                                              if (!mounted) return;
-                                              _homePageBloc.add(
-                                                FetchHomePageDataEvent(
-                                                  context: context,
-                                                  isSearch: true,
-                                                ),
-                                              );
-                                            },
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(
-                                                  right: 10),
-                                              child: Text(
-                                                "Browse All >",
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w400,
-                                                  color: ColorCodes
-                                                      .mainheadingcolor,
-                                                  fontFamily: Fonts.body,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(
-                                      height: 10,
-                                    ),
-                                    SizedBox(
-                                      height: 152,
-                                      child: gracefulGrounding.isEmpty
-                                          ? Center(
-                                              child: Text(
-                                                "Today’s Reflection is on its way. \nPlease check back shortly.",
-                                                textAlign: TextAlign.center,
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w400,
-                                                  color: ColorCodes
-                                                      .mainheadingcolor,
-                                                  fontFamily: Fonts.body,
-                                                ),
-                                              ),
-                                            )
-                                          : Center(
-                                              child: ListView.builder(
-                                                scrollDirection:
-                                                    Axis.horizontal,
-                                                itemCount:
-                                                    gracefulGrounding.length,
-                                                shrinkWrap: true,
-                                                physics:
-                                                    const AlwaysScrollableScrollPhysics(),
-                                                itemBuilder: (context, index) {
-                                                  final GlobalKey repaintKey =
-                                                      GlobalKey();
-                                                  final item =
-                                                      gracefulGrounding[index];
-                                                  return GestureDetector(
-                                                    onTap: () {
-                                                      showDialog(
-                                                        context: context,
-                                                        builder: (context) {
-                                                          return Dialog(
-                                                            backgroundColor:
-                                                                Colors
-                                                                    .transparent,
-                                                            insetPadding:
-                                                                const EdgeInsets
-                                                                    .all(16),
-                                                            child: Container(
-                                                              height: 190,
-                                                              width: 450,
-                                                              margin:
-                                                                  const EdgeInsets
-                                                                      .only(
-                                                                      left: 12),
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            12),
-                                                              ),
-                                                              child: ClipRRect(
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            12),
-                                                                child: Stack(
-                                                                  fit: StackFit
-                                                                      .expand,
-                                                                  children: [
-                                                                    RepaintBoundary(
-                                                                      key:
-                                                                          repaintKey,
-                                                                      child: Image
-                                                                          .network(
-                                                                        '${Urls.baseUrlimages}${item.thumbnail}',
-                                                                        width: double
-                                                                            .infinity,
-                                                                        height:
-                                                                            double.infinity,
-                                                                        fit: BoxFit
-                                                                            .cover,
-                                                                        errorBuilder: (context,
-                                                                            error,
-                                                                            stackTrace) {
-                                                                          return const Center(
-                                                                            child:
-                                                                                Icon(Icons.broken_image),
-                                                                          );
-                                                                        },
-                                                                      ),
-                                                                    ),
-                                                                    Positioned(
-                                                                      top: 5,
-                                                                      right: 5,
-                                                                      child:
-                                                                          Row(
-                                                                        children: [
-                                                                          GestureDetector(
-                                                                            onTap:
-                                                                                () async {
-                                                                              final XFile? imageFile = await captureWidget(repaintKey, 'activity');
-                                                                              if (imageFile != null) {
-                                                                                ShareUtils.showShareOptionsWithImage(context, imageFile);
-                                                                              }
-                                                                            },
-                                                                            child:
-                                                                                SvgPicture.asset(
-                                                                              ImageConstants.shareIcon,
-                                                                              color: ColorCodes.backgroundcolor,
-                                                                            ),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          );
-                                                        },
-                                                      );
-                                                    },
-                                                    child: Container(
-                                                      margin:
-                                                          const EdgeInsets.only(
-                                                              left: 12),
-                                                      width: 245,
-                                                      decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(16),
-                                                      ),
-                                                      child: ClipRRect(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(16),
-                                                        child: Image.network(
-                                                          '${Urls.baseUrlimages}${item.thumbnail}',
-                                                          width:
-                                                              double.infinity,
-                                                          height:
-                                                              double.infinity,
-                                                          fit: BoxFit.cover,
-                                                          errorBuilder:
-                                                              (context, error,
-                                                                  stackTrace) {
-                                                            return const Center(
-                                                              child: Icon(Icons
-                                                                  .broken_image),
-                                                            );
-                                                          },
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                              ),
-                                            ),
-                                    ),
-
-                                    if (state
-                                        .recentlyPlayedData.isNotEmpty) ...[
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 16, top: 20),
-                                        child: Row(
-                                          children: [
-                                            const Text(
-                                              "Recently Played",
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w600,
-                                                color:
-                                                    ColorCodes.mainheadingcolor,
-                                                letterSpacing: Fonts.headingLetterSpacing,
-                                                fontFamily: Fonts.heading,
-                                              ),
-                                            ),
-                                            const Spacer(),
-                                            GestureDetector(
-                                              onTap: () async {
-                                                await Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (_) =>
-                                                        RecentActivity(
-                                                      recentlyPlayedActivities:
-                                                          state
-                                                              .recentlyPlayedData,
-                                                    ),
-                                                  ),
-                                                );
-                                                if (!mounted) return;
-                                                _homePageBloc.add(
-                                                  FetchHomePageDataEvent(
-                                                    context: context,
-                                                    isSearch: true,
-                                                  ),
-                                                );
-                                              },
-                                              child: Padding(
-                                                padding: const EdgeInsets.only(
-                                                    right: 10),
-                                                child: Text(
-                                                  "Browse All >",
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.w400,
-                                                    color: ColorCodes
-                                                        .mainheadingcolor,
-                                                    fontFamily: Fonts.body,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        height: 10,
-                                      ),
-                                      SizedBox(
-                                        height: 152,
-                                        child: Center(
-                                          child: ListView.builder(
-                                            scrollDirection: Axis.horizontal,
-                                            itemCount:
-                                                state.recentlyPlayedData.length,
-                                            physics:
-                                                const AlwaysScrollableScrollPhysics(),
-                                            shrinkWrap: true,
-                                            itemBuilder: (context, index) {
-                                              final item = state
-                                                  .recentlyPlayedData[index];
-                                              return Padding(
-                                                padding:
-                                                    const EdgeInsets.fromLTRB(
-                                                        0, 2, 0, 10),
-                                                child: GestureDetector(
-                                                  onTap: () async {
-                                                    final String imageUrl =
-                                                        '${Urls.baseUrlimages}${item.thumbnail}';
-                                                    try {
-                                                      final Uint8List
-                                                          thumbBytes =
-                                                          await fetchImageBytes(
-                                                              imageUrl);
-
-                                                      await Navigator.push(
-                                                        context,
-                                                        MaterialPageRoute(
-                                                          builder: (context) =>
-                                                              BlocProvider(
-                                                            create: (_) =>
-                                                                PostActivityBloc(),
-                                                            child:
-                                                                ActivityDetailScreen(
-                                                              videoUrl:
-                                                                  '${Urls.baseUrlimages}${item.video}',
-                                                              thumbnail:
-                                                                  thumbBytes,
-                                                              name: item.name,
-                                                              duration: item
-                                                                  .totalVideoTime,
-                                                              tags:
-                                                                  item.tagNames,
-                                                              description: item
-                                                                  .description,
-                                                              activityId:
-                                                                  item.id,
-                                                              isFavorite: item
-                                                                  .isFavorite,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      );
-                                                      // Refresh Recently Played
-                                                      // (order/new plays) on return,
-                                                      // no app restart needed.
-                                                      if (!mounted) return;
-                                                      _homePageBloc.add(
-                                                        FetchHomePageDataEvent(
-                                                          context: context,
-                                                          isSearch: true,
-                                                        ),
-                                                      );
-                                                    } catch (e) {
-                                                      debugPrint(
-                                                          'Failed to fetch image: $e');
-                                                    }
-                                                  },
-                                                  child: Container(
-                                                    width: 245,
-                                                    margin:
-                                                        const EdgeInsets.only(
-                                                            left: 12),
-                                                    decoration: BoxDecoration(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              12),
-                                                    ),
-                                                    child: ClipRRect(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              12),
-                                                      child: Image.network(
-                                                        '${Urls.baseUrlimages}${item.thumbnail}',
-                                                        fit: BoxFit.cover,
-                                                        width: double.infinity,
-                                                        height: double.infinity,
-                                                        errorBuilder: (context,
-                                                            error, stackTrace) {
-                                                          return const Center(
-                                                            child: Icon(Icons
-                                                                .broken_image),
-                                                          );
-                                                        },
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                    // ],
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
+                    return HomeDashboard(
+                      state: state,
+                      onProfile: () => _openPage(const UserprofileScreen()),
+                      onSearch: () => widget.onMeditate?.call(),
+                      onMeditate: () => widget.onMeditate?.call(),
+                      onMood: _showMood,
+                      onFavorites: () => _openPage(const FavouriteActivity()),
+                      onRecent: () => _openPage(RecentActivity(
+                          recentlyPlayedActivities: state.recentlyPlayedData)),
+                      onNotifications: () => _openPage(BlocProvider.value(
+                          value: context.read<NotificationBloc>(),
+                          child: NotificatonScreen())),
+                      onActivity: _openActivity,
+                      onResume: _openRecent,
+                      onCategory: (name) {
+                        final items = state.homePageData.data[name]?.activities;
+                        if (items == null || items.isEmpty) return;
+                        _openPage(BlocProvider(
+                            create: (_) => ActivityBloc(),
+                            child: name == 'Daily Anchor'
+                                ? MeditationListingDaily(
+                                    categoryId: items.first.categoryId)
+                                : MeditationListing(
+                                    categoryId: items.first.categoryId)));
                       },
                     );
                   } else {

@@ -11,9 +11,9 @@ import '../screens/track/track_screen.dart';
 import '../utils/global.dart' as globals;
 
 class MainScreen extends StatefulWidget {
-  final int initialIndex;
+  final int? initialIndex;
 
-  const MainScreen({super.key, this.initialIndex = 0});
+  const MainScreen({super.key, this.initialIndex});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -26,19 +26,20 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedIndex = widget.initialIndex;
+    _selectedIndex = (widget.initialIndex ?? 0).clamp(0, _pages.length - 1);
     _visited.add(_selectedIndex);
   }
 
-  final List<Widget> _pages = [
-    HomePage(),
-    const MeditateScreen(),
-    CommunityScreen(),
-    TrackScreen(),
-    const ProfileScreen(),
-  ];
+  List<Widget> get _pages => [
+        HomePage(onMeditate: () => _onItemTapped(1)),
+        const MeditateScreen(),
+        CommunityScreen(),
+        TrackScreen(),
+        const ProfileScreen(),
+      ];
 
   void _onItemTapped(int index) {
+    if (index < 0 || index >= _pages.length) return;
     if (globals.isSubscribed == true) {
       setState(() {
         _selectedIndex = index;
@@ -60,14 +61,15 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final pages = _pages;
     return Scaffold(
       extendBody: true,
       body: IndexedStack(
         index: _selectedIndex,
         children: List.generate(
-            _pages.length,
+            pages.length,
             (index) => _visited.contains(index)
-                ? _pages[index]
+                ? pages[index]
                 : const SizedBox.shrink()),
       ),
       bottomNavigationBar: AppTabBar(
