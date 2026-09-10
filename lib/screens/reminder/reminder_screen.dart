@@ -1,3 +1,4 @@
+import '../../common/widgets/scroll_title_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -115,7 +116,8 @@ class _ReminderScreenState extends State<ReminderScreen> {
             final colors = Theme.of(context).colorScheme;
             final saving = state is ReminderLoading;
             return Scaffold(
-              body: SafeArea(
+              body: ScrollTitlePage(
+                title: _editing ? 'Edit Reminder' : 'Set Reminder Time',
                 child: Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 560),

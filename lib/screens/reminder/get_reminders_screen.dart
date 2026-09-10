@@ -1,3 +1,4 @@
+import '../../common/widgets/scroll_title_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -55,7 +56,8 @@ class _GetRemindersScreenState extends State<GetRemindersScreen> {
                 state is ReminderDeleteSuccess;
             final reminders = _reminders;
             return Scaffold(
-              body: SafeArea(
+              body: ScrollTitlePage(
+                title: 'Reminders',
                 child: Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 560),

@@ -1,105 +1,47 @@
 import 'package:flutter/material.dart';
-import '../utils/color_constants.dart';
-import '../utils/fonts.dart';
 
 class FAQItemTile extends StatelessWidget {
+  const FAQItemTile({super.key, required this.question, required this.answer});
   final String question;
   final String answer;
 
-  const FAQItemTile({
-    super.key,
-    required this.question,
-    required this.answer,
-  });
-
   @override
   Widget build(BuildContext context) {
-    return _StatelessFAQTile(
-      question: question,
-      answer: answer,
-    );
-  }
-}
-
-class _StatelessFAQTile extends StatelessWidget {
-  final String question;
-  final String answer;
-
-  const _StatelessFAQTile({
-    super.key,
-    required this.question,
-    required this.answer,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return StatefulBuilder(
-      builder: (context, setInnerState) {
-        bool isExpanded = false;
-
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          child: Container(
-            decoration: BoxDecoration(
-              color: ColorCodes.whitecolor,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isExpanded ? Colors.white : Colors.white,
-                width: isExpanded ? 1.5 : 1,
-              ),
-            ),
-            child: Theme(
-              data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-              child: ExpansionTile(
-                tilePadding: const EdgeInsets.symmetric(horizontal: 12),
-                backgroundColor: ColorCodes.transparentcolor,
-                collapsedBackgroundColor: ColorCodes.transparentcolor,
-                childrenPadding: EdgeInsets.zero,
-                collapsedShape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide.none,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide.none,
-                ),
-                title: Text(
-                  question,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    fontFamily: Fonts.body,
-                    color: ColorCodes.mainheadingcolor,
-                  ),
-                ),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      bottom: 12,
-                      left: 12,
-                      right: 12,
-                    ),
-                    child: Text(
-                      answer,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: Fonts.body,
-                        color: ColorCodes.descriptioncolor,
-                      ),
-                    ),
-                  ),
-                ],
-                onExpansionChanged: (expanded) {
-                  setInnerState(() {
-                    isExpanded = expanded;
-                  });
-                },
-              ),
-            ),
-          ),
-        );
-      },
+    final colors = Theme.of(context).colorScheme;
+    final shape =
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(20));
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: colors.surfaceContainerHighest,
+        shape: shape,
+        clipBehavior: Clip.antiAlias,
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          shape: shape,
+          collapsedShape: shape,
+          iconColor: colors.primary,
+          collapsedIconColor: colors.onSurfaceVariant,
+          title: Text(question,
+              style: TextStyle(
+                  color: colors.onSurface,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  height: 1.4)),
+          children: [
+            Divider(height: 1, color: colors.outlineVariant),
+            const SizedBox(height: 16),
+            Align(
+                alignment: Alignment.centerLeft,
+                child: Text(answer,
+                    style: TextStyle(
+                        color: colors.onSurfaceVariant,
+                        fontSize: 15,
+                        height: 1.6))),
+          ],
+        ),
+      ),
     );
   }
 }

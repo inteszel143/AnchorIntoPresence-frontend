@@ -1,3 +1,4 @@
+import '../../common/widgets/scroll_title_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -16,7 +17,8 @@ class FavouriteActivity extends StatelessWidget {
     return BlocProvider(
       create: (_) => ActivityBloc()..add(FetchActivities(useCache: true)),
       child: Scaffold(
-        body: SafeArea(
+        body: ScrollTitlePage(
+          title: 'Favorite Meditations',
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 600),

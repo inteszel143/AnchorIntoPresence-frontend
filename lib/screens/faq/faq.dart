@@ -4,9 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mindfully_evolve_app/utils/string_constants.dart';
 
-import '../../common/widgets/custom_appbar.dart';
+import '../../common/widgets/information_page.dart';
 import '../../helping_widgets/faqitem_tile.dart';
-import '../../utils/color_constants.dart';
 import 'faq_bloc/faq_bloc.dart';
 import 'faq_bloc/faq_event.dart';
 import 'faq_bloc/faq_state.dart';
@@ -95,98 +94,78 @@ class _FaqScreenBodyState extends State<_FaqScreenBody> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: ColorCodes.backgroundcolor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            CustomAppbar(
-              headingTxt: Strings.faqs,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: TextField(
-                controller: _searchController,
-                onChanged: _onSearchChanged,
-                textInputAction: TextInputAction.search,
-                decoration: InputDecoration(
-                  hintText: Strings.searchHelp,
-                  prefixIcon: const Icon(
-                    Icons.search_outlined,
-                  ),
-                  suffixIcon: ValueListenableBuilder<TextEditingValue>(
-                    valueListenable: _searchController,
-                    builder: (context, value, child) {
-                      if (value.text.isEmpty) {
-                        return const SizedBox.shrink();
-                      }
-
-                      return IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: _clearSearch,
-                      );
-                    },
-                  ),
-                  filled: true,
-                  fillColor: ColorCodes.whitecolor,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
+    final colors = Theme.of(context).colorScheme;
+    return InformationPage(
+      title: Strings.faqs,
+      slivers: [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 20),
+            child: TextField(
+              controller: _searchController,
+              onChanged: _onSearchChanged,
+              textInputAction: TextInputAction.search,
+              decoration: InputDecoration(
+                hintText: Strings.searchHelp,
+                prefixIcon: const Icon(Icons.search_rounded),
+                suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: _searchController,
+                  builder: (context, value, child) => value.text.isEmpty
+                      ? const SizedBox.shrink()
+                      : IconButton(
+                          icon: const Icon(Icons.close_rounded),
+                          tooltip: 'Clear search',
+                          onPressed: _clearSearch),
                 ),
+                filled: true,
+                fillColor: colors.surfaceContainerHighest,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(18),
+                    borderSide: BorderSide(color: colors.outlineVariant)),
+                enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(18),
+                    borderSide: BorderSide(color: colors.outlineVariant)),
               ),
             ),
-            Expanded(
-              child: BlocBuilder<FaqBloc, FaqState>(
-                builder: (context, state) {
-                  // Only show the loader during the initial API call.
-                  if (state is FaqLoading) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }
-
-                  if (state is FaqError) {
-                    return Center(
-                      child: Text(state.message),
-                    );
-                  }
-
-                  if (state is FaqLoaded) {
-                    return _buildFaqList(state.faqs);
-                  }
-
-                  return const SizedBox.shrink();
-                },
-              ),
-            ),
-          ],
+          ),
         ),
-      ),
+        BlocBuilder<FaqBloc, FaqState>(builder: (context, state) {
+          if (state is FaqLoading) {
+            return const SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(child: CircularProgressIndicator()));
+          }
+          if (state is FaqError) {
+            return SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                    child: Text(state.message,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: colors.error, height: 1.5))));
+          }
+          if (state is FaqLoaded) return _buildFaqList(state.faqs);
+          return const SliverToBoxAdapter(child: SizedBox.shrink());
+        }),
+      ],
     );
   }
 
   Widget _buildFaqList(List<Faq> faqs) {
     if (faqs.isEmpty) {
-      return const Center(
-        child: Text(
-          'No FAQs found',
-          textAlign: TextAlign.center,
-        ),
-      );
+      return const SliverFillRemaining(
+          hasScrollBody: false,
+          child: Center(
+              child: Text('No FAQs found', textAlign: TextAlign.center)));
     }
-
-    return ListView.builder(
-      padding: EdgeInsets.zero,
-      itemCount: faqs.length,
-      itemBuilder: (context, index) {
-        final faq = faqs[index];
-
-        return FAQItemTile(
+    return SliverList(
+        delegate: SliverChildBuilderDelegate((context, index) {
+      final faq = faqs[index];
+      return FAQItemTile(
+          key: ValueKey('${faq.question}:${faq.answer}'),
           question: faq.question,
-          answer: faq.answer,
-        );
-      },
-    );
+          answer: faq.answer);
+    }, childCount: faqs.length));
   }
 }

@@ -1,10 +1,11 @@
+import '../../common/widgets/scroll_title_page.dart';
+import 'subscription_plan_card.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:in_app_purchase_android/in_app_purchase_android.dart';
-import 'package:intl/intl.dart';
 import 'package:mindfully_evolve_app/common/main_screen.dart';
 import 'package:mindfully_evolve_app/screens/subscriptionmanagement/subscription_management_bloc/subscriprion_management_bloc.dart';
 import 'package:mindfully_evolve_app/screens/subscriptionmanagement/subscription_management_bloc/subscriprion_management_event.dart';
@@ -33,8 +34,6 @@ class _SubscriptionManagementScreenState
     extends State<SubscriptionManagementScreen> {
   late Set<String> _productIds;
   bool _hasNavigated = false;
-  bool isBillingTab = false;
-  bool _hasToken = false;
 
   late final SubscriptionBloc _bloc;
 
@@ -43,7 +42,7 @@ class _SubscriptionManagementScreenState
     super.initState();
     _setPlatformSpecificProductIds();
     _bloc = SubscriptionBloc();
-    _initialize();
+    _bloc.add(FetchSubscriptionPlans(productIds: _productIds));
   }
 
   bool isSubscriptionActive() {
@@ -58,14 +57,6 @@ class _SubscriptionManagementScreenState
     } else {
       return purchaseDate.add(const Duration(days: 365)).isAfter(now);
     }
-  }
-
-  Future<void> _initialize() async {
-    final token = await LocalStorage.getToken();
-    if (mounted) {
-      setState(() => _hasToken = token != null && token.isNotEmpty);
-    }
-    _bloc.add(FetchSubscriptionPlans(productIds: _productIds));
   }
 
   @override
@@ -146,9 +137,8 @@ class _SubscriptionManagementScreenState
                     style: TextStyle(
                       fontSize: 14,
                       fontFamily: Fonts.body,
-                        color: Theme.of(dialogContext)
-                          .colorScheme
-                          .onSurfaceVariant,
+                      color:
+                          Theme.of(dialogContext).colorScheme.onSurfaceVariant,
                       letterSpacing: 2,
                       height: 1.0,
                     ),
@@ -215,7 +205,8 @@ class _SubscriptionManagementScreenState
                         child: Text(
                           'Cancel',
                           style: TextStyle(
-                            color: Theme.of(dialogContext).colorScheme.onSurface,
+                            color:
+                                Theme.of(dialogContext).colorScheme.onSurface,
                             fontFamily: Fonts.body,
                             fontWeight: FontWeight.w500,
                             fontSize: 15,
@@ -238,7 +229,7 @@ class _SubscriptionManagementScreenState
                           Navigator.of(dialogContext).pop();
                         },
                         style: ElevatedButton.styleFrom(
-                            backgroundColor:
+                          backgroundColor:
                               Theme.of(dialogContext).colorScheme.primary,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           elevation: 0,
@@ -249,7 +240,8 @@ class _SubscriptionManagementScreenState
                         child: Text(
                           'Confirm',
                           style: TextStyle(
-                            color: Theme.of(dialogContext).colorScheme.onPrimary,
+                            color:
+                                Theme.of(dialogContext).colorScheme.onPrimary,
                             fontFamily: Fonts.body,
                             fontWeight: FontWeight.w600,
                             fontSize: 15,
@@ -281,208 +273,110 @@ class _SubscriptionManagementScreenState
       child: BlocProvider<SubscriptionBloc>.value(
         value: _bloc,
         child: BlocConsumer<SubscriptionBloc, SubscriptionState>(
-        listener: (context, state) async {
-          if (state is SubscriptionPurchasing) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Processing your purchase...")),
-            );
-          } else if (state is SubscriptionPurchased) {
-            if (_hasNavigated) return;
-            _hasNavigated = true;
-
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Purchase successful!")),
-            );
-
-            final token = await LocalStorage.getToken();
-            if (!mounted) return;
-
-            if (token != null && token.isNotEmpty) {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => MainScreen(initialIndex: 0)),
+          listener: (context, state) async {
+            if (state is SubscriptionPurchasing) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Processing your purchase...")),
               );
-            } else {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => SignupScreen()),
+            } else if (state is SubscriptionPurchased) {
+              if (_hasNavigated) return;
+              _hasNavigated = true;
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Purchase successful!")),
+              );
+
+              final token = await LocalStorage.getToken();
+              if (!mounted || !context.mounted) return;
+
+              if (token != null && token.isNotEmpty) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => MainScreen(initialIndex: 0)),
+                );
+              } else {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => SignupScreen()),
+                );
+              }
+            } else if (state is SubscriptionRestored) {
+              if (_hasNavigated) return;
+              _hasNavigated = true;
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Purchase restored!")),
+              );
+
+              _bloc.add(FetchSubscriptionPlans(productIds: _productIds));
+            } else if (state is SubscriptionError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.message)),
               );
             }
-          } else if (state is SubscriptionRestored) {
-            if (_hasNavigated) return;
-            _hasNavigated = true;
-
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Purchase restored!")),
-            );
-
-            _bloc.add(FetchSubscriptionPlans(productIds: _productIds));
-          } else if (state is SubscriptionError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
-
-            _bloc.add(FetchSubscriptionPlans(productIds: _productIds));
-          }
-        },
-        builder: (context, state) {
-          return Scaffold(
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            body: SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.only(bottom: 48),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CustomAppbar(headingTxt: Strings.subscriptionManagement),
-
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 22),
+          },
+          builder: (context, state) {
+            return Scaffold(
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              body: ScrollTitlePage(
+                title: Strings.subscriptionManagement,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 600),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'MAKE SPACE FOR WHAT MATTERS',
-                            style: TextStyle(
-                              fontFamily: Fonts.body,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 2,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Choose your plan',
-                            style: TextStyle(
-                              fontFamily: Fonts.heading,
-                              fontSize: 30,
-                              height: 1.15,
-                              fontWeight: FontWeight.w500,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Go deeper with guided practices and a calmer space to return to every day.',
-                            style: TextStyle(
-                              fontFamily: Fonts.body,
-                              fontSize: 15,
-                              height: 1.5,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
+                          const CustomAppbar(headingTxt: ''),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              padding:
+                                  const EdgeInsets.only(top: 20, bottom: 32),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(Strings.subscriptionManagement,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headlineLarge
+                                          ?.copyWith(
+                                              fontWeight: FontWeight.w600)),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                      'A little more space for your daily practice.',
+                                      style: TextStyle(
+                                          fontSize: 15,
+                                          height: 1.5,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant)),
+                                  const SizedBox(height: 24),
+                                  Text('Choose your plan',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleLarge),
+                                  const SizedBox(height: 6),
+                                  Text('Find a rhythm that works for you.',
+                                      style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant)),
+                                  const SizedBox(height: 16),
+                                  _buildPlansTab(state),
+                                ],
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-
-                    // ── Tab switcher ────────────────────────────────────────
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.outline,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () {
-                                  setState(() => isBillingTab = false);
-                                  _bloc.add(FetchSubscriptionPlans(
-                                      productIds: _productIds));
-                                },
-                                child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 13),
-                                  decoration: BoxDecoration(
-                                    color: !isBillingTab
-                                      ? Theme.of(context).colorScheme.primary
-                                        : Colors.transparent,
-                                    borderRadius: BorderRadius.circular(11),
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    Strings.plans,
-                                    style: TextStyle(
-                                        color: !isBillingTab
-                                          ? Theme.of(context).colorScheme.onPrimary
-                                          : Theme.of(context)
-                                            .colorScheme
-                                            .onSurfaceVariant,
-                                      fontWeight: FontWeight.w400,
-                                      fontSize: 14,
-                                      fontFamily: Fonts.body,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            if (_hasToken)
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setState(() => isBillingTab = true);
-                                    _bloc.add(FetchBillingHistory());
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 12),
-                                    decoration: BoxDecoration(
-                                      color: isBillingTab
-                                          ? Theme.of(context).colorScheme.primary
-                                          : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(11),
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      Strings.billingHistory,
-                                      style: TextStyle(
-                                        color: isBillingTab
-                                          ? Theme.of(context)
-                                            .colorScheme
-                                            .onPrimary
-                                          : Theme.of(context)
-                                            .colorScheme
-                                            .onSurfaceVariant,
-                                        fontWeight: FontWeight.w400,
-                                        fontSize: 14,
-                                        fontFamily: Fonts.body,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // ── Content ─────────────────────────────────────────────
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: (_hasToken && isBillingTab)
-                          ? _buildBillingHistoryTab(state)
-                          : _buildPlansTab(state),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
         ),
       ),
     );
@@ -604,6 +498,15 @@ class _SubscriptionManagementScreenState
       // Deduplicate so each plan (monthly / yearly) appears exactly once.
       final uniquePlans = _deduplicateProducts(state.products);
 
+      if (uniquePlans.isEmpty) {
+        return _statusPanel(
+          icon: Icons.storefront_outlined,
+          title: 'Plans aren’t available right now',
+          description: 'Please try again in a moment.',
+          onRetry: () =>
+              _bloc.add(FetchSubscriptionPlans(productIds: _productIds)),
+        );
+      }
       return Column(
         children: [
           LayoutBuilder(
@@ -619,12 +522,9 @@ class _SubscriptionManagementScreenState
                 runSpacing: 16,
                 children: uniquePlans.map((plan) {
                   final isActive = plan.id.split(':').first ==
-                          (globals.alreadyPurchasedProductId ?? '')
-                              .split(':')
-                              .first &&
+                          globals.alreadyPurchasedProductId.split(':').first &&
                       isSubscriptionActive();
                   final priceInfo = _resolveOfferPrice(plan);
-                  final features = _featuresForPlan(plan);
 
                   return SizedBox(
                     width: cardWidth,
@@ -633,7 +533,6 @@ class _SubscriptionManagementScreenState
                       plan,
                       isActive,
                       priceInfo,
-                      features,
                     ),
                   );
                 }).toList(),
@@ -641,6 +540,8 @@ class _SubscriptionManagementScreenState
             },
           ),
 
+          const SizedBox(height: 20),
+          if (uniquePlans.isNotEmpty) _includedBenefits(),
           // ── Redeem / Offer Code button ──────────────────────────────────
           const SizedBox(height: 20),
           if (Platform.isIOS)
@@ -667,24 +568,18 @@ class _SubscriptionManagementScreenState
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+          const SizedBox(height: 12),
         ],
       );
     }
 
     if (state is SubscriptionError) {
-      return Center(
-        child: Column(
-          children: [
-            Text(state.message),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () =>
-                  _bloc.add(FetchSubscriptionPlans(productIds: _productIds)),
-              child: const Text("Retry"),
-            ),
-          ],
-        ),
+      return _statusPanel(
+        icon: Icons.wifi_off_rounded,
+        title: 'Plans couldn’t load',
+        description: state.message,
+        onRetry: () =>
+            _bloc.add(FetchSubscriptionPlans(productIds: _productIds)),
       );
     }
 
@@ -694,404 +589,94 @@ class _SubscriptionManagementScreenState
     ));
   }
 
-  List<String> _featuresForPlan(ProductDetails plan) {
-    final id = plan.id.split(':').first;
-    if (id.contains('founding')) {
-      return [
-        'Founding member pricing',
-        'All guided practices',
-        'Progress tracking and favorites',
-        'Access across devices',
-      ];
-    }
-    if (id.contains('year')) {
-      return [
-        'All guided practices',
-        'Progress tracking and favorites',
-        'Access across devices',
-        'Best value for the year',
-      ];
-    }
-    return [
-      'All guided practices',
-      'Progress tracking and favorites',
-      'Access across devices',
-    ];
-  }
-
   Widget _buildPlanCard(
     BuildContext context,
     ProductDetails plan,
     bool isActive,
-    ({String displayPrice, String? originalPrice, String? bestOfferToken})
-        priceInfo,
-    List<String> features,
-  ) {
-    final colors = Theme.of(context).colorScheme;
-    final hasDiscount = priceInfo.originalPrice != null;
+    ({
+      String displayPrice,
+      String? originalPrice,
+      String? bestOfferToken
+    }) priceInfo,
+  ) =>
+      SubscriptionPlanCard(
+        title: _cleanPlanTitle(plan.title),
+        price: priceInfo.displayPrice,
+        originalPrice: priceInfo.originalPrice,
+        period: plan.id.split(':').first.contains('month')
+            ? 'per month'
+            : 'per year',
+        isActive: isActive,
+        isFounding: plan.id.contains('founding'),
+        onChoose: () => _showConfirmationDialog(context, plan),
+      );
 
+  Widget _includedBenefits() {
+    final colors = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: colors.surfaceContainerHighest,
-        border: Border.all(color: colors.outline),
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: isActive
-                      ? null
-                      : () => _showConfirmationDialog(context, plan),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: Radio<String>(
-                          value: plan.id.split(':').first,
-                          groupValue: (globals.alreadyPurchasedProductId ?? '')
-                              .split(':')
-                              .first,
-                          activeColor: colors.primary,
-                          onChanged: isActive
-                              ? null
-                              : (_) => _showConfirmationDialog(context, plan),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          _cleanPlanTitle(plan.title),
-                          style: TextStyle(
-                            fontSize: 19,
-                            fontWeight: FontWeight.w700,
-                            fontFamily: Fonts.body,
-                            color: colors.onSurface,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              if (isActive)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: colors.primary,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    'Current',
-                    style: TextStyle(
-                      color: colors.onPrimary,
-                      fontFamily: Fonts.body,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            'Your space to slow down, with more room to return to yourself.',
-            style: TextStyle(
-              fontFamily: Fonts.body,
-              fontSize: 13,
-              height: 1.4,
-              color: colors.onSurfaceVariant,
+          Text('Included in every plan',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 16),
+          for (final feature in [
+            (Icons.self_improvement_rounded, 'All guided practices'),
+            (Icons.favorite_border_rounded, 'Progress tracking and favorites'),
+            (Icons.devices_rounded, 'Access across devices'),
+          ])
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(children: [
+                Icon(feature.$1, size: 20, color: colors.primary),
+                const SizedBox(width: 12),
+                Expanded(child: Text(feature.$2)),
+              ]),
             ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                priceInfo.displayPrice,
-                style: TextStyle(
-                  fontFamily: Fonts.heading,
-                  fontSize: 30,
-                  height: 1,
-                  fontWeight: FontWeight.w600,
-                  color: colors.onSurface,
-                ),
-              ),
-              if (hasDiscount) ...[
-                const SizedBox(width: 8),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 2),
-                  child: Text(
-                    priceInfo.originalPrice!,
-                    style: TextStyle(
-                      fontFamily: Fonts.body,
-                      fontSize: 13,
-                      color: colors.onSurfaceVariant,
-                      decoration: TextDecoration.lineThrough,
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-          const SizedBox(height: 5),
-          Text(
-            plan.id.split(':').first.contains('month') ? 'per month' : 'per year',
-            style: TextStyle(
-              fontFamily: Fonts.body,
-              fontSize: 12,
-              color: colors.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 20),
-          GestureDetector(
-            onTap: isActive
-                ? () => _bloc.add(RestorePurchasesEvent())
-                : () => _showConfirmationDialog(context, plan),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              decoration: BoxDecoration(
-                color: colors.primary,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                isActive ? 'Restore Purchases' : 'Choose plan',
-                style: TextStyle(
-                  color: colors.onPrimary,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
-                  fontFamily: Fonts.body,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 22),
-          Text(
-            'EVERYTHING INCLUDED',
-            style: TextStyle(
-              fontFamily: Fonts.body,
-              fontSize: 11,
-              letterSpacing: 1.2,
-              fontWeight: FontWeight.w700,
-              color: colors.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ...features.map(
-            (feature) => Padding(
-              padding: const EdgeInsets.only(bottom: 11),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.check_circle, size: 17, color: colors.primary),
-                  const SizedBox(width: 9),
-                  Expanded(
-                    child: Text(
-                      feature,
-                      style: TextStyle(
-                        fontFamily: Fonts.body,
-                        fontSize: 13,
-                        height: 1.25,
-                        color: colors.onSurface,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
     );
   }
 
-  // Billing history tab
-  Widget _buildBillingHistoryTab(SubscriptionState state) {
-    if (state is BillingHistoryLoading) {
-      return const Center(
-          child: CircularProgressIndicator(color: ColorCodes.buttoncolor));
-    }
-
-    if (state is BillingHistoryLoaded) {
-      if (state.purchases.isEmpty) {
-        return const Center(child: Text("No billing history available."));
-      }
-
-      String getFormattedPrice(String? currencyCode, double amount) {
-        final Map<String, String> symbols = {'INR': '₹', 'USD': '\$'};
-        final symbol = symbols[currencyCode] ?? '\$';
-        return '$symbol${amount.toStringAsFixed(2)}';
-      }
-
-      return Column(
-        children: state.purchases.map((item) {
-          final formattedDate =
-              DateFormat('MMM dd, yyyy').format(item.purchaseDate);
-
-          final price = getFormattedPrice(item.currencySymbol, item.amount);
-
-          final oneMonthAgo = DateTime.now().subtract(const Duration(days: 30));
-          final oneYearAgo = DateTime.now().subtract(const Duration(days: 365));
-
-          DateTime nextBillingDate;
-          if (item.planType == 'monthly') {
-            nextBillingDate = item.purchaseDate.add(const Duration(days: 30));
-          } else if (item.planType == 'yearly') {
-            nextBillingDate = item.purchaseDate.add(const Duration(days: 365));
-          } else {
-            nextBillingDate = item.purchaseDate;
-          }
-
-          final nextFormattedDate =
-              DateFormat('MMM dd, yyyy').format(nextBillingDate);
-
-          final isActive = (item.planType == 'monthly' &&
-                  item.purchaseDate.isAfter(oneMonthAgo)) ||
-              (item.planType == 'yearly' &&
-                  item.purchaseDate.isAfter(oneYearAgo));
-
-          final statusText = isActive ? 'Active' : 'Expired';
-            final statusColor = isActive
-              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.25)
-              : Theme.of(context).colorScheme.outline.withValues(alpha: 0.35);
-            final statusTextColor = Theme.of(context).colorScheme.onSurface;
-
-          return Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.outline),
-              boxShadow: [
-                BoxShadow(
-                  color: ColorCodes.greyColor.withValues(alpha: 0.1),
-                  spreadRadius: 1,
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
-                      borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(8),
-                        bottomRight: Radius.circular(8),
-                      ),
-                    ),
-                    child: Text(
-                      toBeginningOfSentenceCase(item.planType ?? 'Monthly') ??
-                          'Monthly',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: Fonts.body,
-                      ),
-                    ),
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      toBeginningOfSentenceCase(item.planType ?? 'Monthly') ??
-                          'Monthly',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w400,
-                        fontSize: 16,
-                        fontFamily: Fonts.body,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                    Text(
-                      'Price: $price',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w400,
-                        fontSize: 16,
-                        fontFamily: Fonts.body,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: Row(
-                    children: [
-                      const Spacer(),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: statusColor,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          statusText,
-                          style: TextStyle(
-                            color: statusTextColor,
-                            fontFamily: Fonts.body,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Next Billing: $nextFormattedDate',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 14,
-                        fontFamily: Fonts.body,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          );
-        }).toList(),
-      );
-    }
-
-    if (state is BillingHistoryError) {
-      return Center(
-          child: Text("Error loading billing history: ${state.error}"));
-    }
-
-    return const SizedBox();
+  Widget _statusPanel(
+      {required IconData icon,
+      required String title,
+      required String description,
+      VoidCallback? onRetry}) {
+    final colors = Theme.of(context).colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+          color: colors.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(24)),
+      child: Column(children: [
+        Icon(icon, size: 32, color: colors.primary),
+        const SizedBox(height: 16),
+        Text(title,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 8),
+        Text(description,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: colors.onSurfaceVariant, height: 1.5)),
+        if (onRetry != null) ...[
+          const SizedBox(height: 16),
+          OutlinedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Try again')),
+        ],
+      ]),
+    );
   }
 }

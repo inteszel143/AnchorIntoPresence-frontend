@@ -1,3 +1,4 @@
+import '../../common/widgets/scroll_title_page.dart';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -69,7 +70,8 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     return Scaffold(
-      body: SafeArea(
+      body: ScrollTitlePage(
+        title: widget.name,
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 720),

@@ -1,3 +1,4 @@
+import '../../common/widgets/scroll_title_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mindfully_evolve_app/screens/privacy_policy/privacy_screen.dart';
@@ -278,32 +279,44 @@ class SettingScreen extends StatelessWidget {
               );
 
           return Scaffold(
-            body: SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 560),
+            body: ScrollTitlePage(
+              title: Strings.settings,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 560),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const CustomAppbar(headingTxt: ''),
-                        const SizedBox(height: 20),
-                        Text(Strings.settings,
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineLarge
-                                ?.copyWith(fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 8),
-                        Text('A little space to make this yours.',
-                            style: TextStyle(
-                                fontSize: 15, color: colors.onSurfaceVariant)),
-                        const SizedBox(height: 28),
-                        section('Your practice', [1, 2, 3]),
-                        section('Preferences', [0]),
-                        section('Membership', [4]),
-                        section('Help & information', [7, 8, 6, 5]),
-                        section('Account', [10, 9]),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.only(top: 20, bottom: 28),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(Strings.settings,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineLarge
+                                        ?.copyWith(
+                                            fontWeight: FontWeight.w600)),
+                                const SizedBox(height: 8),
+                                Text('A little space to make this yours.',
+                                    style: TextStyle(
+                                        fontSize: 15,
+                                        color: colors.onSurfaceVariant)),
+                                const SizedBox(height: 28),
+                                section('Your practice', [1, 2, 3]),
+                                section('Preferences', [0]),
+                                section('Membership', [4]),
+                                section('Help & information', [7, 8, 6, 5]),
+                                section('Account', [10, 9]),
+                              ],
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
