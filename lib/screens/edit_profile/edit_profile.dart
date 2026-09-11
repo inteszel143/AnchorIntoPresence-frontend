@@ -1,490 +1,255 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mindfully_evolve_app/common/main_screen.dart';
-import 'package:mindfully_evolve_app/utils/image_constants.dart';
-
-import '../../common/widgets/button_widget.dart';
-import '../../common/widgets/custom_appbar.dart';
+import '../../common/widgets/collection_page.dart';
+import '../../common/widgets/app_toast.dart';
+import '../../common/widgets/profile_avatar.dart';
 import '../../helping_widgets/user_provider/user_provider.dart';
-import '../../utils/color_constants.dart';
-import '../../utils/fonts.dart';
-import '../../utils/string_constants.dart';
-import '../../utils/urls.dart';
 import 'editprofile_bloc/edit_profile_bloc.dart';
 import 'editprofile_bloc/edit_profile_event.dart';
 import 'editprofile_bloc/edit_profile_state.dart';
 
 class UserprofileEditScreen extends StatelessWidget {
-  final String name;
-  final String email;
+  const UserprofileEditScreen(
+      {super.key, required this.name, required this.email, this.image});
+  final String name, email;
   final String? image;
 
-  const UserprofileEditScreen({
-    super.key,
-    required this.name,
-    required this.email,
-    this.image,
-  });
-
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => EditProfileBloc(),
-      child: Scaffold(
-        resizeToAvoidBottomInset: true,
-        backgroundColor: ColorCodes.backgroundcolor,
-        body: SafeArea(
-          child: _UserProfileEditForm(
-            initialName: name,
-            email: email,
-            initialImage: image,
-          ),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => BlocProvider(
+        create: (_) => EditProfileBloc(),
+        child: ProfileEditForm(
+            initialName: name, email: email, initialImage: image),
+      );
 }
 
-class _UserProfileEditForm extends StatelessWidget {
-  final String initialName;
-  final String email;
+class ProfileEditForm extends StatefulWidget {
+  const ProfileEditForm(
+      {super.key,
+      required this.initialName,
+      required this.email,
+      this.initialImage});
+  final String initialName, email;
   final String? initialImage;
 
-  const _UserProfileEditForm({
-    super.key,
-    required this.initialName,
-    required this.email,
-    this.initialImage,
-  });
+  @override
+  State<ProfileEditForm> createState() => _ProfileEditFormState();
+}
 
-  Future<void> _pickImage(BuildContext context) async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? picked = await picker.pickImage(source: ImageSource.gallery);
-    if (picked != null) {
-      context.read<EditProfileBloc>().add(ImagePicked(File(picked.path)));
+class _ProfileEditFormState extends State<ProfileEditForm> {
+  late final TextEditingController _name =
+      TextEditingController(text: widget.initialName);
+  final _formKey = GlobalKey<FormState>();
+  bool _picking = false;
+
+  @override
+  void dispose() {
+    _name.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickPhoto() async {
+    setState(() => _picking = true);
+    try {
+      final source = await showModalBottomSheet<ImageSource>(
+          context: context,
+          showDragHandle: true,
+          useSafeArea: true,
+          builder: (context) => SafeArea(
+                top: false,
+                child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                    child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Change profile photo',
+                              style: Theme.of(context).textTheme.titleLarge),
+                          const SizedBox(height: 16),
+                          ListTile(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16)),
+                              leading: const Icon(Icons.photo_camera_outlined),
+                              title: const Text('Take a photo'),
+                              onTap: () =>
+                                  Navigator.pop(context, ImageSource.camera)),
+                          ListTile(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16)),
+                              leading: const Icon(Icons.photo_library_outlined),
+                              title: const Text('Choose from gallery'),
+                              onTap: () =>
+                                  Navigator.pop(context, ImageSource.gallery)),
+                        ])),
+              ));
+      if (source == null || !mounted) return;
+      final photo = await ImagePicker().pickImage(source: source);
+      if (photo != null && mounted) {
+        context.read<EditProfileBloc>().add(ImagePicked(File(photo.path)));
+      }
+    } catch (_) {
+      if (mounted) {
+        AppToast.show(context,
+            'Couldn’t open your photos. Please check permissions and try again.',
+            isError: true);
+      }
+    } finally {
+      if (mounted) setState(() => _picking = false);
     }
   }
 
   @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<EditProfileBloc, EditProfileState>(
-      builder: (context, state) {
-        final nameController = TextEditingController(
-            text: state.name.isNotEmpty ? state.name : initialName);
-
-        return Stack(
-          children: [
-            LayoutBuilder(builder: (context, constraints) {
-              return SingleChildScrollView(
-                padding: EdgeInsets.only(
-                    //  bottom: 100),
-                    bottom: MediaQuery.of(context).viewInsets.bottom + 100),
+  Widget build(BuildContext context) =>
+      BlocConsumer<EditProfileBloc, EditProfileState>(
+        listenWhen: (previous, current) =>
+            previous.successMessage != current.successMessage ||
+            previous.error != current.error,
+        listener: (context, state) {
+          if (state.successMessage != null) {
+            final provider = context.read<UserProvider?>();
+            provider?.updateUserProfile(
+                _name.text.trim(),
+                state.pickedImage?.path ??
+                    widget.initialImage ??
+                    provider.image);
+            AppToast.show(context, 'Profile updated.');
+            Navigator.pop(context, true);
+          } else if (state.error != null) {
+            AppToast.show(context, state.error!, isError: true);
+          }
+        },
+        builder: (context, state) {
+          final theme = Theme.of(context);
+          final busy = state.isLoading || _picking;
+          return CollectionPage(
+            title: 'Edit profile',
+            description: 'Make this space feel a little more like you.',
+            slivers: [
+              SliverToBoxAdapter(
+                  child: Form(
+                key: _formKey,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CustomAppbar(headingTxt: Strings.editProfile),
-                    const SizedBox(height: 35),
-                    Center(
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          CircleAvatar(
-                            radius: 60,
-                            backgroundImage: state.pickedImage != null
-                                ? FileImage(state.pickedImage!)
-                                : (initialImage != null &&
-                                        initialImage!.isNotEmpty)
-                                    ? NetworkImage(
-                                            "${Urls.baseUrlimages}$initialImage")
-                                        as ImageProvider
-                                    : const AssetImage(
-                                        'assets/images/user_profile.png'),
-                            backgroundColor: ColorCodes.grey300Color,
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: GestureDetector(
-                              //onTap: () => _pickImage(context),
-                              onTap: () => showProfileImageDialog(context),
-
-                              child: const CircleAvatar(
-                                radius: 18,
-                                backgroundColor: ColorCodes.whitecolor,
-                                child: ClipOval(
-                                  child: Image(
-                                    image: AssetImage(
-                                        'assets/images/upload_icon.png'),
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Center(
-                      child: Text(
-                        state.name.isNotEmpty ? state.name : initialName,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w400,
-                          letterSpacing: Fonts.headingLetterSpacing,
-                          fontFamily: Fonts.heading,
-                          color: ColorCodes.mainheadingcolor,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 35),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 25),
-                      child: Text(
-                        "Account Details",
-                        style: TextStyle(
-                          color: ColorCodes.mainheadingcolor,
-                          fontWeight: FontWeight.w400,
-                          letterSpacing: Fonts.headingLetterSpacing,
-                          fontFamily: Fonts.heading,
-                          fontSize: 18,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: ColorCodes.whitecolor,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                              color:
-                                  ColorCodes.editprofilecontainerbordercolor),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 15, vertical: 10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(Strings.name,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 14,
-                                    fontFamily: Fonts.body,
-                                    color: ColorCodes.bellefairheadingtextcolor,
-                                  )),
-                              const SizedBox(height: 10),
-                              Container(
-                                height: 52,
-                                decoration: BoxDecoration(
-                                  color: ColorCodes.whitecolor,
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(
-                                      color: ColorCodes.searchboxcolor),
-                                ),
-                                child: TextFormField(
-                                  //controller: nameController,
-                                  initialValue: state.name.isNotEmpty
-                                      ? state.name
-                                      : initialName,
-                                  onChanged: (val) {
-                                    context
-                                        .read<EditProfileBloc>()
-                                        .add(NameChanged(val));
-                                  },
-                                  scrollPadding: EdgeInsets.only(bottom: 220),
-                                  decoration: const InputDecoration(
-                                    contentPadding: EdgeInsets.all(15),
-                                    border: InputBorder.none,
-                                    hintText: Strings.name,
-                                    hintStyle: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 14,
-                                      fontFamily: Fonts.body,
-                                      color:
-                                          ColorCodes.bellefairheadingtextcolor,
-                                    ),
-                                  ),
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 14,
-                                    fontFamily: Fonts.body,
-                                    color: ColorCodes.bellefairheadingtextcolor,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              const Text(Strings.emailAddress,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 14,
-                                    fontFamily: Fonts.body,
-                                    color: ColorCodes.bellefairheadingtextcolor,
-                                  )),
-                              const SizedBox(height: 10),
-                              Container(
-                                width: double.infinity,
-                                height: 52,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 15, vertical: 15),
-                                decoration: BoxDecoration(
-                                  color: ColorCodes.whiteNewReplacement,
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(
-                                      color: ColorCodes.searchboxcolor),
-                                ),
-                                child: Text(
-                                  email,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: Fonts.body,
-                                    fontSize: 14,
-                                    color: ColorCodes.bellefairheadingtextcolor,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }),
-            BlocListener<EditProfileBloc, EditProfileState>(
-              listener: (context, state) {
-                if (state.successMessage != null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(state.successMessage!),
-                        backgroundColor: ColorCodes.buttoncolor),
-                  );
-                  final userProvider = context.read<UserProvider>();
-                  userProvider.updateUserProfile(
-                      state.name, state.pickedImage?.path ?? "");
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => MainScreen(
-                              initialIndex: 0,
-                            )),
-                  );
-                } else if (state.error != null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(state.error!),
-                        backgroundColor: ColorCodes.buttoncolor),
-                  );
-                }
-              },
-              child: const SizedBox.shrink(),
-            ),
-            Positioned(
-              left: 23,
-              right: 23,
-              bottom: 30,
-              child: GestureDetector(
-                onTap: () {
-                  FocusScope.of(context).unfocus();
-                  final updatedName = state.name.trim();
-                  context.read<EditProfileBloc>().add(
-                        UpdateProfile(
-                            name: updatedName, image: state.pickedImage),
-                      );
-                },
-                child: ButtonWidget(
-                  btnTxt: state is EditProfileLoading
-                      ? Strings.updating
-                      : Strings.update,
-                  widthFactor: 0.9,
-                  height: 52,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void showProfileImageDialog(BuildContext context) {
-    final ImagePicker picker = ImagePicker();
-
-    showDialog(
-      context: context,
-      builder: (BuildContext ctx) {
-        return Dialog(
-          backgroundColor: ColorCodes.backgroundcolor,
-          child: SizedBox(
-            width: double.maxFinite,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Spacer(),
-                    SizedBox(width: 30),
-                    SizedBox(
-                      height: 50,
-                      child: Center(
-                        child: Text(
-                          'Select',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.black,
-                            fontWeight: FontWeight.w700,
-                            fontFamily: Fonts.body,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Spacer(),
-                    IconButton(
-                      icon: Icon(Icons.close, size: 20),
-                      onPressed: () {
-                        Navigator.of(ctx).pop(); // Close dialog
-                      },
-                    ),
-                  ],
-                ),
-                SizedBox(height: 4),
-                Divider(height: 1, color: ColorCodes.whiteNewReplacement),
-                SizedBox(height: 5),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20.0, vertical: 10),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () async {
-                            final picked = await picker.pickImage(
-                                source: ImageSource.camera);
-                            if (picked != null) {
-                              // Dispatch event to Bloc with picked image file
-                              context
-                                  .read<EditProfileBloc>()
-                                  .add(ImagePicked(File(picked.path)));
-                            }
-                            Navigator.of(ctx).pop(); // Close dialog
-                          },
-                          child: Container(
-                            width: 130,
-                            height: 97,
-                            margin: EdgeInsets.only(top: 8),
-                            decoration: BoxDecoration(
-                              color: ColorCodes.whiteNewReplacement,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: Colors.grey.shade200,
-                                width: 0.6,
-                              ),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16.0, vertical: 10),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Center(
-                                    child: Image.asset(
-                                      ImageConstants.cameraIcon,
-                                      width: 30,
-                                      height: 30,
-                                      fit: BoxFit.contain,
-                                    ),
-                                  ),
-                                  SizedBox(height: 5),
-                                  Text(
-                                    "Camera",
-                                    style: TextStyle(
-                                      color: Colors.black87,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      fontFamily: Fonts.body,
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 10),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () async {
-                            final picked = await picker.pickImage(
-                                source: ImageSource.gallery);
-                            if (picked != null) {
-                              // Dispatch event to Bloc with picked image file
-                              context
-                                  .read<EditProfileBloc>()
-                                  .add(ImagePicked(File(picked.path)));
-                            }
-                            Navigator.of(ctx).pop(); // Close dialog
-                          },
-                          child: Container(
-                            width: 130,
-                            height: 97,
-                            margin: EdgeInsets.only(top: 8),
-                            decoration: BoxDecoration(
-                              color: ColorCodes.whiteNewReplacement,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: Colors.grey.shade200,
-                                width: 0.6,
-                              ),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16.0, vertical: 10),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Center(
-                                    child: Image.asset(
-                                      ImageConstants.gallaryIcon,
-                                      width: 30,
-                                      height: 30,
-                                      fit: BoxFit.contain,
-                                    ),
-                                  ),
-                                  SizedBox(height: 5),
-                                  Text(
-                                    "Gallery",
-                                    style: TextStyle(
-                                      color: Colors.black87,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      fontFamily: Fonts.body,
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 10),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
+                      Center(
+                          child: ProfileAvatar(
+                              image: widget.initialImage,
+                              file: state.pickedImage)),
+                      const SizedBox(height: 12),
+                      Center(
+                          child: TextButton.icon(
+                              onPressed: busy ? null : _pickPhoto,
+                              icon: const Icon(Icons.add_a_photo_outlined,
+                                  size: 20),
+                              label: const Text('Change photo'))),
+                      const SizedBox(height: 24),
+                      Text('Account details',
+                          style: theme.textTheme.titleMedium),
+                      const SizedBox(height: 14),
+                      Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                              color: theme.colorScheme.surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(24)),
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Text('Name', style: theme.textTheme.labelLarge),
+                                const SizedBox(height: 8),
+                                TextFormField(
+                                  controller: _name,
+                                  enabled: !state.isLoading,
+                                  textCapitalization: TextCapitalization.words,
+                                  textInputAction: TextInputAction.done,
+                                  autofillHints: const [AutofillHints.name],
+                                  validator: (value) =>
+                                      value == null || value.trim().isEmpty
+                                          ? 'Please enter your name.'
+                                          : null,
+                                  onChanged: (value) => context
+                                      .read<EditProfileBloc>()
+                                      .add(NameChanged(value)),
+                                  decoration: InputDecoration(
+                                      hintText: 'Your name',
+                                      filled: true,
+                                      fillColor: theme.colorScheme.surface,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 14, vertical: 14),
+                                      border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(14),
+                                          borderSide: BorderSide.none)),
+                                ),
+                                const SizedBox(height: 22),
+                                Text('Email address',
+                                    style: theme.textTheme.labelLarge),
+                                const SizedBox(height: 8),
+                                Container(
+                                    padding: const EdgeInsets.all(14),
+                                    decoration: BoxDecoration(
+                                        color: theme.colorScheme.surface,
+                                        borderRadius:
+                                            BorderRadius.circular(14)),
+                                    child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Icon(Icons.lock_outline_rounded,
+                                              size: 18,
+                                              color: theme.colorScheme
+                                                  .onSurfaceVariant),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                              child: SelectableText(
+                                                  widget.email,
+                                                  style: theme
+                                                      .textTheme.bodyMedium)),
+                                        ])),
+                                const SizedBox(height: 8),
+                                Text(
+                                    'Your sign-in email can’t be changed here.',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                        color: theme
+                                            .colorScheme.onSurfaceVariant)),
+                              ])),
+                      if (state.error != null) ...[
+                        const SizedBox(height: 16),
+                        Semantics(
+                            liveRegion: true,
+                            child: Text(state.error!,
+                                style:
+                                    TextStyle(color: theme.colorScheme.error))),
+                      ],
+                      const SizedBox(height: 24),
+                      FilledButton(
+                          onPressed: busy
+                              ? null
+                              : () {
+                                  if (!_formKey.currentState!.validate()) {
+                                    return;
+                                  }
+                                  FocusScope.of(context).unfocus();
+                                  context.read<EditProfileBloc>().add(
+                                      UpdateProfile(
+                                          name: _name.text.trim(),
+                                          image: state.pickedImage));
+                                },
+                          style: FilledButton.styleFrom(
+                              minimumSize: const Size.fromHeight(48),
+                              shape: const StadiumBorder()),
+                          child: state.isLoading
+                              ? const SizedBox.square(
+                                  dimension: 20,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      semanticsLabel: 'Saving profile'))
+                              : const Text('Save changes')),
+                    ]),
+              ))
+            ],
+          );
+        },
+      );
 }

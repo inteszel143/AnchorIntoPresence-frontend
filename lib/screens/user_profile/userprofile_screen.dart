@@ -1,14 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:mindfully_evolve_app/utils/image_constants.dart';
-import 'package:mindfully_evolve_app/utils/string_constants.dart';
-
-import '../../common/widgets/auth_theme.dart';
-import '../../common/widgets/custom_appbar.dart';
-import '../../utils/color_constants.dart';
-import '../../utils/fonts.dart';
-import '../../utils/urls.dart';
+import '../../common/widgets/collection_page.dart';
+import '../../common/widgets/profile_avatar.dart';
 import '../edit_profile/edit_profile.dart';
 import 'user_model.dart';
 import 'userprofile_bloc/user_profile_bloc.dart';
@@ -19,176 +12,113 @@ class UserprofileScreen extends StatelessWidget {
   const UserprofileScreen({super.key});
 
   @override
+  Widget build(BuildContext context) => BlocProvider(
+        create: (_) => UserProfileBloc()..add(FetchUserProfile()),
+        child: BlocBuilder<UserProfileBloc, UserProfileState>(
+          builder: (context, state) => CollectionPage(
+            title: 'Profile',
+            description: 'A little about you and your account.',
+            slivers: [
+              if (state is UserProfileLoaded)
+                SliverToBoxAdapter(
+                    child: ProfileDetails(
+                  user: state.user,
+                  onEdit: () async {
+                    final updated = await Navigator.push<bool>(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => UserprofileEditScreen(
+                                name: state.user.name,
+                                email: state.user.email,
+                                image: state.user.image)));
+                    if (updated == true && context.mounted) {
+                      context.read<UserProfileBloc>().add(FetchUserProfile());
+                    }
+                  },
+                ))
+              else if (state is UserProfileError)
+                SliverToBoxAdapter(
+                    child: CollectionMessage(
+                  icon: Icons.wifi_off_rounded,
+                  title: 'Your profile couldn’t load',
+                  description: 'Please try again in a moment.',
+                  action: OutlinedButton.icon(
+                      onPressed: () => context
+                          .read<UserProfileBloc>()
+                          .add(FetchUserProfile()),
+                      icon: const Icon(Icons.refresh_rounded),
+                      label: const Text('Try again')),
+                ))
+              else
+                const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                        child: CircularProgressIndicator(
+                            semanticsLabel: 'Loading profile'))),
+            ],
+          ),
+        ),
+      );
+}
+
+class ProfileDetails extends StatelessWidget {
+  const ProfileDetails({super.key, required this.user, required this.onEdit});
+  final UserModel user;
+  final VoidCallback onEdit;
+
+  @override
   Widget build(BuildContext context) {
-    return AuthTheme(
-      child: Builder(
-        builder: (context) => BlocProvider(
-          create: (_) => UserProfileBloc()..add(FetchUserProfile()),
-          child: Scaffold(
-            backgroundColor: Theme.of(context).colorScheme.surface,
-        body: SafeArea(
-          child: BlocBuilder<UserProfileBloc, UserProfileState>(
-            builder: (context, state) {
-              if (state is UserProfileLoading) {
-                return Center(child: CircularProgressIndicator());
-              } else if (state is UserProfileLoaded) {
-                final user = (state.user.name.isEmpty ||
-                        state.user.email.isEmpty ||
-                        state.user.id.isEmpty ||
-                        state.user.provider.isEmpty)
-                    ? UserModel(
-                        id: 'dummy-id-123',
-                        name: 'Test User',
-                        email: 'testuser@example.com',
-                        provider: 'test_provider',
-                      )
-                    : state.user;
-
-                return SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CustomAppbar(
-                        headingTxt: Strings.profile,
-                        okimage: SvgPicture.asset(ImageConstants.editIcon),
-                        onOkTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => UserprofileEditScreen(
-                                name: user.name,
-                                email: user.email,
-                                image: user.image,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 35),
-                      Center(
-                        child: Column(
-                          children: [
-                            CircleAvatar(
-                              radius: 60,
-                              backgroundImage: (user.image != null &&
-                                      user.image!.isNotEmpty)
-                                  ? NetworkImage(
-                                      "${Urls.baseUrlimages}${user.image!}")
-                                  : const AssetImage(ImageConstants.userProfile)
-                                      as ImageProvider,
-                              backgroundColor: ColorCodes.grey300Color,
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              user.name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w400,
-                                letterSpacing: Fonts.headingLetterSpacing,
-                                fontFamily: Fonts.heading,
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 35),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 25),
-                        child: Text(
-                          Strings.accountDetails,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontWeight: FontWeight.w400,
-                            letterSpacing: Fonts.headingLetterSpacing,
-                            fontFamily: Fonts.heading,
-                            fontSize: 18,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                                color: Theme.of(context).colorScheme.outline),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              spacing: 4,
-                              children: [
-                                Text(Strings.name,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 14,
-                                      fontFamily: Fonts.body,
-                                        color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurfaceVariant,
-                                    )),
-                                Text(user.name,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 14,
-                                      fontFamily: Fonts.body,
-                                        color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface,
-                                    )),
-                                SizedBox(
-                                  height: 10,
-                                ),
-                                Text(Strings.emailAddress,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 14,
-                                      fontFamily: Fonts.body,
-                                        color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurfaceVariant,
-                                    )),
-                                Text(user.email,
-                                    maxLines: 2,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 14,
-                                      fontFamily: Fonts.body,
-                                        color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface,
-                                    )),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              } else if (state is UserProfileError) {
-                return Center(child: Text("Error: ${state.message}"));
-              }
-
-              return Center(child: Text(Strings.somethingWentWrong));
-            },
-          ),
-        ),
-          ),
-        ),
-      ),
-    );
+    final theme = Theme.of(context);
+    Widget detail(IconData icon, String label, String value) =>
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(icon, size: 22, color: theme.colorScheme.onSurfaceVariant),
+          const SizedBox(width: 14),
+          Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                Text(label,
+                    style: theme.textTheme.labelMedium
+                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                const SizedBox(height: 6),
+                Text(value.isEmpty ? 'Not provided' : value,
+                    style: theme.textTheme.bodyLarge),
+              ])),
+        ]);
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      Center(child: ProfileAvatar(image: user.image)),
+      const SizedBox(height: 18),
+      Text(user.name.trim().isEmpty ? 'Your profile' : user.name,
+          textAlign: TextAlign.center, style: theme.textTheme.headlineSmall),
+      const SizedBox(height: 8),
+      Text('Your space to grow, one moment at a time.',
+          textAlign: TextAlign.center,
+          style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant, height: 1.5)),
+      const SizedBox(height: 32),
+      Text('Account details', style: theme.textTheme.titleMedium),
+      const SizedBox(height: 14),
+      Container(
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(24)),
+          child: Column(children: [
+            detail(Icons.person_outline_rounded, 'Name', user.name),
+            Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Divider(
+                    height: 1, color: theme.colorScheme.outlineVariant)),
+            detail(Icons.mail_outline_rounded, 'Email address', user.email),
+          ])),
+      const SizedBox(height: 24),
+      FilledButton.icon(
+          onPressed: onEdit,
+          style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(48),
+              shape: const StadiumBorder()),
+          icon: const Icon(Icons.edit_outlined, size: 20),
+          label: const Text('Edit profile')),
+    ]);
   }
 }

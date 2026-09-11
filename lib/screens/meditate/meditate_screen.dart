@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../common/widgets/app_toast.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../common/widgets/scroll_title_page.dart';
 import '../../helping_widgets/activityitem_tile.dart';
@@ -51,6 +52,11 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final inactiveTabColor =
+        isDark ? colors.surfaceContainerHighest : Colors.white;
+    final inactiveTabForeground =
+        isDark ? colors.onSurfaceVariant : const Color(0xFF58584F);
     return Scaffold(
       body: ScrollTitlePage(
         title: 'Meditate',
@@ -89,37 +95,7 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                         ? 'Favorites updated.'
                         : state.message,
                   };
-                  final width = MediaQuery.sizeOf(context).width;
-                  final horizontalMargin =
-                      width > 348 ? (width - 300) / 2 : 24.0;
-                  ScaffoldMessenger.of(context)
-                    ..hideCurrentSnackBar()
-                    ..showSnackBar(SnackBar(
-                      behavior: SnackBarBehavior.floating,
-                      duration: const Duration(seconds: 3),
-                      backgroundColor: const Color(0xFF4B503D),
-                      elevation: 6,
-                      margin: EdgeInsets.fromLTRB(
-                          horizontalMargin, 0, horizontalMargin, 24),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        side: const BorderSide(color: Color(0xFF747A62)),
-                      ),
-                      content: Row(children: [
-                        const Icon(Icons.check_circle_outline_rounded,
-                            color: Colors.white, size: 22),
-                        const SizedBox(width: 10),
-                        Expanded(
-                            child: Text(message,
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    height: 1.4))),
-                      ]),
-                    ));
+                  AppToast.show(context, message);
                   context
                       .read<ActivityBloc>()
                       .add(FetchActivities(useCache: true));
@@ -167,20 +143,30 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                         const SizedBox(height: 24),
                         TextField(
                           controller: _search,
+                          style: const TextStyle(fontSize: 14),
                           onChanged: (_) => setState(() {}),
                           decoration: InputDecoration(
                             hintText: 'Search meditations',
-                            prefixIcon: const Icon(Icons.search_rounded),
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 10),
+                            prefixIconConstraints: const BoxConstraints(
+                                minWidth: 44, minHeight: 44),
+                            suffixIconConstraints: const BoxConstraints(
+                                minWidth: 44, minHeight: 44),
+                            prefixIcon:
+                                const Icon(Icons.search_rounded, size: 20),
                             suffixIcon: _search.text.isEmpty
                                 ? null
                                 : IconButton(
                                     tooltip: 'Clear search',
-                                    icon: const Icon(Icons.close_rounded),
+                                    icon: const Icon(Icons.close_rounded,
+                                        size: 18),
                                     onPressed: () => setState(_search.clear)),
                             filled: true,
                             fillColor: colors.surfaceContainerHighest,
                             border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
+                                borderRadius: BorderRadius.circular(14),
                                 borderSide: BorderSide.none),
                           ),
                         ),
@@ -189,42 +175,46 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                             scrollDirection: Axis.horizontal,
                             child: Row(children: [
                               ChoiceChip(
-                                  avatar: const Icon(
-                                      Icons.self_improvement_rounded,
-                                      size: 22),
+                                  avatar: Icon(Icons.self_improvement_rounded,
+                                      size: 18,
+                                      color: !_favoritesOnly
+                                          ? colors.onSecondaryContainer
+                                          : inactiveTabForeground),
                                   showCheckmark: false,
                                   shape: const StadiumBorder(),
                                   side: BorderSide.none,
-                                  backgroundColor: colors.surface,
+                                  backgroundColor: inactiveTabColor,
                                   selectedColor: colors.secondaryContainer,
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 14),
+                                      horizontal: 10, vertical: 6),
                                   labelStyle: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 14,
                                       color: !_favoritesOnly
                                           ? colors.onSecondaryContainer
-                                          : colors.onSurfaceVariant),
+                                          : inactiveTabForeground),
                                   label: const Text('All practices'),
                                   selected: !_favoritesOnly,
                                   onSelected: (_) =>
                                       setState(() => _favoritesOnly = false)),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 8),
                               ChoiceChip(
-                                  avatar: const Icon(
-                                      Icons.favorite_border_rounded,
-                                      size: 22),
+                                  avatar: Icon(Icons.favorite_border_rounded,
+                                      size: 18,
+                                      color: _favoritesOnly
+                                          ? colors.onSecondaryContainer
+                                          : inactiveTabForeground),
                                   showCheckmark: false,
                                   shape: const StadiumBorder(),
                                   side: BorderSide.none,
-                                  backgroundColor: colors.surface,
+                                  backgroundColor: inactiveTabColor,
                                   selectedColor: colors.secondaryContainer,
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 14),
+                                      horizontal: 10, vertical: 6),
                                   labelStyle: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 14,
                                       color: _favoritesOnly
                                           ? colors.onSecondaryContainer
-                                          : colors.onSurfaceVariant),
+                                          : inactiveTabForeground),
                                   label: const Text('Favorites'),
                                   selected: _favoritesOnly,
                                   onSelected: (_) =>
@@ -237,22 +227,26 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                             child: Row(children: [
                               for (final tag in tags)
                                 Padding(
-                                    padding: const EdgeInsets.only(right: 12),
+                                    padding: const EdgeInsets.only(right: 8),
                                     child: FilterChip(
-                                        avatar: Icon(_tagIcon(tag), size: 20),
+                                        avatar: Icon(_tagIcon(tag),
+                                            size: 18,
+                                            color: selectedTag == tag
+                                                ? colors.onSecondaryContainer
+                                                : inactiveTabForeground),
                                         showCheckmark: false,
                                         shape: const StadiumBorder(),
                                         side: BorderSide.none,
-                                        backgroundColor: colors.surface,
+                                        backgroundColor: inactiveTabColor,
                                         selectedColor:
                                             colors.secondaryContainer,
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 14, vertical: 12),
+                                            horizontal: 10, vertical: 6),
                                         labelStyle: TextStyle(
-                                            fontSize: 15,
+                                            fontSize: 14,
                                             color: selectedTag == tag
                                                 ? colors.onSecondaryContainer
-                                                : colors.onSurfaceVariant),
+                                                : inactiveTabForeground),
                                         label: Text(tag),
                                         selected: selectedTag == tag,
                                         onSelected: (selected) => setState(() =>
