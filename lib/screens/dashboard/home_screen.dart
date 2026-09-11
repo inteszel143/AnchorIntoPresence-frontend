@@ -1,4 +1,5 @@
 import 'home_dashboard.dart';
+import 'mood_picker.dart';
 import 'home_model.dart';
 import '../activity_listing/favourite_activities.dart';
 import '../activity_listing/getactivity_bloc/getrecent_activities_bloc.dart';
@@ -127,6 +128,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _showMood() async {
+    final homeState = _homePageBloc.state;
+    final currentMood = homeState is HomePageLoadedState
+        ? homeState.profileData.userMood
+        : null;
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -138,40 +143,12 @@ class _HomePageState extends State<HomePage> {
           listener: (context, state) {
             if (state is CategorySuccess) Navigator.pop(context);
           },
-          builder: (context, state) => SafeArea(
-            top: false,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-              child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text('How are you feeling today?',
-                        style: Theme.of(context).textTheme.headlineSmall),
-                    const SizedBox(height: 20),
-                    if (state is CategoryFailure)
-                      Text(state.error,
-                          style: TextStyle(
-                              color: Theme.of(context).colorScheme.error)),
-                    if (state is CategoryLoading)
-                      const Center(child: CircularProgressIndicator())
-                    else
-                      Wrap(spacing: 10, runSpacing: 10, children: [
-                        for (final mood in [
-                          'Grounded',
-                          'Aligned',
-                          'Calm',
-                          'Steady',
-                          'Connected'
-                        ])
-                          ActionChip(
-                              label: Text(mood),
-                              onPressed: () => context
-                                  .read<CategoryBloc>()
-                                  .add(SelectCategory(mood: mood))),
-                      ]),
-                  ]),
-            ),
+          builder: (context, state) => MoodPicker(
+            initialMood: currentMood,
+            isSaving: state is CategoryLoading,
+            error: state is CategoryFailure ? state.error : null,
+            onConfirm: (mood) =>
+                context.read<CategoryBloc>().add(SelectCategory(mood: mood)),
           ),
         ),
       ),

@@ -29,6 +29,19 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
   bool _favoritesOnly = false;
   String? _tag;
 
+  IconData _tagIcon(String tag) {
+    final name = tag.toLowerCase();
+    if (name.contains('sleep') || name.contains('rest')) {
+      return Icons.bedtime_outlined;
+    }
+    if (name.contains('breath')) return Icons.air_rounded;
+    if (name.contains('calm') || name.contains('relax')) {
+      return Icons.spa_outlined;
+    }
+    if (name.contains('focus')) return Icons.center_focus_strong_rounded;
+    return Icons.self_improvement_rounded;
+  }
+
   @override
   void dispose() {
     _search.dispose();
@@ -69,6 +82,44 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                 child: BlocConsumer<ActivityBloc, ActivityState>(
               listener: (context, state) {
                 if (state is ActivityFavouriteLoaded) {
+                  final message = switch (state.message.trim().toLowerCase()) {
+                    'added to favorite' => 'Added to Favorites.',
+                    'removed from favorite' => 'Removed from Favorites.',
+                    _ => state.message.trim().isEmpty
+                        ? 'Favorites updated.'
+                        : state.message,
+                  };
+                  final width = MediaQuery.sizeOf(context).width;
+                  final horizontalMargin =
+                      width > 348 ? (width - 300) / 2 : 24.0;
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(SnackBar(
+                      behavior: SnackBarBehavior.floating,
+                      duration: const Duration(seconds: 3),
+                      backgroundColor: const Color(0xFF4B503D),
+                      elevation: 6,
+                      margin: EdgeInsets.fromLTRB(
+                          horizontalMargin, 0, horizontalMargin, 24),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        side: const BorderSide(color: Color(0xFF747A62)),
+                      ),
+                      content: Row(children: [
+                        const Icon(Icons.check_circle_outline_rounded,
+                            color: Colors.white, size: 22),
+                        const SizedBox(width: 10),
+                        Expanded(
+                            child: Text(message,
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.4))),
+                      ]),
+                    ));
                   context
                       .read<ActivityBloc>()
                       .add(FetchActivities(useCache: true));
@@ -134,18 +185,51 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        Wrap(spacing: 8, runSpacing: 8, children: [
-                          ChoiceChip(
-                              label: const Text('All practices'),
-                              selected: !_favoritesOnly,
-                              onSelected: (_) =>
-                                  setState(() => _favoritesOnly = false)),
-                          ChoiceChip(
-                              label: const Text('Favorites'),
-                              selected: _favoritesOnly,
-                              onSelected: (_) =>
-                                  setState(() => _favoritesOnly = true)),
-                        ]),
+                        SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(children: [
+                              ChoiceChip(
+                                  avatar: const Icon(
+                                      Icons.self_improvement_rounded,
+                                      size: 22),
+                                  showCheckmark: false,
+                                  shape: const StadiumBorder(),
+                                  side: BorderSide.none,
+                                  backgroundColor: colors.surface,
+                                  selectedColor: colors.secondaryContainer,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 14),
+                                  labelStyle: TextStyle(
+                                      fontSize: 16,
+                                      color: !_favoritesOnly
+                                          ? colors.onSecondaryContainer
+                                          : colors.onSurfaceVariant),
+                                  label: const Text('All practices'),
+                                  selected: !_favoritesOnly,
+                                  onSelected: (_) =>
+                                      setState(() => _favoritesOnly = false)),
+                              const SizedBox(width: 12),
+                              ChoiceChip(
+                                  avatar: const Icon(
+                                      Icons.favorite_border_rounded,
+                                      size: 22),
+                                  showCheckmark: false,
+                                  shape: const StadiumBorder(),
+                                  side: BorderSide.none,
+                                  backgroundColor: colors.surface,
+                                  selectedColor: colors.secondaryContainer,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 14),
+                                  labelStyle: TextStyle(
+                                      fontSize: 16,
+                                      color: _favoritesOnly
+                                          ? colors.onSecondaryContainer
+                                          : colors.onSurfaceVariant),
+                                  label: const Text('Favorites'),
+                                  selected: _favoritesOnly,
+                                  onSelected: (_) =>
+                                      setState(() => _favoritesOnly = true)),
+                            ])),
                         if (tags.isNotEmpty) ...[
                           const SizedBox(height: 12),
                           SingleChildScrollView(
@@ -153,8 +237,22 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                             child: Row(children: [
                               for (final tag in tags)
                                 Padding(
-                                    padding: const EdgeInsets.only(right: 8),
+                                    padding: const EdgeInsets.only(right: 12),
                                     child: FilterChip(
+                                        avatar: Icon(_tagIcon(tag), size: 20),
+                                        showCheckmark: false,
+                                        shape: const StadiumBorder(),
+                                        side: BorderSide.none,
+                                        backgroundColor: colors.surface,
+                                        selectedColor:
+                                            colors.secondaryContainer,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 14, vertical: 12),
+                                        labelStyle: TextStyle(
+                                            fontSize: 15,
+                                            color: selectedTag == tag
+                                                ? colors.onSecondaryContainer
+                                                : colors.onSurfaceVariant),
                                         label: Text(tag),
                                         selected: selectedTag == tag,
                                         onSelected: (selected) => setState(() =>

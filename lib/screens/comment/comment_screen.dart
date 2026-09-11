@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mindfully_evolve_app/screens/community/community_screen.dart';
-import 'package:mindfully_evolve_app/utils/fonts.dart';
-import 'package:mindfully_evolve_app/utils/global.dart';
 import 'package:timeago/timeago.dart' as timeago;
-
 import '../../common/widgets/commentdeletionconfirmation_dialog.dart';
 import '../../common/widgets/custom_appbar.dart';
-import '../../utils/color_constants.dart';
-import '../../utils/image_constants.dart';
-import '../../utils/string_constants.dart';
+import '../../common/widgets/scroll_title_page.dart';
+import '../../utils/global.dart';
 import '../../utils/urls.dart';
 import '../community/community_model.dart';
 import 'comment_bloc/comment_bloc.dart';
@@ -17,200 +12,175 @@ import 'comment_bloc/comment_event.dart';
 import 'comment_bloc/comment_state.dart';
 import 'comment_model.dart';
 
-class CommentScreen extends StatefulWidget {
-  final Post post;
+class CommentScreen extends StatelessWidget {
   const CommentScreen({super.key, required this.post});
+  final Post post;
 
   @override
-  _CommentScreenState createState() => _CommentScreenState();
+  Widget build(BuildContext context) => BlocProvider(
+        create: (_) => CommentBloc()..add(FetchCommentsEvent(post.id)),
+        child: CommentsContent(post: post),
+      );
 }
 
-class _CommentScreenState extends State<CommentScreen> {
-  final FocusNode _focusNode = FocusNode();
-  List<Comment> _comments = []; // Store the comments in a list
+class CommentsContent extends StatefulWidget {
+  const CommentsContent({super.key, required this.post});
+  final Post post;
+  @override
+  State<CommentsContent> createState() => _CommentsContentState();
+}
+
+class _CommentsContentState extends State<CommentsContent> {
+  final _focus = FocusNode();
+  List<Comment> _comments = [];
 
   @override
-  Widget build(BuildContext context) {
-    final timeAgo = timeago.format(widget.post.createdAt);
-    final postId = widget.post.id;
-    final userId = widget.post.userId;
+  void initState() {
+    super.initState();
+    final state = context.read<CommentBloc>().state;
+    if (state is CommentLoaded) _comments = state.comments;
+  }
 
-    return BlocProvider(
-      create: (context) => CommentBloc()..add(FetchCommentsEvent(postId)),
-      child: Scaffold(
-        backgroundColor: ColorCodes.backgroundcolor,
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 5),
-            child: Column(
-              children: [
-                SizedBox(height: 15),
-                CustomAppbar(
-                  headingTxt: Strings.comments,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => CommunityScreen()),
-                    );
-                  },
-                ),
-                Container(
-                  margin: const EdgeInsets.fromLTRB(15, 10, 15, 10),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: ColorCodes.whiteNewReplacement,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              backgroundImage: (widget.post.image != null &&
-                                      widget.post.image!.isNotEmpty)
-                                  ? NetworkImage(widget.post.image!)
-                                  : AssetImage(ImageConstants.userProfile)
-                                      as ImageProvider,
-                            ),
-                            const SizedBox(width: 10),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  widget.post.userName,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                    fontFamily: Fonts.body,
-                                    color: ColorCodes.nameColor,
-                                  ),
-                                ),
-                                Text(
-                                  timeAgo,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w400,
-                                    fontFamily: Fonts.body,
-                                    color: Color(0xff51585C),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        widget.post.imagesList.isNotEmpty
-                            ? Container(
-                                padding: EdgeInsets.symmetric(vertical: 8),
-                                child: Image.network(
-                                  '${Urls.baseUrlimages}${widget.post.images.first}',
-                                  width: double.infinity,
-                                  height: 200,
-                                  fit: BoxFit.cover,
-                                ),
-                              )
-                            : Container(),
-                        const SizedBox(height: 10),
-                        Text(
-                          widget.post.message,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            fontFamily: Fonts.body,
-                            height: 2,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        Divider(),
-                        const SizedBox(height: 5),
+  @override
+  void dispose() {
+    _focus.dispose();
+    super.dispose();
+  }
 
-                        BlocListener<CommentBloc, CommentState>(
-                          listener: (context, state) {
-                            if (state is CommentDeleted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content:
-                                      Text('Comment deleted successfully!'),
-                                  backgroundColor: ColorCodes.buttoncolor,
-                                ),
-                              );
-                            }
-                          },
-                          child: BlocBuilder<CommentBloc, CommentState>(
-                            builder: (context, state) {
-                              if (state is CommentLoading ||
-                                  state is CommentPosting ||
-                                  state is CommentLiking) {
-                                return _comments.isNotEmpty
-                                    ? Column(
-                                        children: _comments.map((comment) {
-                                          return CommentSection(
-                                            comment: comment,
-                                            post: widget.post,
-                                            userid: widget.post.userId,
-                                            onReply: () {
-                                              context.read<CommentBloc>().add(
-                                                  UpdateParentCommentEvent(
-                                                      comment.id));
-                                              _focusNode.requestFocus();
-                                            },
-                                          );
-                                        }).toList(),
-                                      )
-                                    : Center(
-                                        child: CircularProgressIndicator());
-                              } else if (state is CommentLoaded) {
-                                // Update the state only when new comments are loaded.
-                                if (_comments != state.comments) {
-                                  _comments = state.comments;
-                                }
-
-                                return Column(
-                                  children: state.comments.map((comment) {
-                                    return CommentSection(
-                                      comment: comment,
-                                      post: widget.post,
-                                      userid: widget.post.userId,
-                                      onReply: () {
-                                        context.read<CommentBloc>().add(
-                                            UpdateParentCommentEvent(
-                                                comment.id));
-                                        _focusNode.requestFocus();
-                                      },
-                                    );
-                                  }).toList(),
-                                );
-                              } else if (state is CommentError) {
-                                // Show error message and retain the previous list of comments.
-                                return Column(
-                                  children: [
-                                    Center(
-                                        child: Text('Error: ${state.message}')),
-                                    if (_comments.isNotEmpty)
-                                      ..._comments.map((comment) {
+  @override
+  Widget build(BuildContext context) => BlocConsumer<CommentBloc, CommentState>(
+        listener: (context, state) {
+          if (state is CommentLoaded) _comments = state.comments;
+          if (state is CommentDeleted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Comment deleted successfully!')));
+          }
+        },
+        builder: (context, state) {
+          final text = Theme.of(context).textTheme;
+          final colors = Theme.of(context).colorScheme;
+          return Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            body: ScrollTitlePage(
+                title: 'Comments',
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 600),
+                    child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(children: [
+                          CustomAppbar(
+                              headingTxt: '',
+                              onTap: () => Navigator.pop(context)),
+                          Expanded(
+                              child: CustomScrollView(
+                                  keyboardDismissBehavior:
+                                      ScrollViewKeyboardDismissBehavior.onDrag,
+                                  slivers: [
+                                SliverToBoxAdapter(
+                                    child: Padding(
+                                        padding: const EdgeInsets.only(
+                                            top: 24, bottom: 24),
+                                        child: Text('Comments',
+                                            style: text.headlineLarge?.copyWith(
+                                                fontWeight: FontWeight.w600)))),
+                                SliverToBoxAdapter(
+                                    child: Container(
+                                        padding: const EdgeInsets.all(20),
+                                        decoration: BoxDecoration(
+                                            color:
+                                                colors.surfaceContainerHighest,
+                                            borderRadius:
+                                                BorderRadius.circular(24)),
+                                        child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              _Author(
+                                                  name: widget.post.userName,
+                                                  image: widget.post.image,
+                                                  date: widget.post.createdAt),
+                                              if (widget
+                                                  .post.images.isNotEmpty) ...[
+                                                const SizedBox(height: 18),
+                                                ClipRRect(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            18),
+                                                    child: Image.network(
+                                                        _imageUrl(widget
+                                                            .post.images.first),
+                                                        width: double.infinity,
+                                                        height: 220,
+                                                        fit: BoxFit.cover,
+                                                        errorBuilder: (_, __,
+                                                                ___) =>
+                                                            SizedBox(
+                                                                height: 100,
+                                                                child: Center(
+                                                                    child: Icon(
+                                                                        Icons.image_outlined,
+                                                                        color: colors.onSurfaceVariant)))))
+                                              ],
+                                              const SizedBox(height: 16),
+                                              Text(widget.post.message,
+                                                  style: text.bodyLarge
+                                                      ?.copyWith(height: 1.6)),
+                                            ]))),
+                                SliverToBoxAdapter(
+                                    child: Padding(
+                                        padding: const EdgeInsets.only(
+                                            top: 28, bottom: 16),
+                                        child: Text('Conversation',
+                                            style: text.titleLarge?.copyWith(
+                                                fontWeight: FontWeight.w600)))),
+                                if (state is CommentError)
+                                  SliverToBoxAdapter(
+                                      child: Padding(
+                                          padding:
+                                              const EdgeInsets.only(bottom: 16),
+                                          child: Text(state.message,
+                                              style: text.bodyMedium?.copyWith(
+                                                  color: colors.error)))),
+                                if (_comments.isEmpty &&
+                                    state is CommentLoading)
+                                  const SliverToBoxAdapter(
+                                      child: Padding(
+                                          padding: EdgeInsets.all(24),
+                                          child: Center(
+                                              child:
+                                                  CircularProgressIndicator())))
+                                else if (_comments.isEmpty &&
+                                    state is! CommentError)
+                                  SliverToBoxAdapter(
+                                      child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 24),
+                                          child: Column(children: [
+                                            Icon(
+                                                Icons
+                                                    .chat_bubble_outline_rounded,
+                                                size: 32,
+                                                color: colors.onSurfaceVariant),
+                                            const SizedBox(height: 12),
+                                            Text('Start the conversation',
+                                                style: text.titleMedium),
+                                            const SizedBox(height: 6),
+                                            Text(
+                                                'Share a thoughtful comment below.',
+                                                textAlign: TextAlign.center,
+                                                style: text.bodyMedium
+                                                    ?.copyWith(
+                                                        color: colors
+                                                            .onSurfaceVariant))
+                                          ])))
+                                else
+                                  SliverList.builder(
+                                      itemCount: _comments.length,
+                                      itemBuilder: (context, index) {
+                                        final comment = _comments[index];
                                         return CommentSection(
-                                          comment: comment,
-                                          post: widget.post,
-                                          userid: widget.post.userId,
-                                          onReply: () {
-                                            context.read<CommentBloc>().add(
-                                                UpdateParentCommentEvent(
-                                                    comment.id));
-                                            _focusNode.requestFocus();
-                                          },
-                                        );
-                                      }),
-                                  ],
-                                );
-                              } else if (state is ParentCommentUpdated) {
-                                // If we are in loading state, show the previously loaded comments.
-                                return _comments.isNotEmpty
-                                    ? Column(
-                                        children: _comments.map((comment) {
-                                          return CommentSection(
+                                            key: ValueKey(comment.id),
                                             comment: comment,
                                             post: widget.post,
                                             userid: widget.post.userId,
@@ -218,454 +188,273 @@ class _CommentScreenState extends State<CommentScreen> {
                                               context.read<CommentBloc>().add(
                                                   UpdateParentCommentEvent(
                                                       comment.id));
-                                              _focusNode.requestFocus();
-                                            },
-                                          );
-                                        }).toList(),
-                                      )
-                                    : Container();
-                              }
-                              return Container(); // Return an empty container by default
-                            },
-                          ),
-                        ),
-
-                        // Input for new comment
-                        AnimatedPadding(
-                          padding: EdgeInsets.only(
-                            bottom: MediaQuery.of(context).viewInsets.bottom,
-                          ),
-                          duration: const Duration(milliseconds: 150),
-                          curve: Curves.easeOut,
-                          child: MessageInput(
-                            postId: postId,
-                            focusNode: _focusNode,
-                          ),
-                        ),
-                      ],
-                    ),
+                                              _focus.requestFocus();
+                                            });
+                                      }),
+                                const SliverToBoxAdapter(
+                                    child: SizedBox(height: 24)),
+                              ])),
+                          MessageInput(
+                              postId: widget.post.id, focusNode: _focus),
+                        ])),
                   ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+                )),
+          );
+        },
+      );
+}
+
+String _imageUrl(String image) =>
+    image.startsWith('http') ? image : '${Urls.baseUrlimages}$image';
+
+class _Author extends StatelessWidget {
+  const _Author({required this.name, this.image, this.date});
+  final String name;
+  final String? image;
+  final DateTime? date;
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final fallback = Container(
+        width: 40,
+        height: 40,
+        color: colors.surfaceContainerLow,
+        child: Icon(Icons.person_outline_rounded, color: colors.primary));
+    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      ClipOval(
+          child: image?.isNotEmpty == true
+              ? Image.network(_imageUrl(image!),
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => fallback)
+              : fallback),
+      const SizedBox(width: 12),
+      Expanded(
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(name,
+            style: Theme.of(context)
+                .textTheme
+                .titleSmall
+                ?.copyWith(fontWeight: FontWeight.w700)),
+        if (date != null) ...[
+          const SizedBox(height: 3),
+          Text(timeago.format(date!),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: colors.onSurfaceVariant))
+        ],
+      ])),
+    ]);
   }
 }
 
 class CommentSection extends StatefulWidget {
+  const CommentSection(
+      {super.key,
+      required this.comment,
+      required this.post,
+      required this.userid,
+      required this.onReply});
   final Comment comment;
   final Post post;
   final String userid;
   final VoidCallback onReply;
-
-  const CommentSection({super.key, 
-    required this.comment,
-    required this.post,
-    required this.userid,
-    required this.onReply,
-  });
-
   @override
-  _CommentSectionState createState() => _CommentSectionState();
+  State<CommentSection> createState() => _CommentSectionState();
 }
 
 class _CommentSectionState extends State<CommentSection> {
-  bool showReplies = false;
-
-  void toggleReplies() {
-    setState(() {
-      showReplies = !showReplies;
-    });
-  }
-
+  bool _showReplies = false;
   @override
   Widget build(BuildContext context) {
-    final timeAgo = timeago.format(widget.comment.createdAt);
-    final image = widget.comment.image;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                backgroundImage: (image != null && image.isNotEmpty)
-                    ? NetworkImage('${Urls.baseUrlimages}$image')
-                    : AssetImage(ImageConstants.userProfile) as ImageProvider,
-              ),
-              const SizedBox(width: 5),
-              Expanded(
-                child: Container(
-                  color: ColorCodes.lightContainerColor,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(10, 8, 10, 2),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              widget.comment.userName ?? 'user name',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              timeAgo,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400,
-                                fontFamily: Fonts.body,
-                                color: Color(0xff51585C),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
-                        child: Container(
-                          constraints: BoxConstraints(
-                            maxWidth: double.infinity,
-                          ),
-                          child: Text(
-                            widget.comment.message,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                              fontFamily: Fonts.body,
-                            ),
-                            softWrap: true,
-                            overflow: TextOverflow.visible,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 50, top: 5),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                BlocBuilder<CommentBloc, CommentState>(
-                  builder: (context, state) {
-                    final bool isLiking = state is CommentLiking;
-                    return GestureDetector(
-                      onTap: isLiking
-                          ? null
-                          : () {
-                              context.read<CommentBloc>().add(
-                                    LikeCommentEvent(widget.comment.postId,
-                                        widget.comment.id),
-                                  );
-                            },
-                      child: Text(
-                        isLiking ? "Liking..." : "Like",
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: Fonts.body,
-                          color: widget.comment.liked
-                              ? Colors.blue
-                              : ColorCodes.blackcolor,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(width: 20),
-                GestureDetector(
-                  onTap: widget.onReply,
-                  child: const Text(
-                    "Reply",
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      fontFamily: Fonts.body,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 20),
-                if (userId == widget.comment.userId)
-                  GestureDetector(
-                    onTap: () {
-                      showCommentDeleteConfirmationDialog(
-                          context, widget.post, widget.comment.id);
-                    },
-                    child: const Text(
-                      "Delete",
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: Fonts.body,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          if (widget.comment.repliesCount > 0)
-            Padding(
-              padding: const EdgeInsets.only(left: 50, top: 5),
-              child: GestureDetector(
-                onTap: toggleReplies,
-                child: Text(
-                  showReplies
-                      ? "Hide Replies"
-                      : "View Replies (${widget.comment.repliesCount})",
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    fontFamily: Fonts.body,
-                    color: Colors.blue,
-                  ),
-                ),
-              ),
-            ),
-          if (showReplies)
-            ...?widget.comment.replies?.map((reply) {
-              return Padding(
-                padding: const EdgeInsets.only(left: 50),
-                child: SubCommentSection(
-                  reply: reply,
-                  post: widget.post,
-                ),
-              );
-            }),
-        ],
-      ),
-    );
+    final colors = Theme.of(context).colorScheme;
+    final comment = widget.comment;
+    return Container(
+        margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+            color: colors.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(24)),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          _Author(
+              name: comment.userName ?? 'Community member',
+              image: comment.image,
+              date: comment.createdAt),
+          const SizedBox(height: 14),
+          Text(comment.message,
+              style:
+                  Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5)),
+          const SizedBox(height: 8),
+          Wrap(spacing: 4, children: [
+            BlocBuilder<CommentBloc, CommentState>(
+                builder: (context, state) => TextButton.icon(
+                    style: TextButton.styleFrom(
+                        foregroundColor: comment.liked
+                            ? colors.error
+                            : colors.onSurfaceVariant),
+                    onPressed: state is CommentLiking
+                        ? null
+                        : () => context
+                            .read<CommentBloc>()
+                            .add(LikeCommentEvent(comment.postId, comment.id)),
+                    icon: Icon(
+                        comment.liked
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_border_rounded,
+                        size: 18),
+                    label: Text(state is CommentLiking ? 'Liking…' : 'Like'))),
+            TextButton(onPressed: widget.onReply, child: const Text('Reply')),
+            if (userId == comment.userId)
+              TextButton(
+                  style: TextButton.styleFrom(foregroundColor: colors.error),
+                  onPressed: () => showCommentDeleteConfirmationDialog(
+                      context, widget.post, comment.id),
+                  child: const Text('Delete')),
+          ]),
+          if (comment.repliesCount > 0)
+            TextButton.icon(
+                onPressed: () => setState(() => _showReplies = !_showReplies),
+                icon: Icon(_showReplies
+                    ? Icons.expand_less_rounded
+                    : Icons.expand_more_rounded),
+                label: Text(_showReplies
+                    ? 'Hide replies'
+                    : 'View replies (${comment.repliesCount})')),
+          if (_showReplies)
+            ...?comment.replies?.map(
+                (reply) => SubCommentSection(reply: reply, post: widget.post)),
+        ]));
   }
 }
 
 class SubCommentSection extends StatelessWidget {
+  const SubCommentSection({super.key, required this.reply, required this.post});
   final Reply reply;
   final Post post;
-
-  const SubCommentSection({super.key, 
-    required this.reply,
-    required this.post,
-  });
-
   @override
   Widget build(BuildContext context) {
-    String? userName = reply.userName;
-
-    String? userImage = reply.image;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              // User image
-              CircleAvatar(
-                backgroundImage: (userImage != null && userImage.isNotEmpty)
-                    ? NetworkImage('${Urls.baseUrlimages}$userImage')
-                    : AssetImage(ImageConstants.userProfile) as ImageProvider,
-              ),
-              const SizedBox(width: 10),
-
-              // User name and message
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {},
-                  child: Container(
-                    color: ColorCodes.lightContainerColor,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 5, horizontal: 10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            userName!,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          // Message
-                          Text(
-                            reply.message,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(
-            height: 5,
-          ),
+    final colors = Theme.of(context).colorScheme;
+    return Container(
+        margin: const EdgeInsets.only(top: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: BorderRadius.circular(18)),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          _Author(
+              name: reply.userName ?? 'Community member', image: reply.image),
+          const SizedBox(height: 12),
+          Text(reply.message,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(height: 1.5)),
           if (userId == reply.userId)
-            GestureDetector(
-              onTap: () {
-                showCommentDeleteConfirmationDialog(
-                    context, post, reply.id ?? '');
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(left: 55),
-                child: const Text(
-                  "Delete",
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    fontFamily: Fonts.body,
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
+            TextButton(
+                style: TextButton.styleFrom(foregroundColor: colors.error),
+                onPressed: () => showCommentDeleteConfirmationDialog(
+                    context, post, reply.id),
+                child: const Text('Delete')),
+        ]));
   }
 }
 
 class MessageInput extends StatefulWidget {
+  const MessageInput(
+      {super.key, required this.postId, required this.focusNode});
   final String postId;
   final FocusNode focusNode;
-
-  const MessageInput({
-    super.key,
-    required this.postId,
-    required this.focusNode,
-  });
-
   @override
   State<MessageInput> createState() => _MessageInputState();
 }
 
 class _MessageInputState extends State<MessageInput> {
-  late TextEditingController controller;
-
-  @override
-  void initState() {
-    super.initState();
-    controller = TextEditingController();
-  }
-
+  final _controller = TextEditingController();
+  String _parentId = '';
   @override
   void dispose() {
-    controller.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return BlocConsumer<CommentBloc, CommentState>(
-      listener: (context, state) {
-        if (state is CommentPosted) {
-          controller.clear();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Comment posted!'),
-              backgroundColor: ColorCodes.buttoncolor,
-            ),
-          );
-        } else if (state is CommentPostError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error: ${state.message}'),
-              backgroundColor: ColorCodes.buttoncolor,
-            ),
-          );
-        }
-      },
-      builder: (context, state) {
-        final bool isPosting = state is CommentPosting;
-
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          child: Container(
-            decoration: BoxDecoration(
-              color: ColorCodes.lightContainerColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: controller,
-                    focusNode: widget.focusNode,
-                    enabled: !isPosting,
-                    maxLines: null,
-                    keyboardType: TextInputType.multiline,
-                    textInputAction: TextInputAction.send,
-                    decoration: InputDecoration(
-                      hintText: Strings.writeYourMessage,
-                      hintStyle: TextStyle(
-                        color: const Color(0xff51585C),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                        fontFamily: Fonts.body,
-                      ),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                          vertical: 15, horizontal: 20),
-                    ),
-                  ),
-                ),
-
-                // Send button
-                ValueListenableBuilder<TextEditingValue>(
-                  valueListenable: controller,
-                  builder: (context, value, child) {
-                    final hasText = value.text.trim().isNotEmpty;
-                    return IconButton(
-                      icon: isPosting
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Image.asset(ImageConstants.sendIcon),
-                      onPressed: hasText
-                          ? () {
-                              final parentCommentId = context
-                                      .read<CommentBloc>()
-                                      .state is ParentCommentUpdated
-                                  ? (context.read<CommentBloc>().state
-                                          as ParentCommentUpdated)
-                                      .parentCommentId
-                                  : '';
-
-                              context.read<CommentBloc>().add(
-                                    PostCommentEvent(
-                                      widget.postId,
-                                      parentCommentId,
-                                      controller.text.trim(),
-                                    ),
-                                  );
-                            }
-                          : null,
-                    );
-                  },
-                )
-              ],
-            ),
-          ),
-        );
-      },
-    );
+  void _send(BuildContext context) {
+    if (_controller.text.trim().isEmpty ||
+        context.read<CommentBloc>().state is CommentPosting) return;
+    context.read<CommentBloc>().add(
+        PostCommentEvent(widget.postId, _parentId, _controller.text.trim()));
   }
+
+  @override
+  Widget build(BuildContext context) => BlocConsumer<CommentBloc, CommentState>(
+        listener: (context, state) {
+          if (state is ParentCommentUpdated) _parentId = state.parentCommentId;
+          if (state is CommentPosted) {
+            _controller.clear();
+            _parentId = '';
+            ScaffoldMessenger.of(context)
+                .showSnackBar(const SnackBar(content: Text('Comment posted!')));
+          } else if (state is CommentPostError) {
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(state.message)));
+          }
+        },
+        builder: (context, state) {
+          final colors = Theme.of(context).colorScheme;
+          final busy = state is CommentPosting;
+          return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Container(
+                  padding: const EdgeInsets.fromLTRB(4, 4, 8, 4),
+                  decoration: BoxDecoration(
+                      color: colors.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                          color: colors.outlineVariant.withValues(alpha: .5))),
+                  child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(
+                            child: TextField(
+                                controller: _controller,
+                                focusNode: widget.focusNode,
+                                enabled: !busy,
+                                minLines: 1,
+                                maxLines: 4,
+                                keyboardType: TextInputType.multiline,
+                                textInputAction: TextInputAction.newline,
+                                decoration: InputDecoration(
+                                    hintText: _parentId.isEmpty
+                                        ? 'Write a comment…'
+                                        : 'Write a reply…',
+                                    hintStyle: TextStyle(
+                                        color: colors.onSurfaceVariant),
+                                    border: InputBorder.none,
+                                    enabledBorder: InputBorder.none,
+                                    focusedBorder: InputBorder.none,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 14, vertical: 12)))),
+                        ValueListenableBuilder<TextEditingValue>(
+                            valueListenable: _controller,
+                            builder: (context, value, _) => IconButton.filled(
+                                tooltip: 'Send comment',
+                                style: IconButton.styleFrom(
+                                    backgroundColor: colors.primary,
+                                    foregroundColor: colors.onPrimary),
+                                onPressed: !busy && value.text.trim().isNotEmpty
+                                    ? () => _send(context)
+                                    : null,
+                                icon: busy
+                                    ? SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: colors.onSurfaceVariant))
+                                    : const Icon(Icons.arrow_upward_rounded))),
+                      ])));
+        },
+      );
 }

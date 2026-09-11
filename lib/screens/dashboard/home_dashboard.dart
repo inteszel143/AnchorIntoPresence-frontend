@@ -3,6 +3,7 @@ import '../../utils/urls.dart';
 import 'dashboard_bloc/home_state.dart';
 import 'dashboard_bloc/recently_played_model.dart';
 import 'home_model.dart';
+import 'mood_picker.dart';
 
 /// Home's presentation uses only the user's existing profile and content data.
 class HomeDashboard extends StatelessWidget {
@@ -53,6 +54,7 @@ class HomeDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final mood = moodOptionFor(state.profileData.userMood);
     final name = state.profileData.name.trim();
     final firstName = name.isEmpty || name.contains('@')
         ? 'there'
@@ -205,8 +207,12 @@ class HomeDashboard extends StatelessWidget {
                     child: Row(children: [
                       CircleAvatar(
                           backgroundColor: colors.surface.withValues(alpha: .7),
-                          child: Icon(Icons.sentiment_satisfied_alt_rounded,
-                              color: colors.onSurface)),
+                          child: mood == null
+                              ? Icon(Icons.sentiment_satisfied_alt_rounded,
+                                  color: colors.onSurface)
+                              : Text(mood.$2,
+                                  semanticsLabel: 'Current mood: ${mood.$1}',
+                                  style: const TextStyle(fontSize: 26))),
                       const SizedBox(width: 14),
                       Expanded(
                           child: Text('How are you feeling today?',

@@ -6,9 +6,11 @@ import 'package:mindfully_evolve_app/screens/dashboard/home_model.dart';
 import 'package:mindfully_evolve_app/screens/dashboard/dashboard_bloc/home_state.dart';
 import 'package:mindfully_evolve_app/screens/dashboard/dashboard_bloc/recently_played_model.dart';
 
-HomePageLoadedState fixture({bool recent = true}) => HomePageLoadedState(
+HomePageLoadedState fixture({bool recent = true, String? mood}) =>
+    HomePageLoadedState(
       profileData: ProfileDataModel(
           id: 'test',
+          userMood: mood,
           name: 'Luciana Test',
           email: 'test@example.com',
           isVerified: true,
@@ -74,7 +76,8 @@ void main() {
               data: MediaQueryData(textScaler: TextScaler.linear(scale)),
               child: Scaffold(
                   body: HomeDashboard(
-                      state: fixture(),
+                      state:
+                          fixture(mood: scale == 1 ? 'grounded' : 'connected'),
                       onProfile: () => action = 'profile',
                       onSearch: () => action = 'search',
                       onMood: () => action = 'mood',
@@ -88,6 +91,9 @@ void main() {
             )));
         await tester.pumpAndSettle();
         expect(find.text('Hi,\nLuciana!'), findsOneWidget);
+        expect(find.text(scale == 1 ? '😌' : '🥰'), findsOneWidget);
+        expect(
+            find.byIcon(Icons.sentiment_satisfied_alt_rounded), findsNothing);
         await tester.tap(find.byTooltip('Search meditations'));
         expect(action, 'search');
         await tester.tap(find.byWidgetPredicate((widget) =>

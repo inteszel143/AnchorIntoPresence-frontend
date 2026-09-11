@@ -7,6 +7,7 @@ import 'package:mindfully_evolve_app/screens/meditate/meditate_screen.dart';
 import 'package:mindfully_evolve_app/screens/activity_listing/getactivity_model.dart';
 import 'package:mindfully_evolve_app/screens/activity_listing/getactivity_bloc/getrecent_activities_bloc.dart';
 import 'package:mindfully_evolve_app/screens/activity_listing/getactivity_bloc/getrecent_activities_state.dart';
+import 'package:mindfully_evolve_app/screens/activity_listing/getactivity_bloc/getrecent_activities_event.dart';
 
 class LibraryFixtureBloc extends ActivityBloc {
   LibraryFixtureBloc() {
@@ -35,7 +36,49 @@ class LibraryFixtureBloc extends ActivityBloc {
   }
 }
 
+class FavoriteToastFixtureBloc extends LibraryFixtureBloc {
+  late final ActivityLoaded loaded = state as ActivityLoaded;
+
+  @override
+  void add(ActivityEvent event) {
+    if (event is ToggleFavorite) {
+      final item = loaded.activities.activities
+          .firstWhere((item) => item.id == event.activityId);
+      emit(ActivityFavouriteLoaded(
+          item.isFavorite ? 'Removed from favorite' : 'Added to favorite'));
+    } else if (event is FetchActivities) {
+      emit(loaded);
+    }
+  }
+}
+
 void main() {
+  testWidgets('heart action shows a floating confirmation that dismisses',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: BlocProvider<ActivityBloc>(
+          create: (_) => FavoriteToastFixtureBloc(),
+          child: const MeditationLibrary()),
+    ));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byTooltip('Remove from favorites').first);
+    await tester.tap(find.byTooltip('Remove from favorites').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Removed from Favorites.'), findsOneWidget);
+    expect(tester.widget<SnackBar>(find.byType(SnackBar)).behavior,
+        SnackBarBehavior.floating);
+    expect(find.byIcon(Icons.check_circle_outline_rounded), findsOneWidget);
+    await tester.pump(const Duration(seconds: 4));
+    await tester.pumpAndSettle();
+    expect(find.byType(SnackBar), findsNothing);
+    await tester.scrollUntilVisible(find.byTooltip('Save meditation'), 200,
+        scrollable: find.byType(Scrollable).first);
+    await tester.tap(find.byTooltip('Save meditation'));
+    await tester.pumpAndSettle();
+    expect(find.text('Added to Favorites.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
       'library searches existing content and combines favorites and tag filters',
       (tester) async {
@@ -55,6 +98,8 @@ void main() {
     expect(
         tester.widget<ActivityItemTile>(find.byType(ActivityItemTile)).heading,
         'Evening rest');
+    await tester.ensureVisible(find.text('Favorites'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Favorites'));
     await tester.pumpAndSettle();
     expect(
@@ -64,9 +109,13 @@ void main() {
     expect(
         tester.widget<ActivityItemTile>(find.byType(ActivityItemTile)).heading,
         'Morning pause');
+    await tester.ensureVisible(find.widgetWithText(FilterChip, 'Sleep'));
+    await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilterChip, 'Sleep'));
     await tester.pumpAndSettle();
     expect(find.byType(ActivityItemTile), findsNothing);
+    await tester.ensureVisible(find.text('All practices'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('All practices'));
     await tester.pumpAndSettle();
     expect(

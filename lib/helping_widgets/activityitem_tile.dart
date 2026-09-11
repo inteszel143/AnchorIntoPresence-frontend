@@ -11,6 +11,8 @@ import '../screens/activity_details/activity_details.dart';
 import '../screens/activity_listing/getactivity_bloc/getrecent_activities_bloc.dart';
 import '../screens/activity_listing/getactivity_bloc/getrecent_activities_event.dart';
 import '../utils/color_constants.dart';
+import '../utils/api_service.dart';
+import '../screens/activity_listing/activity_list_cache.dart';
 import '../utils/fonts.dart';
 import '../utils/image_constants.dart';
 import '../utils/urls.dart';
@@ -72,6 +74,35 @@ class _ActivityItemTileState extends State<ActivityItemTile> {
     }
   }
 
+  bool _savingFavorite = false;
+
+  Future<void> _toggleCollectionFavorite() async {
+    ActivityBloc? bloc;
+    try {
+      bloc = context.read<ActivityBloc>();
+    } catch (_) {
+      // Recent Activities has no activity-list provider.
+    }
+    if (bloc != null) {
+      bloc.add(ToggleFavorite(activityId: widget.id));
+      return;
+    }
+    setState(() => _savingFavorite = true);
+    try {
+      await ApiService.toggleFavorite(widget.id);
+      ActivityListCache.clear();
+      if (mounted) setState(() => isLiked = !isLiked);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Couldn’t update favorites. Please try again.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _savingFavorite = false);
+    }
+  }
+
   Widget _collectionCard(
       AsyncSnapshot<Uint8List?> thumbnail, AsyncSnapshot<String> duration) {
     final colors = Theme.of(context).colorScheme;
@@ -111,12 +142,7 @@ class _ActivityItemTileState extends State<ActivityItemTile> {
                       isLiked ? 'Remove from favorites' : 'Save meditation',
                   style: IconButton.styleFrom(
                       backgroundColor: colors.surfaceContainerHighest),
-                  onPressed: () {
-                    // Wait for the list refresh after the server confirms the change.
-                    context
-                        .read<ActivityBloc>()
-                        .add(ToggleFavorite(activityId: widget.id));
-                  },
+                  onPressed: _savingFavorite ? null : _toggleCollectionFavorite,
                   icon: Icon(
                       isLiked
                           ? Icons.favorite_rounded
