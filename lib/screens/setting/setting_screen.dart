@@ -312,7 +312,7 @@ class SettingScreen extends StatelessWidget {
                                 section('Preferences', [0]),
                                 section('Membership', [4]),
                                 section('Help & information', [7, 8, 6, 5]),
-                                section('Account', [10, 9]),
+                                section('Account', [9, 10]),
                               ],
                             ),
                           ),

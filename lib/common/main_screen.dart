@@ -1,7 +1,8 @@
 import 'widgets/app_tab_bar.dart';
 
 import 'package:flutter/material.dart';
-import 'package:mindfully_evolve_app/common/widgets/buy_subscription_dialog.dart';
+import 'widgets/subscription_tab_page.dart';
+import '../screens/subscriptionmanagement/subscription_management.dart';
 
 import '../screens/community/community_screen.dart';
 import '../screens/meditate/meditate_screen.dart';
@@ -40,23 +41,17 @@ class _MainScreenState extends State<MainScreen> {
 
   void _onItemTapped(int index) {
     if (index < 0 || index >= _pages.length) return;
-    if (globals.isSubscribed == true) {
-      setState(() {
-        _selectedIndex = index;
-        _visited.add(index);
-      });
-    } else {
-      if (index == 1 || index == 2 || index == 3) {
-        // Keep the current tab selected when access requires a subscription.
-        setState(() {});
-        showSubscriptionDialog(context);
-      } else {
-        setState(() {
-          _selectedIndex = index;
-          _visited.add(index);
-        });
-      }
-    }
+    setState(() {
+      _selectedIndex = index;
+      _visited.add(index);
+    });
+  }
+
+  Future<void> _openSubscriptionPlans() async {
+    await Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (_) => const SubscriptionManagementScreen(isSubscribed: false),
+    ));
+    if (mounted) setState(() {});
   }
 
   @override
@@ -69,7 +64,12 @@ class _MainScreenState extends State<MainScreen> {
         children: List.generate(
             pages.length,
             (index) => _visited.contains(index)
-                ? pages[index]
+                ? (index < 4 && !globals.isSubscribed
+                    ? SubscriptionTabPage(
+                        tabIndex: index,
+                        onSubscribe: _openSubscriptionPlans,
+                      )
+                    : pages[index])
                 : const SizedBox.shrink()),
       ),
       bottomNavigationBar: AppTabBar(

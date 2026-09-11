@@ -114,13 +114,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         child: ClipOval(
                           child: photoUrl == null
-                              ? _avatar(colors)
+                              ? _avatar()
                               : Image.network(photoUrl,
                                   width: 52,
                                   height: 52,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) =>
-                                      _avatar(colors)),
+                                  errorBuilder: (_, __, ___) => _avatar()),
                         ),
                       ),
                     ),
@@ -144,7 +143,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     )),
                     AppCircleButton(
                       tooltip: 'Settings',
-                      icon: const Icon(Icons.settings_outlined),
+                      icon:
+                          Icon(Icons.settings_outlined, color: colors.primary),
                       onPressed: () => Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => SettingScreen())),
                     ),
@@ -235,18 +235,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _avatar(ColorScheme colors) => Container(
+  Widget _avatar() => Image.asset(
+        'assets/icons/default_profile.png',
         width: 52,
         height: 52,
-        color: colors.surfaceContainerHighest,
-        child: Icon(Icons.person_rounded,
-            color: colors.onSurfaceVariant, size: 30),
+        fit: BoxFit.cover,
       );
 
   Widget _statIcon(IconData icon, ColorScheme colors) => CircleAvatar(
         radius: 17,
-        backgroundColor: colors.tertiaryContainer,
-        child: Icon(icon, size: 20, color: colors.onTertiaryContainer),
+        backgroundColor: const Color(0xFFE8E3D8),
+        child: Icon(icon, size: 20, color: const Color(0xFF514C40)),
       );
 
   Widget _stat(String label, String value, IconData icon, ColorScheme colors) =>
@@ -297,11 +296,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           IconButton(
               tooltip: 'Previous month',
               onPressed: () => _changeMonth(-1),
-              icon: const Icon(Icons.chevron_left)),
+              icon: Icon(Icons.chevron_left, color: colors.primary)),
           IconButton(
               tooltip: 'Next month',
               onPressed: () => _changeMonth(1),
-              icon: const Icon(Icons.chevron_right)),
+              icon: Icon(Icons.chevron_right, color: colors.primary)),
         ]),
         const SizedBox(height: 8),
         Row(children: [

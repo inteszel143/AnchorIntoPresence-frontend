@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mindfully_evolve_app/common/main_screen.dart';
 import 'package:mindfully_evolve_app/common/widgets/app_tab_bar.dart';
+import 'package:mindfully_evolve_app/common/widgets/subscription_tab_page.dart';
 import 'package:mindfully_evolve_app/screens/dashboard/dashboard_bloc/home_bloc.dart';
 import 'package:mindfully_evolve_app/screens/track/track_bloc/track_bloc.dart';
 import 'package:mindfully_evolve_app/screens/meditate/meditate_screen.dart';
@@ -11,6 +12,55 @@ import 'package:mindfully_evolve_app/screens/profile/profile_screen.dart';
 import 'package:mindfully_evolve_app/utils/global.dart' as globals;
 
 void main() {
+  testWidgets('nonmembers can navigate all four tabs without a modal',
+      (tester) async {
+    final previous = globals.isSubscribed;
+    globals.isSubscribed = false;
+    addTearDown(() => globals.isSubscribed = previous);
+    await tester.pumpWidget(const MaterialApp(home: MainScreen()));
+
+    for (final index in [0, 1, 2, 3, 0]) {
+      final tabBar = tester.widget<AppTabBar>(find.byType(AppTabBar));
+      tabBar.onTap(index);
+      await tester.pump();
+      expect(tester.widget<AppTabBar>(find.byType(AppTabBar)).selectedIndex,
+          index);
+      expect(find.byType(Dialog), findsNothing);
+      expect(find.byType(SubscriptionTabPage), findsOneWidget);
+      expect(
+          tester
+              .widget<SubscriptionTabPage>(find.byType(SubscriptionTabPage))
+              .tabIndex,
+          index);
+      expect(find.text('View subscription plans'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    }
+  });
+
+  testWidgets(
+      'subscription invitation scrolls on small screens and opens plans',
+      (tester) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    var openedPlans = false;
+    await tester.pumpWidget(MaterialApp(
+      home: MediaQuery(
+        data: const MediaQueryData(textScaler: TextScaler.linear(1.5)),
+        child: Scaffold(
+            body: SubscriptionTabPage(
+          tabIndex: 2,
+          onSubscribe: () => openedPlans = true,
+        )),
+      ),
+    ));
+    await tester.ensureVisible(find.byType(FilledButton));
+    await tester.tap(find.byType(FilledButton));
+    expect(openedPlans, isTrue);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('fifth tab stays in range and maps to Profile after Meditate',
       (tester) async {
     FlutterSecureStorage.setMockInitialValues({});
