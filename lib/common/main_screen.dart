@@ -1,3 +1,4 @@
+import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import 'widgets/app_tab_bar.dart';
 
 import 'package:flutter/material.dart';
@@ -57,7 +58,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final pages = _pages;
-    return Scaffold(
+    return AppScaffold(
       extendBody: true,
       body: IndexedStack(
         index: _selectedIndex,

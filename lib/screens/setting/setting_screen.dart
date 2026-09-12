@@ -1,3 +1,4 @@
+import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import '../../common/widgets/scroll_title_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -278,7 +279,7 @@ class SettingScreen extends StatelessWidget {
                     ]),
               );
 
-          return Scaffold(
+          return AppScaffold(
             body: ScrollTitlePage(
               title: Strings.settings,
               child: Center(

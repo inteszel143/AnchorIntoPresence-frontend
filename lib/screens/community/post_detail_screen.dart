@@ -1,3 +1,4 @@
+import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -27,8 +28,7 @@ class PostDetailScreen extends StatelessWidget {
       // Loads the shared community post using its share ID.
       create: (context) =>
           CommunityBloc()..add(FetchCommunityPost(shareId: shareId)),
-      child: Scaffold(
-        backgroundColor: ColorCodes.backgroundcolor,
+      child: AppScaffold(
         body: Column(
           children: [
             SizedBox(height: 15),

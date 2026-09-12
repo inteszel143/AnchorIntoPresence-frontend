@@ -1,3 +1,4 @@
+import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import '../../common/widgets/scroll_title_page.dart';
 import 'dart:typed_data';
 
@@ -69,7 +70,7 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    return Scaffold(
+    return AppScaffold(
       body: ScrollTitlePage(
         title: widget.name,
         child: Center(

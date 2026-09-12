@@ -1,3 +1,4 @@
+import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import '../../common/widgets/app_toast.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -57,7 +58,7 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
         isDark ? colors.surfaceContainerHighest : Colors.white;
     final inactiveTabForeground =
         isDark ? colors.onSurfaceVariant : const Color(0xFF58584F);
-    return Scaffold(
+    return AppScaffold(
       body: ScrollTitlePage(
         title: 'Meditate',
         child: Center(

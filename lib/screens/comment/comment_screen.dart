@@ -1,3 +1,4 @@
+import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -59,8 +60,7 @@ class _CommentsContentState extends State<CommentsContent> {
         builder: (context, state) {
           final text = Theme.of(context).textTheme;
           final colors = Theme.of(context).colorScheme;
-          return Scaffold(
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          return AppScaffold(
             body: ScrollTitlePage(
                 title: 'Comments',
                 child: Center(

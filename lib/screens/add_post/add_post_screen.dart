@@ -1,3 +1,4 @@
+import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -106,8 +107,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             final avatar = userImage;
             return PopScope(
                 canPop: !busy,
-                child: Scaffold(
-                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                child: AppScaffold(
                   body: ScrollTitlePage(
                       title: 'Create post',
                       child: Center(

@@ -1,3 +1,4 @@
+import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'scroll_title_page.dart';
 
@@ -17,8 +18,7 @@ class TabContentPage extends StatelessWidget {
   final Widget? bottomAction;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+  Widget build(BuildContext context) => AppScaffold(
         body: ScrollTitlePage(
             title: title,
             child: Center(

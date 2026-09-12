@@ -1,3 +1,4 @@
+import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import '../../common/widgets/scroll_title_page.dart';
 import 'subscription_plan_card.dart';
 import 'dart:io';
@@ -317,8 +318,7 @@ class _SubscriptionManagementScreenState
             }
           },
           builder: (context, state) {
-            return Scaffold(
-              backgroundColor: Theme.of(context).colorScheme.surface,
+            return AppScaffold(
               body: ScrollTitlePage(
                 title: Strings.subscriptionManagement,
                 child: Center(

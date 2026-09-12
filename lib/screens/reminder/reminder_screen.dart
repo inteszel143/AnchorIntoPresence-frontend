@@ -1,3 +1,4 @@
+import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import '../../common/widgets/scroll_title_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -115,7 +116,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
           builder: (context, state) {
             final colors = Theme.of(context).colorScheme;
             final saving = state is ReminderLoading;
-            return Scaffold(
+            return AppScaffold(
               body: ScrollTitlePage(
                 title: _editing ? 'Edit Reminder' : 'Set Reminder Time',
                 child: Center(

@@ -1,3 +1,4 @@
+import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'custom_appbar.dart';
 import 'scroll_title_page.dart';
@@ -11,7 +12,7 @@ class InformationPage extends StatelessWidget {
   final List<Widget> slivers;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) => AppScaffold(
         body: ScrollTitlePage(
           title: title,
           child: Center(

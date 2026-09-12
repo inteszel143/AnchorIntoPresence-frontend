@@ -1,3 +1,4 @@
+import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import '../../common/widgets/auth_entrance.dart';
 import 'dart:io';
 
@@ -50,7 +51,7 @@ class _SignupScreenState extends State<SignupScreen> {
         child: Builder(
             builder: (context) => BlocProvider(
                   create: (_) => SignupBloc(),
-                  child: Scaffold(
+                  child: AppScaffold(
                     body: BlocListener<SignupBloc, SignupState>(
                       listener: (context, state) {
                         if (state is SignupSuccess) {

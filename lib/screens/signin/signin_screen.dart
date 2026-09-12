@@ -1,3 +1,4 @@
+import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import '../../common/widgets/auth_entrance.dart';
 import '../../common/widgets/button_widget.dart';
 import 'dart:io';
@@ -53,8 +54,7 @@ class _SigninScreenState extends State<SigninScreen> {
       create: (context) => SigninBloc(),
       child: Builder(
         builder: (context) {
-          return Scaffold(
-            backgroundColor: Theme.of(context).colorScheme.surface,
+          return AppScaffold(
             body: LoadingOverlay(
               isLoading: context.watch<SigninBloc>().state is SigninLoading,
               child: BlocListener<SigninBloc, SigninState>(

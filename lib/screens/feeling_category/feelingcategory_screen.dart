@@ -1,8 +1,8 @@
+import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../common/widgets/app_back_button.dart';
 import 'package:mindfully_evolve_app/common/main_screen.dart';
-import 'package:mindfully_evolve_app/utils/image_constants.dart';
 
 import '../../common/local_storage.dart';
 import '../../common/widgets/button_widget.dart';
@@ -65,15 +65,9 @@ class CategoryScreen extends StatelessWidget {
               if (didPop) return;
               _goToSignin(context);
             },
-            child: Scaffold(
+            child: AppScaffold(
               body: Stack(
                 children: [
-                  Positioned.fill(
-                    child: Image.asset(
-                      ImageConstants.seaBackgroundImage,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
                   SafeArea(
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
@@ -96,7 +90,7 @@ class CategoryScreen extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 26,
                                 fontWeight: FontWeight.w400,
-                                color: ColorCodes.categoryheadercolor,
+                                color: Theme.of(context).colorScheme.onSurface,
                                 letterSpacing: Fonts.headingLetterSpacing,
                                 fontFamily: Fonts.heading,
                               ),
@@ -110,7 +104,7 @@ class CategoryScreen extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
-                                color: ColorCodes.categorydescriptioncolor,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 fontFamily: Fonts.body,
                               ),
                               textAlign: TextAlign.center,

@@ -1,3 +1,4 @@
+import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -35,8 +36,7 @@ class ActivityDetail extends StatelessWidget {
           );
         }
       },
-      child: Scaffold(
-        backgroundColor: const Color(0xffF0EAE6),
+      child: AppScaffold(
         body: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

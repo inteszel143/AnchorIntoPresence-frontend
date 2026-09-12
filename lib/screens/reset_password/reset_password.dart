@@ -1,3 +1,4 @@
+import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import '../../common/widgets/auth_entrance.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -38,7 +39,7 @@ class ResetPassword extends StatelessWidget {
       child: Builder(
         builder: (context) => BlocProvider(
           create: (_) => ResetPasswordBloc(),
-          child: Scaffold(
+          child: AppScaffold(
           body: SafeArea(
             child: SingleChildScrollView(
               keyboardDismissBehavior:

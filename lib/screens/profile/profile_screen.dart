@@ -1,3 +1,4 @@
+import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import '../user_profile/userprofile_screen.dart';
 import '../../common/widgets/app_circle_button.dart';
 import 'package:flutter/material.dart';
@@ -92,7 +93,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         .where((day) => day.year == _month.year && day.month == _month.month)
         .length;
 
-    return Scaffold(
+    return AppScaffold(
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),

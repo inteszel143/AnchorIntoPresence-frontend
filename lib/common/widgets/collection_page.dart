@@ -1,3 +1,4 @@
+import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'custom_appbar.dart';
 import 'scroll_title_page.dart';
@@ -17,7 +18,7 @@ class CollectionPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
+    return AppScaffold(
       body: ScrollTitlePage(
         title: title,
         child: Center(

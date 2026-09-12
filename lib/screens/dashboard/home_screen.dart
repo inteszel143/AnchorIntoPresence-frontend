@@ -1,3 +1,4 @@
+import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import 'home_dashboard.dart';
 import 'mood_picker.dart';
 import 'home_model.dart';
@@ -255,8 +256,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Scaffold(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        AppScaffold(
           body: SafeArea(
             child: BlocProvider.value(
               value: _homePageBloc,

@@ -1,3 +1,4 @@
+import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mindfully_evolve_app/utils/color_constants.dart';
@@ -18,8 +19,7 @@ class AccountOnboardingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return AuthTheme(
       child: Builder(
-        builder: (context) => Scaffold(
-          backgroundColor: Theme.of(context).colorScheme.surface,
+        builder: (context) => AppScaffold(
           body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {

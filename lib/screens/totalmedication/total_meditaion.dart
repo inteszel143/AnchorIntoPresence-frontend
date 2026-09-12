@@ -1,3 +1,4 @@
+import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -30,8 +31,7 @@ class TotalMeditationScreen extends StatelessWidget {
           create: (context) => TrackBloc()..add(TrackDataFetchEvent()),
         ),
       ],
-      child: Scaffold(
-        backgroundColor: ColorCodes.backgroundcolor,
+      child: AppScaffold(
         body: SafeArea(
           child: _TotalMeditationBody(),
         ),
