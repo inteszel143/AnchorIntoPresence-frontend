@@ -72,7 +72,6 @@ class _PasswordField extends StatefulWidget {
   final TextEditingController? controller;
 
   const _PasswordField({
-    super.key,
     required this.label,
     this.validator,
     this.controller,

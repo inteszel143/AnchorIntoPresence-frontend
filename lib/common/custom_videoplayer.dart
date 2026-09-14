@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mindfully_evolve_app/utils/color_constants.dart';
@@ -27,17 +28,20 @@ class _OnlineVideoPlayerState extends State<OnlineVideoPlayer> {
   late VideoPlayerController _controller;
   late Future<void> _initializeVideoPlayerFuture;
   bool _showControls = true;
+  Timer? _hideControlsTimer;
+  bool _scrubbing = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.network(widget.videoUrl);
+    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
     _initializeVideoPlayerFuture = _controller.initialize().then((_) async {
       if (!mounted) return;
       setState(() {});
       if (widget.initialPosition > Duration.zero) {
         await _controller.seekTo(widget.initialPosition);
       }
+      if (!mounted) return;
       _controller.setLooping(true);
       _controller.addListener(() {
         if (widget.onProgress != null) {
@@ -49,32 +53,47 @@ class _OnlineVideoPlayerState extends State<OnlineVideoPlayer> {
 
   @override
   void dispose() {
+    _hideControlsTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }
 
-  void _togglePlayPause() {
-    setState(() {
-      _controller.value.isPlaying ? _controller.pause() : _controller.play();
-      _showControls = true;
+  void _scheduleHide() {
+    _hideControlsTimer?.cancel();
+    if (!_controller.value.isPlaying ||
+        _scrubbing ||
+        MediaQuery.accessibleNavigationOf(context)) return;
+    _hideControlsTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) setState(() => _showControls = false);
     });
   }
 
+  void _togglePlayPause() {
+    _controller.value.isPlaying ? _controller.pause() : _controller.play();
+    setState(() => _showControls = true);
+    _scheduleHide();
+  }
+
   void _toggleControls() {
-    setState(() {
-      _showControls = !_showControls;
-    });
+    setState(() => _showControls = !_showControls);
+    if (_showControls) {
+      _scheduleHide();
+    } else {
+      _hideControlsTimer?.cancel();
+    }
   }
 
   void _seekRelative(Duration offset) {
     final newPosition = _controller.value.position + offset;
     final duration = _controller.value.duration;
+    _scheduleHide();
     _controller.seekTo(newPosition < Duration.zero
         ? Duration.zero
         : (newPosition > duration ? duration : newPosition));
   }
 
   void _toggleFullscreen() async {
+    _hideControlsTimer?.cancel();
     _controller.pause();
 
     final position = await Navigator.push(
@@ -98,16 +117,6 @@ class _OnlineVideoPlayerState extends State<OnlineVideoPlayer> {
     }
   }
 
-  // Formats a Duration as "m:ss" (or "h:mm:ss" once the video is an hour
-  // or longer) for the played/total label above the progress bar.
-  String _formatDuration(Duration d) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final hours = d.inHours;
-    final minutes = twoDigits(d.inMinutes.remainder(60));
-    final seconds = twoDigits(d.inSeconds.remainder(60));
-    return hours > 0 ? '$hours:$minutes:$seconds' : '$minutes:$seconds';
-  }
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -116,136 +125,99 @@ class _OnlineVideoPlayerState extends State<OnlineVideoPlayer> {
         if (snapshot.connectionState == ConnectionState.done &&
             _controller.value.isInitialized) {
           return GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: _toggleControls,
             child: Center(
-              child: AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Video fills the AspectRatio box exactly
-                      VideoPlayer(_controller),
-                      if (_showControls)
-                        const Positioned.fill(
-                          child: IgnorePointer(
-                              child: ColoredBox(color: Color(0x55000000))),
-                        ),
-
-                      // Played / total duration label — sits just above the
-                      // progress bar, centered.
-                      if (_showControls)
-                        Positioned(
-                          bottom: 14,
-                          left: 16,
-                          right: 16,
-                          child: ValueListenableBuilder<VideoPlayerValue>(
-                            valueListenable: _controller,
-                            builder: (context, value, child) {
-                              final position = _isDraggingProgress
-                                  ? _draggingPosition
-                                  : value.position;
-                              return Text(
-                                '${_formatDuration(position)} / ${_formatDuration(value.duration)}',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: ColorCodes.whitecolor,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  shadows: [
-                                    Shadow(
-                                      color: Colors.black45,
-                                      blurRadius: 4,
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-
-                      // Progress bar — always inside the video box
-                      if (_showControls)
-                        Positioned(
-                          bottom: 4,
-                          left: 16,
-                          right: 16,
-                          child: _CustomVideoProgressBar(
-                            controller: _controller,
-                            onDragPositionChanged: (dragging, position) {
-                              setState(() {
-                                _isDraggingProgress = dragging;
-                                _draggingPosition = position;
-                              });
-                            },
-                          ),
-                        ),
-
-                      // Play/pause + seek controls
-                      if (_showControls)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              tooltip: 'Back 10 seconds',
-                              iconSize: 30,
-                              style: IconButton.styleFrom(
-                                  backgroundColor: Colors.black38),
-                              color: ColorCodes.whitecolor,
-                              icon: const Icon(Icons.replay_10),
-                              onPressed: () =>
-                                  _seekRelative(const Duration(seconds: -10)),
-                            ),
-                            IconButton(
-                              tooltip: _controller.value.isPlaying
-                                  ? 'Pause'
-                                  : 'Play',
-                              iconSize: 64,
-                              color: ColorCodes.whitecolor,
-                              icon: Icon(
-                                _controller.value.isPlaying
-                                    ? Icons.pause_circle_filled
-                                    : Icons.play_circle_filled,
+                child: AspectRatio(
+              aspectRatio: _controller.value.aspectRatio,
+              child: ClipRRect(
+                borderRadius:
+                    BorderRadius.circular(widget.isFullscreen ? 0 : 20),
+                child: Stack(alignment: Alignment.center, children: [
+                  VideoPlayer(_controller),
+                  Positioned.fill(
+                      child: IgnorePointer(
+                    ignoring: !_showControls,
+                    child: AnimatedOpacity(
+                      opacity: _showControls ? 1 : 0,
+                      duration: MediaQuery.disableAnimationsOf(context)
+                          ? Duration.zero
+                          : const Duration(milliseconds: 180),
+                      child: ExcludeSemantics(
+                        excluding: !_showControls,
+                        child: Stack(alignment: Alignment.center, children: [
+                          const Positioned.fill(
+                              child: IgnorePointer(
+                            child: DecoratedBox(
+                                decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.black26,
+                                  Colors.transparent,
+                                  Colors.black54
+                                ],
                               ),
-                              onPressed: _togglePlayPause,
+                            )),
+                          )),
+                          Row(mainAxisSize: MainAxisSize.min, children: [
+                            _control(
+                                tooltip: 'Back 10 seconds',
+                                icon: Icons.replay_10_rounded,
+                                onPressed: () => _seekRelative(
+                                    const Duration(seconds: -10))),
+                            const SizedBox(width: 16),
+                            ValueListenableBuilder<VideoPlayerValue>(
+                              valueListenable: _controller,
+                              builder: (context, value, _) => IconButton.filled(
+                                tooltip: value.isPlaying ? 'Pause' : 'Play',
+                                style: IconButton.styleFrom(
+                                  backgroundColor: ColorCodes.cream,
+                                  foregroundColor: ColorCodes.charcoal,
+                                  minimumSize: const Size.square(56),
+                                ),
+                                iconSize: 32,
+                                icon: Icon(value.isPlaying
+                                    ? Icons.pause_rounded
+                                    : Icons.play_arrow_rounded),
+                                onPressed: _togglePlayPause,
+                              ),
                             ),
-                            IconButton(
-                              tooltip: 'Forward 10 seconds',
-                              iconSize: 30,
-                              style: IconButton.styleFrom(
-                                  backgroundColor: Colors.black38),
-                              color: ColorCodes.whitecolor,
-                              icon: const Icon(Icons.forward_10),
-                              onPressed: () =>
-                                  _seekRelative(const Duration(seconds: 10)),
-                            ),
-                          ],
-                        ),
-
-                      // Fullscreen button — always top-right inside video
-                      if (_showControls && !widget.isFullscreen)
-                        Positioned(
-                          top: 8,
-                          right: 8,
-                          child: IconButton(
-                            tooltip: 'Full screen',
-                            style: IconButton.styleFrom(
-                                backgroundColor: Colors.black38),
-                            icon: Icon(
-                              Icons.fullscreen,
-                              color: ColorCodes.whitecolor,
-                              size: 28,
-                            ),
-                            onPressed: _toggleFullscreen,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
+                            const SizedBox(width: 16),
+                            _control(
+                                tooltip: 'Forward 10 seconds',
+                                icon: Icons.forward_10_rounded,
+                                onPressed: () =>
+                                    _seekRelative(const Duration(seconds: 10))),
+                          ]),
+                          if (!widget.isFullscreen)
+                            Positioned(
+                                top: 4,
+                                right: 4,
+                                child: _control(
+                                  tooltip: 'Full screen',
+                                  icon: Icons.fullscreen_rounded,
+                                  onPressed: _toggleFullscreen,
+                                )),
+                          Positioned(
+                              bottom: 0,
+                              left: 12,
+                              right: 12,
+                              child: _CustomVideoProgressBar(
+                                controller: _controller,
+                                onScrubbingChanged: (scrubbing) {
+                                  _scrubbing = scrubbing;
+                                  _scheduleHide();
+                                },
+                              )),
+                        ]),
+                      ),
+                    ),
+                  )),
+                ]),
               ),
-            ),
+            )),
           );
         } else if (snapshot.hasError) {
           return const ColoredBox(
@@ -287,10 +259,20 @@ class _OnlineVideoPlayerState extends State<OnlineVideoPlayer> {
     );
   }
 
-  // Tracked so the label shows the position being dragged to, not the
-  // stale controller position, while the user is scrubbing.
-  bool _isDraggingProgress = false;
-  Duration _draggingPosition = Duration.zero;
+  Widget _control(
+          {required String tooltip,
+          required IconData icon,
+          required VoidCallback onPressed}) =>
+      IconButton(
+        tooltip: tooltip,
+        style: IconButton.styleFrom(
+          backgroundColor: ColorCodes.charcoal.withValues(alpha: .85),
+          foregroundColor: ColorCodes.cream,
+          minimumSize: const Size.square(48),
+        ),
+        icon: Icon(icon, size: 24),
+        onPressed: onPressed,
+      );
 }
 
 class FullscreenVideoScreen extends StatefulWidget {
@@ -376,15 +358,10 @@ class _FullscreenVideoScreenState extends State<FullscreenVideoScreen> {
 }
 
 class _CustomVideoProgressBar extends StatefulWidget {
+  const _CustomVideoProgressBar(
+      {required this.controller, required this.onScrubbingChanged});
   final VideoPlayerController controller;
-  final void Function(bool isDragging, Duration position)?
-      onDragPositionChanged;
-
-  const _CustomVideoProgressBar({
-    super.key,
-    required this.controller,
-    this.onDragPositionChanged,
-  });
+  final ValueChanged<bool> onScrubbingChanged;
 
   @override
   State<_CustomVideoProgressBar> createState() =>
@@ -392,100 +369,53 @@ class _CustomVideoProgressBar extends StatefulWidget {
 }
 
 class _CustomVideoProgressBarState extends State<_CustomVideoProgressBar> {
-  late VideoPlayerController _controller;
-  bool _isDragging = false;
-  double _dragValue = 0;
+  double? _dragValue;
 
   @override
-  void initState() {
-    super.initState();
-    _controller = widget.controller;
-    _controller.addListener(_update);
-  }
-
-  @override
-  void dispose() {
-    _controller.removeListener(_update);
-    super.dispose();
-  }
-
-  void _update() {
-    if (!_isDragging) {
-      setState(() {});
-    }
-  }
-
-  void _onDragStart(DragStartDetails details) {
-    setState(() {
-      _isDragging = true;
-    });
-  }
-
-  void _onDragUpdate(DragUpdateDetails details, BoxConstraints constraints) {
-    final boxWidth = constraints.maxWidth;
-    final dx = details.localPosition.dx.clamp(0, boxWidth);
-    final relative = dx / boxWidth;
-    setState(() {
-      _dragValue = relative;
-    });
-    final duration = _controller.value.duration;
-    widget.onDragPositionChanged?.call(true, duration * relative);
-  }
-
-  void _onDragEnd(DragEndDetails details) {
-    final duration = _controller.value.duration;
-    final position = duration * _dragValue;
-    _controller.seekTo(position);
-    setState(() {
-      _isDragging = false;
-    });
-    widget.onDragPositionChanged?.call(false, position);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final duration = _controller.value.duration.inMilliseconds;
-    final position = _isDragging
-        ? (_dragValue * duration).toInt()
-        : _controller.value.position.inMilliseconds;
-
-    final progress = duration > 0 ? position / duration : 0.0;
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        const height = 8.0;
-
-        return GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onHorizontalDragStart: _onDragStart,
-          onHorizontalDragUpdate: (details) =>
-              _onDragUpdate(details, constraints),
-          onHorizontalDragEnd: _onDragEnd,
-          child: Container(
-            width: width,
-            height: height,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.white, width: 2),
-              color: Colors.transparent,
+  Widget build(BuildContext context) =>
+      ValueListenableBuilder<VideoPlayerValue>(
+        valueListenable: widget.controller,
+        builder: (context, value, _) {
+          final duration = value.duration.inMilliseconds;
+          final progress = duration > 0
+              ? (value.position.inMilliseconds / duration).clamp(0.0, 1.0)
+              : 0.0;
+          return Semantics(
+            label: 'Video progress',
+            child: SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                trackHeight: 3,
+                activeTrackColor: ColorCodes.cream,
+                inactiveTrackColor: ColorCodes.cream.withValues(alpha: .35),
+                thumbColor: ColorCodes.cream,
+                overlayColor: ColorCodes.cream.withValues(alpha: .15),
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
+                overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+              ),
+              child: Slider(
+                value: _dragValue ?? progress,
+                semanticFormatterCallback: (value) =>
+                    '${(value * 100).round()} percent',
+                onChangeStart: duration <= 0
+                    ? null
+                    : (value) {
+                        setState(() => _dragValue = value);
+                        widget.onScrubbingChanged(true);
+                      },
+                onChanged: duration <= 0
+                    ? null
+                    : (value) => setState(() => _dragValue = value),
+                onChangeEnd: duration <= 0
+                    ? null
+                    : (value) {
+                        widget.controller.seekTo(
+                            Duration(milliseconds: (duration * value).round()));
+                        setState(() => _dragValue = null);
+                        widget.onScrubbingChanged(false);
+                      },
+              ),
             ),
-            child: Stack(
-              children: [
-                FractionallySizedBox(
-                  widthFactor: progress,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
+          );
+        },
+      );
 }

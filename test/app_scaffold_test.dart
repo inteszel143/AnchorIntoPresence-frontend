@@ -63,7 +63,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Home, Profile and Settings share the light and dark backgrounds',
+  testWidgets('Home and Settings share the light and dark backgrounds',
       (tester) async {
     FlutterSecureStorage.setMockInitialValues({});
     SharedPreferences.setMockInitialValues({});
@@ -113,9 +113,8 @@ void main() {
               boundaryKey.currentContext!,
             ));
       }
-      for (final page in ['home', 'profile', 'settings']) {
-        if (page == 'profile') await tester.tap(find.text('Profile'));
-        if (page == 'settings') await tester.tap(find.byTooltip('Settings'));
+      for (final page in ['home', 'settings']) {
+        if (page == 'settings') await tester.tap(find.text('Settings'));
         await tester.pumpAndSettle();
         expect(find.byType(AppBackground), findsWidgets);
         expect(

@@ -3,7 +3,6 @@ import '../../utils/urls.dart';
 import 'dashboard_bloc/home_state.dart';
 import 'dashboard_bloc/recently_played_model.dart';
 import 'home_model.dart';
-import 'mood_picker.dart';
 
 /// Home's presentation uses only the user's existing profile and content data.
 class HomeDashboard extends StatelessWidget {
@@ -12,7 +11,6 @@ class HomeDashboard extends StatelessWidget {
       required this.state,
       required this.onProfile,
       required this.onSearch,
-      required this.onMood,
       required this.onFavorites,
       required this.onMeditate,
       required this.onRecent,
@@ -23,7 +21,6 @@ class HomeDashboard extends StatelessWidget {
   final HomePageLoadedState state;
   final VoidCallback onProfile,
       onSearch,
-      onMood,
       onFavorites,
       onMeditate,
       onRecent,
@@ -54,7 +51,6 @@ class HomeDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final mood = moodOptionFor(state.profileData.userMood);
     final name = state.profileData.name.trim();
     final firstName = name.isEmpty || name.contains('@')
         ? 'there'
@@ -156,74 +152,58 @@ class HomeDashboard extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Expanded(
-                  child: Text('Hi,\n$firstName!',
-                      style: Theme.of(context)
-                          .textTheme
-                          .headlineLarge
-                          ?.copyWith(
-                              fontWeight: FontWeight.w600, height: 1.2))),
-              IconButton.filledTonal(
-                  tooltip: 'Search meditations',
-                  style: IconButton.styleFrom(
-                      backgroundColor: colors.surfaceContainerHighest),
-                  onPressed: onSearch,
-                  icon: const Icon(Icons.search_rounded)),
-              const SizedBox(width: 8),
-              Semantics(
-                  button: true,
-                  label: 'Open profile',
-                  child: InkWell(
-                    onTap: onProfile,
-                    customBorder: const CircleBorder(),
-                    child: ClipOval(
-                        child: SizedBox.square(
-                      dimension: 48,
-                      child: state.profileData.image?.isNotEmpty == true
-                          ? _image(context, state.profileData.image!,
-                              width: 48, height: 48, fit: BoxFit.cover)
-                          : ColoredBox(
-                              color: colors.surfaceContainerHighest,
-                              child: Icon(Icons.person_rounded,
-                                  color: colors.primary)),
+            child: LayoutBuilder(builder: (context, constraints) {
+              final greeting = Text('Hi,\n$firstName!',
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineLarge
+                      ?.copyWith(fontWeight: FontWeight.w600, height: 1.2));
+              final actions = Row(mainAxisSize: MainAxisSize.min, children: [
+                IconButton.filledTonal(
+                    tooltip: 'Search meditations',
+                    style: IconButton.styleFrom(
+                        foregroundColor: colors.onSurface,
+                        backgroundColor: colors.surfaceContainerHighest),
+                    onPressed: onSearch,
+                    icon: const Icon(Icons.search_rounded)),
+                const SizedBox(width: 8),
+                IconButton.filledTonal(
+                    tooltip: 'Notifications',
+                    style: IconButton.styleFrom(
+                        foregroundColor: colors.onSurface,
+                        backgroundColor: colors.surfaceContainerHighest),
+                    onPressed: onNotifications,
+                    icon: const Icon(Icons.notifications_none_rounded)),
+                const SizedBox(width: 8),
+                Semantics(
+                    button: true,
+                    label: 'Open profile',
+                    child: InkWell(
+                      onTap: onProfile,
+                      customBorder: const CircleBorder(),
+                      child: ClipOval(
+                          child: SizedBox.square(
+                        dimension: 48,
+                        child: state.profileData.image?.isNotEmpty == true
+                            ? _image(context, state.profileData.image!,
+                                width: 48, height: 48, fit: BoxFit.cover)
+                            : ColoredBox(
+                                color: colors.surfaceContainerHighest,
+                                child: Icon(Icons.person_rounded,
+                                    color: colors.primary)),
+                      )),
                     )),
-                  )),
-            ]),
-          ),
-          const SizedBox(height: 28),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Material(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? const Color(0xFF3D3031)
-                  : const Color(0xFFEED6D3),
-              borderRadius: BorderRadius.circular(24),
-              child: InkWell(
-                onTap: onMood,
-                borderRadius: BorderRadius.circular(24),
-                child: Padding(
-                    padding: const EdgeInsets.all(18),
-                    child: Row(children: [
-                      CircleAvatar(
-                          backgroundColor: colors.surface.withValues(alpha: .7),
-                          child: mood == null
-                              ? Icon(Icons.sentiment_satisfied_alt_rounded,
-                                  color: colors.onSurface)
-                              : Text(mood.$2,
-                                  semanticsLabel: 'Current mood: ${mood.$1}',
-                                  style: const TextStyle(fontSize: 26))),
-                      const SizedBox(width: 14),
-                      Expanded(
-                          child: Text('How are you feeling today?',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleSmall
-                                  ?.copyWith(height: 1.4))),
-                      const Icon(Icons.chevron_right_rounded),
-                    ])),
-              ),
-            ),
+              ]);
+              if (constraints.maxWidth < 360 ||
+                  MediaQuery.textScalerOf(context).scale(16) > 20) {
+                return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [greeting, const SizedBox(height: 12), actions]);
+              }
+              return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [Expanded(child: greeting), actions]);
+            }),
           ),
           const SizedBox(height: 24),
           SingleChildScrollView(
@@ -234,11 +214,6 @@ class HomeDashboard extends StatelessWidget {
                 (Icons.favorite_border_rounded, 'Favorites', onFavorites),
                 (Icons.self_improvement_rounded, 'Meditate', onMeditate),
                 (Icons.history_rounded, 'Recently played', onRecent),
-                (
-                  Icons.notifications_none_rounded,
-                  'Notifications',
-                  onNotifications
-                )
               ]) ...[
                 ActionChip(
                     avatar: Icon(item.$1, size: 18),

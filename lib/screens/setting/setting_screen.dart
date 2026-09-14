@@ -36,7 +36,9 @@ class SettingScreen extends StatelessWidget {
   final ValueNotifier<bool> notificationToggle =
       ValueNotifier<bool>(true); // Default state
 
-  SettingScreen({super.key});
+  final bool isTab;
+
+  SettingScreen({super.key, this.isTab = false});
 
   // Load notification toggle state from SharedPreferences
   static Future<void> _loadNotificationState(
@@ -290,7 +292,7 @@ class SettingScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const CustomAppbar(headingTxt: ''),
+                        CustomAppbar(headingTxt: '', showBackButton: !isTab),
                         Expanded(
                           child: SingleChildScrollView(
                             padding: const EdgeInsets.only(top: 20, bottom: 28),

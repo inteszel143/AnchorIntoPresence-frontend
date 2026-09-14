@@ -13,7 +13,6 @@ class ColorCodes {
   static const Color clay = Color(0xFFBEA899);
 
   static const Color buttonActive = charcoal;
-  static const Color buttonInactive = sand;
   static const Color buttoncolor = taupe;
   static const Color backgroundcolor = cream;
   static const Color whiteNewReplacement = cream;

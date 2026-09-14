@@ -7,12 +7,14 @@ class AuthTextField extends StatefulWidget {
       required this.label,
       required this.controller,
       this.widthFactor = 1,
+      this.compact = false,
       this.keyboardType,
       this.obscureText = false,
       this.validator});
   final String label;
   final TextEditingController controller;
   final double widthFactor;
+  final bool compact;
   final TextInputType? keyboardType;
   final bool obscureText;
   final String? Function(String?)? validator;
@@ -70,6 +72,8 @@ class AuthTextFieldState extends State<AuthTextField> {
                 color: colorScheme.onSurface,
               ),
               decoration: InputDecoration(
+                constraints:
+                    widget.compact ? const BoxConstraints(minHeight: 48) : null,
                 hintText: widget.label,
                 hintStyle: TextStyle(
                   color: colorScheme.onSurfaceVariant,
@@ -77,10 +81,10 @@ class AuthTextFieldState extends State<AuthTextField> {
                 ),
                 filled: true,
                 fillColor: colorScheme.surfaceContainerHighest,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                contentPadding: EdgeInsets.symmetric(
+                    horizontal: 18, vertical: widget.compact ? 12 : 18),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 enabledBorder: hasError ? errorBorder : enabledBorder,
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),

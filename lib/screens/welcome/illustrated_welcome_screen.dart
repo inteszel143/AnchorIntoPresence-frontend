@@ -125,15 +125,31 @@ class _IllustratedWelcomeScreenState extends State<IllustratedWelcomeScreen> {
                                 child: Column(
                                   children: [
                                     ExcludeSemantics(
-                                      child: Image.asset(
-                                        'assets/images/onboarding/${page.illustration}-${dark ? 'dark' : 'light'}.png',
-                                        width: constraints.maxWidth,
-                                        height: illustrationHeight,
-                                        fit: constraints.maxWidth >
-                                                illustrationHeight * 1.2
-                                            ? BoxFit.contain
-                                            : BoxFit.cover,
-                                        alignment: Alignment.topCenter,
+                                      // Blend the artwork's baked-in background
+                                      // into the active surface in both themes.
+                                      child: ShaderMask(
+                                        blendMode: BlendMode.dstIn,
+                                        shaderCallback: (bounds) =>
+                                            const LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: [
+                                            Colors.white,
+                                            Colors.white,
+                                            Colors.transparent,
+                                          ],
+                                          stops: [0, .76, 1],
+                                        ).createShader(bounds),
+                                        child: Image.asset(
+                                          'assets/images/onboarding/${page.illustration}-${dark ? 'dark' : 'light'}.png',
+                                          width: constraints.maxWidth,
+                                          height: illustrationHeight,
+                                          fit: constraints.maxWidth >
+                                                  illustrationHeight * 1.2
+                                              ? BoxFit.contain
+                                              : BoxFit.cover,
+                                          alignment: Alignment.topCenter,
+                                        ),
                                       ),
                                     ),
                                     Padding(

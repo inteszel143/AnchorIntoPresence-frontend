@@ -28,7 +28,7 @@ class SettingItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final foreground = destructive ? colors.error : colors.onSurface;
+    final foreground = colors.onSurface;
     return InkWell(
       onTap: showToggle && onToggle != null && toggleValue != null
           ? () => onToggle!(!toggleValue!)
@@ -40,14 +40,8 @@ class SettingItemTile extends StatelessWidget {
             padding: const EdgeInsets.all(10),
             width: 42,
             height: 42,
-            decoration: BoxDecoration(
-              color: destructive ? colors.errorContainer : colors.surface,
-              borderRadius: BorderRadius.circular(13),
-            ),
             child: SvgPicture.asset(iconPath,
-                colorFilter: ColorFilter.mode(
-                    destructive ? colors.onErrorContainer : foreground,
-                    BlendMode.srcIn)),
+                colorFilter: ColorFilter.mode(foreground, BlendMode.srcIn)),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -81,8 +75,7 @@ class SettingItemTile extends StatelessWidget {
             )
           else
             Icon(Icons.chevron_right_rounded,
-                size: 20,
-                color: destructive ? colors.error : colors.onSurfaceVariant),
+                size: 20, color: colors.onSurfaceVariant),
         ]),
       ),
     );

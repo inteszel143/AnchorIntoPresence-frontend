@@ -11,10 +11,9 @@ class AppTabBar extends StatelessWidget {
 
   static const _items = [
     (Icons.home_rounded, 'Home'),
-    (Icons.self_improvement_rounded, 'Meditate'),
     (Icons.groups_rounded, 'Community'),
     (Icons.insights_rounded, 'Track'),
-    (Icons.person_rounded, 'Profile'),
+    (Icons.settings_rounded, 'Settings'),
   ];
 
   @override

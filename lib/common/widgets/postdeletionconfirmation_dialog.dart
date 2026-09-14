@@ -43,13 +43,11 @@ Future<void> showPostDeleteConfirmationDialog(
                           width: 74,
                           height: 74,
                           padding: EdgeInsets.all(17),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: ColorCodes.buttoncolor,
-                          ),
                           child: ClipOval(
                             child: SvgPicture.asset(
                               ImageConstants.svgDeleteIcon,
+                              colorFilter: const ColorFilter.mode(
+                                  ColorCodes.charcoal, BlendMode.srcIn),
                             ),
                           ),
                         ),
@@ -117,7 +115,7 @@ Future<void> showPostDeleteConfirmationDialog(
                               },
                               style: ElevatedButton.styleFrom(
                                 fixedSize: Size(135, 41),
-                                backgroundColor: ColorCodes.buttoncolor,
+                                backgroundColor: ColorCodes.buttonActive,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),

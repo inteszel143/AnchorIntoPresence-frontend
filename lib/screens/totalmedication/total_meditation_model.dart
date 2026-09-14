@@ -36,7 +36,7 @@ class TotalMeditationData {
       categories: (json['categories'] as List?)
               ?.whereType<Map<String, dynamic>>()
               .map((category) =>
-                  Category.fromJson(category as Map<String, dynamic>))
+                  Category.fromJson(category))
               .toList() ??
           [],
       week: (json['week'] as List?)

@@ -12,6 +12,7 @@ class CustomAppbar extends StatelessWidget {
   final void Function()? onTap;
   final Widget? image;
   final double rightPadding;
+  final bool showBackButton;
 
   const CustomAppbar({
     super.key,
@@ -21,6 +22,7 @@ class CustomAppbar extends StatelessWidget {
     this.onTap,
     this.image,
     this.rightPadding = 0,
+    this.showBackButton = true,
   });
 
   @override
@@ -51,7 +53,9 @@ class CustomAppbar extends StatelessWidget {
                 width: 48,
                 child: Align(
                     alignment: Alignment.centerLeft,
-                    child: AppBackButton(onPressed: onTap, icon: image))),
+                    child: showBackButton
+                        ? AppBackButton(onPressed: onTap, icon: image)
+                        : const SizedBox.shrink())),
             Expanded(
               child: Center(
                 child: visibility == null || headingTxt.isNotEmpty

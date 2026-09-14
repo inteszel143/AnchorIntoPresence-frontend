@@ -25,8 +25,9 @@ void main() {
               onTap: (index) => setState(() => selected = index),
             )),
           )));
+      expect(find.text('Meditate'), findsNothing);
       for (final (index, label)
-          in ['Home', 'Meditate', 'Community', 'Track', 'Profile'].indexed) {
+          in ['Home', 'Community', 'Track', 'Settings'].indexed) {
         await tester.tap(find.text(label));
         await tester.pumpAndSettle();
         expect(selected, index);
@@ -63,7 +64,7 @@ void main() {
             child: Scaffold(
                 bottomNavigationBar: RepaintBoundary(
                     key: key,
-                    child: AppTabBar(selectedIndex: 4, onTap: (_) {}))),
+                    child: AppTabBar(selectedIndex: 3, onTap: (_) {}))),
           )));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);

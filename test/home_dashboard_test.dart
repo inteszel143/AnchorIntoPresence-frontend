@@ -80,33 +80,51 @@ void main() {
                           fixture(mood: scale == 1 ? 'grounded' : 'connected'),
                       onProfile: () => action = 'profile',
                       onSearch: () => action = 'search',
-                      onMood: () => action = 'mood',
                       onFavorites: () => action = 'favorites',
                       onMeditate: () {},
                       onRecent: () {},
-                      onNotifications: () {},
+                      onNotifications: () => action = 'notifications',
                       onActivity: (item) => action = item.id,
                       onCategory: (_) {},
                       onResume: (_) => action = 'recent')),
             )));
         await tester.pumpAndSettle();
         expect(find.text('Hi,\nLuciana!'), findsOneWidget);
-        expect(find.text(scale == 1 ? '😌' : '🥰'), findsOneWidget);
+        expect(find.text('How are you feeling today?'), findsNothing);
         expect(
             find.byIcon(Icons.sentiment_satisfied_alt_rounded), findsNothing);
+        for (final tooltip in ['Search meditations', 'Notifications']) {
+          final buttonFinder = find.byWidgetPredicate(
+              (widget) => widget is IconButton && widget.tooltip == tooltip);
+          final button = tester.widget<IconButton>(buttonFinder);
+          final iconContext = tester.element(
+              find.descendant(of: buttonFinder, matching: find.byType(Icon)));
+          final foreground = IconTheme.of(iconContext).color!;
+          final background = button.style!.backgroundColor!.resolve({})!;
+          final luminances = [
+            foreground.computeLuminance(),
+            background.computeLuminance()
+          ]..sort();
+          expect((luminances.last + .05) / (luminances.first + .05),
+              greaterThanOrEqualTo(4.5));
+        }
         await tester.tap(find.byTooltip('Search meditations'));
         expect(action, 'search');
+        expect(find.widgetWithText(ActionChip, 'Notifications'), findsNothing);
+        await tester.tap(find.byTooltip('Notifications'));
+        expect(action, 'notifications');
         await tester.tap(find.byWidgetPredicate((widget) =>
             widget is Semantics && widget.properties.label == 'Open profile'));
         expect(action, 'profile');
-        await tester.ensureVisible(find.text('How are you feeling today?'));
-        await tester.tap(find.text('How are you feeling today?'));
-        expect(action, 'mood');
         await tester.ensureVisible(find.text('Favorites'));
         await tester.tap(find.text('Favorites'));
         expect(action, 'favorites');
         await tester.scrollUntilVisible(find.text('Finding calm'), 200,
             scrollable: find.byType(Scrollable).first);
+        await Scrollable.ensureVisible(
+            tester.element(find.text('Finding calm')),
+            alignment: 0.5);
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Finding calm'));
         expect(action, 'recent');
         await tester.drag(find.byType(ListView).first, const Offset(0, -500));

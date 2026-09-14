@@ -209,11 +209,11 @@ class ReminderTile extends StatelessWidget {
         reminder.weekdays.where((day) => day >= 0 && day < 7).toSet();
     final recurring = weekdays.isNotEmpty;
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
           color: colors.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(24)),
+          borderRadius: BorderRadius.circular(18)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           Icon(Icons.notifications_none_rounded,
@@ -228,18 +228,18 @@ class ReminderTile extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                       color: colors.onSurfaceVariant))),
         ]),
-        const SizedBox(height: 14),
+        const SizedBox(height: 6),
         Text(time,
             style: Theme.of(context)
                 .textTheme
-                .headlineLarge
+                .headlineSmall
                 ?.copyWith(fontWeight: FontWeight.w600)),
-        const SizedBox(height: 16),
+        const SizedBox(height: 10),
         if (recurring)
-          Wrap(spacing: 6, runSpacing: 6, children: [
+          Wrap(spacing: 4, runSpacing: 4, children: [
             for (var day = 0; day < 7; day++)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
                 decoration: BoxDecoration(
                     color: weekdays.contains(day)
                         ? colors.primary
@@ -259,9 +259,9 @@ class ReminderTile extends StatelessWidget {
                   ? 'No date selected'
                   : DateFormat.yMMMMd().format(reminder.date!.toLocal()),
               style: TextStyle(color: colors.onSurfaceVariant, fontSize: 14)),
-        const SizedBox(height: 18),
+        const SizedBox(height: 10),
         Divider(height: 1, color: colors.outlineVariant.withValues(alpha: .45)),
-        const SizedBox(height: 12),
+        const SizedBox(height: 4),
         Row(children: [
           Expanded(
               child: Text(
@@ -286,13 +286,14 @@ class ReminderTile extends StatelessWidget {
                                 initialDate: reminder.date?.toLocal(),
                                 initialDays: weekdays,
                               )));
-                      if (context.mounted)
+                      if (context.mounted) {
                         context.read<ReminderBloc>().add(FetchReminder());
+                      }
                     }),
           const SizedBox(width: 8),
           AppCircleButton(
               tooltip: 'Delete reminder',
-              icon: Icon(Icons.delete_outline_rounded, color: colors.error),
+              icon: Icon(Icons.delete_outline_rounded, color: colors.onSurface),
               onPressed: !enabled
                   ? null
                   : () => context

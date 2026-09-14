@@ -8,7 +8,7 @@ import '../screens/subscriptionmanagement/subscription_management.dart';
 import '../screens/community/community_screen.dart';
 import '../screens/meditate/meditate_screen.dart';
 import '../screens/dashboard/home_screen.dart';
-import '../screens/profile/profile_screen.dart';
+import '../screens/setting/setting_screen.dart';
 import '../screens/track/track_screen.dart';
 import '../utils/global.dart' as globals;
 
@@ -33,11 +33,14 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   List<Widget> get _pages => [
-        HomePage(onMeditate: () => _onItemTapped(1)),
-        const MeditateScreen(),
+        HomePage(
+          onMeditate: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const MeditateScreen()),
+          ),
+        ),
         CommunityScreen(),
         TrackScreen(),
-        const ProfileScreen(),
+        SettingScreen(isTab: true),
       ];
 
   void _onItemTapped(int index) {
@@ -65,7 +68,7 @@ class _MainScreenState extends State<MainScreen> {
         children: List.generate(
             pages.length,
             (index) => _visited.contains(index)
-                ? (index < 4 && !globals.isSubscribed
+                ? (index < 3 && !globals.isSubscribed
                     ? SubscriptionTabPage(
                         tabIndex: index,
                         onSubscribe: _openSubscriptionPlans,

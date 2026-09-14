@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/color_constants.dart';
@@ -8,10 +7,11 @@ class SocialLoginButton extends StatelessWidget {
   final String text;
   final dynamic icon;
   final Color? color;
+  final double height;
   final void Function()? onPressed;
 
   const SocialLoginButton(this.text, this.icon,
-      {this.color, super.key, this.onPressed});
+      {this.color, this.height = 60, super.key, this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,7 @@ class SocialLoginButton extends StatelessWidget {
       onTap: onPressed,
       child: Container(
         width: double.infinity,
-        height: 60,
+        height: height,
         decoration: BoxDecoration(
           color: Theme.of(context).brightness == Brightness.dark
               ? Theme.of(context).colorScheme.surfaceContainerHighest

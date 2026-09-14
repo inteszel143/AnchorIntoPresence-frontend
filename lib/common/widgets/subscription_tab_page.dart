@@ -29,22 +29,6 @@ class SubscriptionTabPage extends StatelessWidget {
       ],
     ),
     (
-      title: 'Meditate',
-      accent: Color(0xFF595959),
-      lightAccent: Color(0xFFE8B4B8),
-      tint: Color(0xFFEED6D3),
-      subtitle: 'Pause. Breathe. Be here.',
-      icon: Icons.self_improvement_rounded,
-      headline: 'Find your moment of stillness.',
-      description:
-          'Create space between the busy moments with guided practices to help you slow down and reconnect.',
-      benefits: [
-        'Explore the meditation library',
-        'Find a practice for how you feel',
-        'Return to your favorite sessions'
-      ],
-    ),
-    (
       title: 'Community',
       accent: Color(0xFF595959),
       lightAccent: Color(0xFFBEA899),
@@ -224,7 +208,7 @@ class SubscriptionTabPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
                       Text(
-                        'One subscription. Access to Home, Meditate, Community, and Track.',
+                        'One subscription. Access to Home, Community, and Track.',
                         textAlign: TextAlign.center,
                         style: theme.textTheme.bodySmall
                             ?.copyWith(color: colors.onSurfaceVariant),

@@ -1,3 +1,4 @@
+import '../../common/widgets/custom_appbar.dart';
 import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import '../../common/widgets/app_toast.dart';
@@ -65,26 +66,10 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
             child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
           child: Column(children: [
-            Builder(
-                builder: (context) => ValueListenableBuilder<bool>(
-                      valueListenable: ScrollTitlePage.visibilityOf(context)!,
-                      builder: (context, visible, _) => SizedBox(
-                        height: 56,
-                        child: Center(
-                            child: ExcludeSemantics(
-                          excluding: !visible,
-                          child: AnimatedOpacity(
-                            opacity: visible ? 1 : 0,
-                            duration: const Duration(milliseconds: 180),
-                            child: Text('Meditate',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleLarge
-                                    ?.copyWith(fontWeight: FontWeight.w700)),
-                          ),
-                        )),
-                      ),
-                    )),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: CustomAppbar(headingTxt: ''),
+            ),
             Expanded(
                 child: BlocConsumer<ActivityBloc, ActivityState>(
               listener: (context, state) {

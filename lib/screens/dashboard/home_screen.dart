@@ -1,12 +1,8 @@
 import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import 'home_dashboard.dart';
-import 'mood_picker.dart';
 import 'home_model.dart';
 import '../activity_listing/favourite_activities.dart';
 import '../activity_listing/getactivity_bloc/getrecent_activities_bloc.dart';
-import '../feeling_category/feelingcategory_bloc/feeling_categories_bloc.dart';
-import '../feeling_category/feelingcategory_bloc/feeling_categories_event.dart';
-import '../feeling_category/feelingcategory_bloc/feeling_categories_state.dart';
 import 'dashboard_bloc/recently_played_model.dart';
 import 'dart:async';
 import 'dart:io';
@@ -128,38 +124,6 @@ class _HomePageState extends State<HomePage> {
     _homePageBloc.add(FetchHomePageDataEvent(context: context, isSearch: true));
   }
 
-  Future<void> _showMood() async {
-    final homeState = _homePageBloc.state;
-    final currentMood = homeState is HomePageLoadedState
-        ? homeState.profileData.userMood
-        : null;
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      showDragHandle: true,
-      builder: (_) => BlocProvider(
-        create: (_) => CategoryBloc(),
-        child: BlocConsumer<CategoryBloc, CategoryState>(
-          listener: (context, state) {
-            if (state is CategorySuccess) Navigator.pop(context);
-          },
-          builder: (context, state) => MoodPicker(
-            initialMood: currentMood,
-            isSaving: state is CategoryLoading,
-            error: state is CategoryFailure ? state.error : null,
-            onConfirm: (mood) =>
-                context.read<CategoryBloc>().add(SelectCategory(mood: mood)),
-          ),
-        ),
-      ),
-    );
-    if (mounted) {
-      _homePageBloc
-          .add(FetchHomePageDataEvent(context: context, isSearch: true));
-    }
-  }
-
   Future<void> _openRecent(RecentlyPlayedActivity item) => _openVideo(
         id: item.id,
         name: item.name,
@@ -276,7 +240,6 @@ class _HomePageState extends State<HomePage> {
                       onProfile: () => _openPage(const UserprofileScreen()),
                       onSearch: () => widget.onMeditate?.call(),
                       onMeditate: () => widget.onMeditate?.call(),
-                      onMood: _showMood,
                       onFavorites: () => _openPage(const FavouriteActivity()),
                       onRecent: () => _openPage(RecentActivity(
                           recentlyPlayedActivities: state.recentlyPlayedData)),

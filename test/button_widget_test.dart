@@ -3,7 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mindfully_evolve_app/common/widgets/button_widget.dart';
 
 void main() {
-  testWidgets('shared button updates colors and blocks inactive taps', (tester) async {
+  testWidgets('shared button keeps its appearance and blocks inactive taps',
+      (tester) async {
     var taps = 0;
     Future<void> showButton(bool active, {bool externalTap = false}) async {
       final button = ButtonWidget(
@@ -29,16 +30,25 @@ void main() {
       final label = tester.widget<Text>(find.text('Login'));
       expect(label.style?.color, const Color(0xFFF0EAE6));
       expect(label.style?.fontWeight, FontWeight.w700);
-      BoxDecoration decoration() => tester.widget<Container>(
-        find.descendant(of: find.byType(ButtonWidget), matching: find.byType(Container)).first,
-      ).decoration! as BoxDecoration;
-      expect(decoration().color, const Color(0xFFDFCCC0));
+      BoxDecoration decoration() => tester
+          .widget<Container>(
+            find
+                .descendant(
+                    of: find.byType(ButtonWidget),
+                    matching: find.byType(Container))
+                .first,
+          )
+          .decoration! as BoxDecoration;
+      expect(decoration().color, const Color(0xFF595959));
+      final inactiveDecoration = decoration();
       final before = taps;
       await tester.tapAt(tester.getCenter(find.text('Login')));
       expect(taps, before);
 
       await showButton(true, externalTap: externalTap);
       expect(decoration().color, const Color(0xFF595959));
+      expect(decoration(), inactiveDecoration);
+      expect(tester.widget<Text>(find.text('Login')).style, label.style);
       await tester.tap(find.text('Login'));
       expect(taps, before + 1);
     }

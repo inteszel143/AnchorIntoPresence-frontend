@@ -157,7 +157,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       ),
                     ),
                     const SizedBox(height: 14),
-                    Text(
+                    Center(
+                      child: Text(
                         Strings.otpVerification,
                         textAlign: TextAlign.center,
                         style: TextStyle(
@@ -168,6 +169,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           letterSpacing: Fonts.headingLetterSpacing,
                           fontFamily: Fonts.heading,
                         ),
+                    ),
                     ),
                     const SizedBox(height: 14),
                     Text(

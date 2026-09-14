@@ -5,6 +5,7 @@ import '../screens/signin/deleteaccount_bloc/delete_account_bloc.dart';
 import '../screens/signin/deleteaccount_bloc/delete_account_event.dart';
 import '../screens/signin/signin_screen.dart';
 import '../utils/string_constants.dart';
+import '../utils/color_constants.dart';
 
 Future<void> showDeleteConfirmationDialog(BuildContext context) async {
   return showModalBottomSheet<void>(
@@ -18,7 +19,6 @@ Future<void> showDeleteConfirmationDialog(BuildContext context) async {
       borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
     ),
     builder: (sheetContext) {
-      final colors = Theme.of(sheetContext).colorScheme;
       return SafeArea(
         top: false,
         child: SingleChildScrollView(
@@ -36,11 +36,12 @@ Future<void> showDeleteConfirmationDialog(BuildContext context) async {
                 ),
               ),
               Center(
-                child: CircleAvatar(
-                  radius: 32,
-                  backgroundColor: colors.errorContainer,
+                child: SizedBox(
+                  width: 64,
+                  height: 64,
                   child: Icon(Icons.delete_outline_rounded,
-                      size: 28, color: colors.onErrorContainer),
+                      size: 28,
+                      color: Theme.of(sheetContext).colorScheme.onSurface),
                 ),
               ),
               const SizedBox(height: 20),
@@ -65,8 +66,8 @@ Future<void> showDeleteConfirmationDialog(BuildContext context) async {
                   );
                 },
                 style: FilledButton.styleFrom(
-                  backgroundColor: colors.error,
-                  foregroundColor: colors.onError,
+                  backgroundColor: ColorCodes.buttonActive,
+                  foregroundColor: ColorCodes.cream,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 ),

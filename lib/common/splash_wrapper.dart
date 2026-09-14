@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mindfully_evolve_app/common/widgets/main_page.dart';
 import 'package:mindfully_evolve_app/screens/community/post_detail_screen.dart';
-import 'package:mindfully_evolve_app/screens/dashboard/home_model.dart';
 import 'package:mindfully_evolve_app/screens/signin/signin_screen.dart';
 import 'package:mindfully_evolve_app/screens/signup/signup_screen.dart';
 import 'package:mindfully_evolve_app/screens/welcome/welcome_screen.dart';

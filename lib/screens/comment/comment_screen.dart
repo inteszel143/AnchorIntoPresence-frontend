@@ -309,7 +309,7 @@ class _CommentSectionState extends State<CommentSection> {
             TextButton(onPressed: widget.onReply, child: const Text('Reply')),
             if (userId == comment.userId)
               TextButton(
-                  style: TextButton.styleFrom(foregroundColor: colors.error),
+                  style: TextButton.styleFrom(foregroundColor: colors.onSurface),
                   onPressed: () => showCommentDeleteConfirmationDialog(
                       context, widget.post, comment.id),
                   child: const Text('Delete')),
@@ -354,7 +354,7 @@ class SubCommentSection extends StatelessWidget {
                   ?.copyWith(height: 1.5)),
           if (userId == reply.userId)
             TextButton(
-                style: TextButton.styleFrom(foregroundColor: colors.error),
+                style: TextButton.styleFrom(foregroundColor: colors.onSurface),
                 onPressed: () => showCommentDeleteConfirmationDialog(
                     context, post, reply.id),
                 child: const Text('Delete')),
@@ -382,7 +382,9 @@ class _MessageInputState extends State<MessageInput> {
 
   void _send(BuildContext context) {
     if (_controller.text.trim().isEmpty ||
-        context.read<CommentBloc>().state is CommentPosting) return;
+        context.read<CommentBloc>().state is CommentPosting) {
+      return;
+    }
     context.read<CommentBloc>().add(
         PostCommentEvent(widget.postId, _parentId, _controller.text.trim()));
   }
