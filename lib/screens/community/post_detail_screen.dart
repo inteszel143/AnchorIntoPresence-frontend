@@ -88,7 +88,7 @@ class PostDetailScreen extends StatelessWidget {
                                           fontSize: 12,
                                           fontWeight: FontWeight.w400,
                                           fontFamily: Fonts.body,
-                                          color: Color(0xff51585C),
+                                          color: Color(0xFF595959),
                                         ),
                                       ),
                                     ],

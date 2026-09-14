@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 const moodOptions = [
-  ('Grounded', '😌', Color(0xFFDDE8DC)),
-  ('Aligned', '😊', Color(0xFFF6DFCD)),
-  ('Calm', '☺️', Color(0xFFDED5EB)),
-  ('Steady', '🙂', Color(0xFFD7E6F1)),
-  ('Connected', '🥰', Color(0xFFF5DADD)),
+  ('Grounded', '😌', Color(0xFFD8E2DC)),
+  ('Aligned', '😊', Color(0xFFDFCCC0)),
+  ('Calm', '☺️', Color(0xFFEED6D3)),
+  ('Steady', '🙂', Color(0xFFB2A89F)),
+  ('Connected', '🥰', Color(0xFFE8B4B8)),
 ];
 
 (String, String, Color)? moodOptionFor(String? value) {

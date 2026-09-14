@@ -27,18 +27,18 @@ void main() {
     for (final externalTap in [false, true]) {
       await showButton(false, externalTap: externalTap);
       final label = tester.widget<Text>(find.text('Login'));
-      expect(label.style?.color, Colors.white);
+      expect(label.style?.color, const Color(0xFFF0EAE6));
       expect(label.style?.fontWeight, FontWeight.w700);
       BoxDecoration decoration() => tester.widget<Container>(
         find.descendant(of: find.byType(ButtonWidget), matching: find.byType(Container)).first,
       ).decoration! as BoxDecoration;
-      expect(decoration().color, const Color(0xFFAEABA4));
+      expect(decoration().color, const Color(0xFFDFCCC0));
       final before = taps;
       await tester.tapAt(tester.getCenter(find.text('Login')));
       expect(taps, before);
 
       await showButton(true, externalTap: externalTap);
-      expect(decoration().color, const Color(0xFF514C40));
+      expect(decoration().color, const Color(0xFF595959));
       await tester.tap(find.text('Login'));
       expect(taps, before + 1);
     }

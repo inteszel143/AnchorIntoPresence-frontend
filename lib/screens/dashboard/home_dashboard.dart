@@ -197,7 +197,7 @@ class HomeDashboard extends StatelessWidget {
             child: Material(
               color: Theme.of(context).brightness == Brightness.dark
                   ? const Color(0xFF3D3031)
-                  : const Color(0xFFF6E9E7),
+                  : const Color(0xFFEED6D3),
               borderRadius: BorderRadius.circular(24),
               child: InkWell(
                 onTap: onMood,

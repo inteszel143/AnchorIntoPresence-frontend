@@ -57,7 +57,7 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
     final inactiveTabColor =
         isDark ? colors.surfaceContainerHighest : Colors.white;
     final inactiveTabForeground =
-        isDark ? colors.onSurfaceVariant : const Color(0xFF58584F);
+        isDark ? colors.onSurfaceVariant : const Color(0xFF595959);
     return AppScaffold(
       body: ScrollTitlePage(
         title: 'Meditate',

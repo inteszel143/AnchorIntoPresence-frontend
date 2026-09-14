@@ -22,8 +22,8 @@ class ButtonWidget extends StatelessWidget {
   static ButtonStyle get primaryStyle => ElevatedButton.styleFrom(
         backgroundColor: ColorCodes.buttonActive,
         disabledBackgroundColor: ColorCodes.buttonInactive,
-        foregroundColor: Colors.white,
-        disabledForegroundColor: Colors.white,
+        foregroundColor: ColorCodes.cream,
+        disabledForegroundColor: ColorCodes.cream,
         textStyle: const TextStyle(
           fontFamily: Fonts.body,
           fontWeight: FontWeight.w700,
@@ -62,7 +62,7 @@ class ButtonWidget extends StatelessWidget {
                   btnTxt,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: ColorCodes.cream,
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     fontFamily: Fonts.body,
@@ -94,7 +94,7 @@ class ButtonWidget extends StatelessWidget {
         btnTxt,
         textAlign: TextAlign.center,
         style: TextStyle(
-          color: Colors.white,
+          color: ColorCodes.cream,
           fontSize: 16,
           fontWeight: FontWeight.w700,
           fontFamily: Fonts.body,
@@ -114,8 +114,8 @@ class ButtonWidget extends StatelessWidget {
                 child: InkWell(
                   onTap: isActive ? onTap : null,
                   borderRadius: borderRadius,
-                  splashColor: Colors.white.withValues(alpha: 0.2),
-                  highlightColor: Colors.white.withValues(alpha: 0.1),
+                  splashColor: ColorCodes.cream.withValues(alpha: 0.2),
+                  highlightColor: ColorCodes.cream.withValues(alpha: 0.1),
                   child: content,
                 ),
               ),

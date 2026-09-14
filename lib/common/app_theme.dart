@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../utils/fonts.dart';
+import '../utils/color_constants.dart';
 import 'widgets/button_widget.dart';
 
 class AppTheme {
@@ -11,18 +12,28 @@ class AppTheme {
   static ThemeData _build(Brightness brightness) {
     final dark = brightness == Brightness.dark;
     final scheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF514C40),
+      seedColor: ColorCodes.taupe,
       brightness: dark ? Brightness.dark : Brightness.light,
     ).copyWith(
-      surface: dark ? const Color(0xFF211F1C) : const Color(0xFFF7F5F1),
-      surfaceContainerHighest: dark ? const Color(0xFF2C2925) : Colors.white,
-      surfaceContainerLow: dark ? const Color(0xFF292620) : Colors.white,
-      onSurface: dark ? const Color(0xFFF3EEE7) : const Color(0xFF47423C),
+      surface: dark ? const Color(0xFF211F1C) : ColorCodes.cream,
+      surfaceContainerHighest: dark ? const Color(0xFF2C2925) : ColorCodes.cream,
+      surfaceContainerLow: dark ? const Color(0xFF292620) : ColorCodes.cream,
+      onSurface: dark ? ColorCodes.cream : ColorCodes.charcoal,
       onSurfaceVariant:
-          dark ? const Color(0xFFC8BFB3) : const Color(0xFF746D63),
-      primary: dark ? const Color(0xFFDED0B9) : const Color(0xFF514C40),
-      onPrimary: dark ? const Color(0xFF29251F) : Colors.white,
-      outline: dark ? const Color(0xFF9B8E7B) : const Color(0xFFAEA08A),
+          dark ? ColorCodes.sand : ColorCodes.charcoal,
+      primary: dark ? ColorCodes.taupe : ColorCodes.charcoal,
+      onPrimary: dark ? const Color(0xFF29251F) : ColorCodes.cream,
+      primaryContainer: ColorCodes.taupe,
+      onPrimaryContainer: const Color(0xFF29251F),
+      secondary: dark ? ColorCodes.rose : ColorCodes.charcoal,
+      onSecondary: dark ? const Color(0xFF29251F) : ColorCodes.cream,
+      secondaryContainer: ColorCodes.blush,
+      onSecondaryContainer: ColorCodes.charcoal,
+      tertiary: dark ? ColorCodes.sage : ColorCodes.charcoal,
+      onTertiary: dark ? const Color(0xFF29251F) : ColorCodes.cream,
+      tertiaryContainer: ColorCodes.sage,
+      onTertiaryContainer: ColorCodes.charcoal,
+      outline: dark ? ColorCodes.mauve : ColorCodes.mauve,
     );
     final theme = ThemeData(
       useMaterial3: true,

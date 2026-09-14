@@ -14,13 +14,13 @@ class AppToast {
       ..showSnackBar(SnackBar(
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 3),
-        backgroundColor: const Color(0xFF4B503D),
+        backgroundColor: const Color(0xFF595959),
         elevation: 6,
         margin: EdgeInsets.fromLTRB(horizontalMargin, 0, horizontalMargin, 24),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
-          side: const BorderSide(color: Color(0xFF747A62)),
+          side: const BorderSide(color: Color(0xFFA49393)),
         ),
         content: Row(children: [
           Icon(

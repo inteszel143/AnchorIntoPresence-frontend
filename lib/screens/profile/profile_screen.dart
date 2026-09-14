@@ -245,8 +245,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _statIcon(IconData icon, ColorScheme colors) => CircleAvatar(
         radius: 17,
-        backgroundColor: const Color(0xFFE8E3D8),
-        child: Icon(icon, size: 20, color: const Color(0xFF514C40)),
+        backgroundColor: const Color(0xFFDFCCC0),
+        child: Icon(icon, size: 20, color: const Color(0xFF595959)),
       );
 
   Widget _stat(String label, String value, IconData icon, ColorScheme colors) =>

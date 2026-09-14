@@ -195,7 +195,7 @@ class MeditationListingCode extends StatelessWidget {
                                 child: Container(
                                   padding: const EdgeInsets.all(20),
                                   decoration: BoxDecoration(
-                                    color: Color(0xFFF4DADA),
+                                    color: Color(0xFFEED6D3),
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                   child: Column(
@@ -241,7 +241,7 @@ class MeditationListingCode extends StatelessWidget {
                               vertical: 8), // Space between cards
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF4DADA),
+                            color: const Color(0xFFEED6D3),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Stack(

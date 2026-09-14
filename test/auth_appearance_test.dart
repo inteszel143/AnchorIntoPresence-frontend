@@ -32,7 +32,7 @@ void main() {
               theme.scaffoldBackgroundColor,
               brightness == Brightness.dark
                   ? const Color(0xFF211F1C)
-                  : const Color(0xFFF7F5F1));
+                  : const Color(0xFFF0EAE6));
           double contrast(Color a, Color b) {
             final first = a.computeLuminance();
             final second = b.computeLuminance();
