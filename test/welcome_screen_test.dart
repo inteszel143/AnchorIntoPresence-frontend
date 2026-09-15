@@ -113,7 +113,7 @@ void main() {
   });
 
   testWidgets(
-      'system theme changes update artwork and contrast without resetting the page',
+      'system theme changes switch sun artwork and preserve contrast and page',
       (tester) async {
     tester.platformDispatcher.platformBrightnessTestValue = Brightness.light;
     addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
@@ -123,6 +123,16 @@ void main() {
       themeMode: ThemeMode.system,
       home: const IllustratedWelcomeScreen(),
     ));
+    // The opening page must also react immediately to the system theme.
+    for (final brightness in [Brightness.dark, Brightness.light]) {
+      tester.platformDispatcher.platformBrightnessTestValue = brightness;
+      await tester.pumpAndSettle();
+      expect(find.text('Find your calm'), findsOneWidget);
+      expect(
+          find.image(AssetImage(
+              'assets/images/onboarding/${brightness == Brightness.dark ? 'sunset' : 'sunrise'}.png')),
+          findsOneWidget);
+    }
     await tester.tap(find.text('Next'));
     await tester.pumpAndSettle();
 
@@ -142,10 +152,9 @@ void main() {
           greaterThanOrEqualTo(4.5));
       expect(background.computeLuminance(),
           brightness == Brightness.dark ? lessThan(.1) : greaterThan(.8));
-      final themeName = brightness == Brightness.dark ? 'dark' : 'light';
       expect(
-          find.image(
-              AssetImage('assets/images/onboarding/rest-$themeName.png')),
+          find.image(AssetImage(
+              'assets/images/onboarding/${brightness == Brightness.dark ? 'sunset' : 'sunrise'}.png')),
           findsOneWidget);
       final button = tester.widget<FilledButton>(find.byType(FilledButton));
       final buttonColors = [
@@ -191,10 +200,9 @@ void main() {
           ),
         ),
       ));
-      for (final name in ['calm', 'rest', 'connection']) {
+      for (final name in ['sunrise', 'sunset', 'sunrise-sunset']) {
         await tester.runAsync(() => precacheImage(
-            AssetImage(
-                'assets/images/onboarding/$name-${dark ? 'dark' : 'light'}.png'),
+            AssetImage('assets/images/onboarding/$name.png'),
             boundaryKey.currentContext!));
       }
       for (var page = 0; page < 3; page++) {

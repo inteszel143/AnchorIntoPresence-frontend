@@ -32,8 +32,14 @@ startup behavior is preserved.
 
 The illustrated welcome follows the app's active `ThemeData` (system light/dark
 mode in the main app). Backgrounds, text, buttons, progress indicators, disabled
-states and system bars use the app's warm neutral palette. Each scene has matching
-`-light.png` and `-dark.png` artwork so dark mode does not show a bright image panel.
+states and system bars use the app's warm neutral palette. The sunrise and sunset
+mascots use transparent watercolor artwork that blends into either theme without
+a bright image panel: `sunrise.png` in light mode and `sunset.png` in dark mode for the first two
+pages, with `sunrise-sunset.png` for connection in both themes. All images live
+in `assets/images/onboarding/`. Artwork updates immediately when the theme changes.
+The shared `BeachIllustration` widget frames each sun image with a sandy
+shoreline and two muted palm trees. Its scenery adapts to light and dark mode
+and scales with the illustration area.
 Changing theme preserves the current onboarding page. The legacy screen is untouched.
 
 Render both themes and run navigation/contrast checks with:

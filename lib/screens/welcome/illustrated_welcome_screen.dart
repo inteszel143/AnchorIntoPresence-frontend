@@ -5,6 +5,7 @@ import '../../common/local_storage.dart';
 import '../../common/main_screen.dart';
 import '../../utils/fonts.dart';
 import '../account/account_screen.dart';
+import 'beach_illustration.dart';
 
 /// The illustrated welcome is separate so the original design stays restorable.
 class IllustratedWelcomeScreen extends StatefulWidget {
@@ -18,19 +19,16 @@ class IllustratedWelcomeScreen extends StatefulWidget {
 class _IllustratedWelcomeScreenState extends State<IllustratedWelcomeScreen> {
   static const _pages = [
     (
-      illustration: 'calm',
       title: 'Find your calm',
       description:
           'Slow down with guided meditations.\nTake a breath and come back to the present.',
     ),
     (
-      illustration: 'rest',
       title: 'Make room for rest',
       description:
           'Let the busy moments soften.\nCreate a little space to pause and unwind.',
     ),
     (
-      illustration: 'connection',
       title: 'Feel more connected',
       description:
           'Check in with yourself and grow together.\nSmall steps toward a more mindful day.',
@@ -115,6 +113,11 @@ class _IllustratedWelcomeScreenState extends State<IllustratedWelcomeScreen> {
                               setState(() => _index = index),
                           itemBuilder: (context, index) {
                             final page = _pages[index];
+                            final illustration = index == _pages.length - 1
+                                ? 'sunrise-sunset'
+                                : dark
+                                    ? 'sunset'
+                                    : 'sunrise';
                             return LayoutBuilder(
                                 builder: (context, constraints) {
                               final illustrationHeight =
@@ -124,33 +127,10 @@ class _IllustratedWelcomeScreenState extends State<IllustratedWelcomeScreen> {
                                 key: PageStorageKey('welcome-page-$index'),
                                 child: Column(
                                   children: [
-                                    ExcludeSemantics(
-                                      // Blend the artwork's baked-in background
-                                      // into the active surface in both themes.
-                                      child: ShaderMask(
-                                        blendMode: BlendMode.dstIn,
-                                        shaderCallback: (bounds) =>
-                                            const LinearGradient(
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          colors: [
-                                            Colors.white,
-                                            Colors.white,
-                                            Colors.transparent,
-                                          ],
-                                          stops: [0, .76, 1],
-                                        ).createShader(bounds),
-                                        child: Image.asset(
-                                          'assets/images/onboarding/${page.illustration}-${dark ? 'dark' : 'light'}.png',
-                                          width: constraints.maxWidth,
-                                          height: illustrationHeight,
-                                          fit: constraints.maxWidth >
-                                                  illustrationHeight * 1.2
-                                              ? BoxFit.contain
-                                              : BoxFit.cover,
-                                          alignment: Alignment.topCenter,
-                                        ),
-                                      ),
+                                    BeachIllustration(
+                                      asset:
+                                          'assets/images/onboarding/$illustration.png',
+                                      height: illustrationHeight,
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.fromLTRB(
