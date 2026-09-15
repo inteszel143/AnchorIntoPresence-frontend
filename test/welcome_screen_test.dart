@@ -112,8 +112,7 @@ void main() {
     }
   });
 
-  testWidgets(
-      'system theme changes switch sun artwork and preserve contrast and page',
+  testWidgets('theme selects the mascot and each step selects its expression',
       (tester) async {
     tester.platformDispatcher.platformBrightnessTestValue = Brightness.light;
     addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
@@ -123,7 +122,7 @@ void main() {
       themeMode: ThemeMode.system,
       home: const IllustratedWelcomeScreen(),
     ));
-    // The opening page must also react immediately to the system theme.
+    // Theme selects sunrise/sunset without changing the current step.
     for (final brightness in [Brightness.dark, Brightness.light]) {
       tester.platformDispatcher.platformBrightnessTestValue = brightness;
       await tester.pumpAndSettle();
@@ -154,7 +153,7 @@ void main() {
           brightness == Brightness.dark ? lessThan(.1) : greaterThan(.8));
       expect(
           find.image(AssetImage(
-              'assets/images/onboarding/${brightness == Brightness.dark ? 'sunset' : 'sunrise'}.png')),
+              'assets/images/onboarding/${brightness == Brightness.dark ? 'sunset' : 'sunrise'}-rest.png')),
           findsOneWidget);
       final button = tester.widget<FilledButton>(find.byType(FilledButton));
       final buttonColors = [
@@ -170,6 +169,18 @@ void main() {
           .value;
       expect(overlay.statusBarIconBrightness,
           brightness == Brightness.dark ? Brightness.light : Brightness.dark);
+      expect(tester.takeException(), isNull);
+    }
+    await tester.tap(find.text('Next'));
+    await tester.pumpAndSettle();
+    for (final brightness in [Brightness.dark, Brightness.light]) {
+      tester.platformDispatcher.platformBrightnessTestValue = brightness;
+      await tester.pumpAndSettle();
+      expect(find.text('Feel more connected'), findsOneWidget);
+      expect(
+          find.image(AssetImage(
+              'assets/images/onboarding/${brightness == Brightness.dark ? 'sunset' : 'sunrise'}-connected.png')),
+          findsOneWidget);
       expect(tester.takeException(), isNull);
     }
   });
@@ -200,7 +211,8 @@ void main() {
           ),
         ),
       ));
-      for (final name in ['sunrise', 'sunset', 'sunrise-sunset']) {
+      for (final expression in ['', '-rest', '-connected']) {
+        final name = '${dark ? 'sunset' : 'sunrise'}$expression';
         await tester.runAsync(() => precacheImage(
             AssetImage('assets/images/onboarding/$name.png'),
             boundaryKey.currentContext!));

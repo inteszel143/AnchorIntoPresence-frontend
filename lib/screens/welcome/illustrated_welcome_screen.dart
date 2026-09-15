@@ -19,16 +19,19 @@ class IllustratedWelcomeScreen extends StatefulWidget {
 class _IllustratedWelcomeScreenState extends State<IllustratedWelcomeScreen> {
   static const _pages = [
     (
+      expression: '',
       title: 'Find your calm',
       description:
           'Slow down with guided meditations.\nTake a breath and come back to the present.',
     ),
     (
+      expression: '-rest',
       title: 'Make room for rest',
       description:
           'Let the busy moments soften.\nCreate a little space to pause and unwind.',
     ),
     (
+      expression: '-connected',
       title: 'Feel more connected',
       description:
           'Check in with yourself and grow together.\nSmall steps toward a more mindful day.',
@@ -113,11 +116,7 @@ class _IllustratedWelcomeScreenState extends State<IllustratedWelcomeScreen> {
                               setState(() => _index = index),
                           itemBuilder: (context, index) {
                             final page = _pages[index];
-                            final illustration = index == _pages.length - 1
-                                ? 'sunrise-sunset'
-                                : dark
-                                    ? 'sunset'
-                                    : 'sunrise';
+                            final mascot = dark ? 'sunset' : 'sunrise';
                             return LayoutBuilder(
                                 builder: (context, constraints) {
                               final illustrationHeight =
@@ -129,7 +128,7 @@ class _IllustratedWelcomeScreenState extends State<IllustratedWelcomeScreen> {
                                   children: [
                                     BeachIllustration(
                                       asset:
-                                          'assets/images/onboarding/$illustration.png',
+                                          'assets/images/onboarding/$mascot${page.expression}.png',
                                       height: illustrationHeight,
                                     ),
                                     Padding(

@@ -34,9 +34,18 @@ The illustrated welcome follows the app's active `ThemeData` (system light/dark
 mode in the main app). Backgrounds, text, buttons, progress indicators, disabled
 states and system bars use the app's warm neutral palette. The sunrise and sunset
 mascots use transparent watercolor artwork that blends into either theme without
-a bright image panel: `sunrise.png` in light mode and `sunset.png` in dark mode for the first two
-pages, with `sunrise-sunset.png` for connection in both themes. All images live
-in `assets/images/onboarding/`. Artwork updates immediately when the theme changes.
+a bright image panel. Theme and step select the artwork independently:
+
+| Step | Light mode | Dark mode | Expression |
+| --- | --- | --- | --- |
+| Find your calm | `sunrise.png` | `sunset.png` | Calm, gentle smile |
+| Make room for rest | `sunrise-rest.png` | `sunset-rest.png` | Sleepy, relaxed yawn |
+| Feel more connected | `sunrise-connected.png` | `sunset-connected.png` | Happy, welcoming smile |
+
+All images live in `assets/images/onboarding/`. Sunrise appears only in light
+mode and sunset only in dark mode. Changing theme preserves the current step
+and its expression. Expression variants were made with the built-in imagegen
+tool; prompts are recorded in `docs/onboarding-artwork-prompts.md`.
 The shared `BeachIllustration` widget frames each sun image with a sandy
 shoreline and two muted palm trees. Its scenery adapts to light and dark mode
 and scales with the illustration area.
