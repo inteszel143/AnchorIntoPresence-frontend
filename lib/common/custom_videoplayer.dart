@@ -7,6 +7,8 @@ import 'package:video_player/video_player.dart';
 class OnlineVideoPlayer extends StatefulWidget {
   final String videoUrl;
   final Uint8List? thumbnail;
+  final String? thumbnailUrl;
+  final ValueChanged<Duration>? onInitialized;
   final bool isFullscreen;
   final Duration initialPosition;
   final Function(Duration)? onProgress;
@@ -15,6 +17,8 @@ class OnlineVideoPlayer extends StatefulWidget {
     super.key,
     required this.videoUrl,
     this.thumbnail,
+    this.thumbnailUrl,
+    this.onInitialized,
     this.isFullscreen = false,
     this.initialPosition = Duration.zero,
     this.onProgress,
@@ -38,6 +42,7 @@ class _OnlineVideoPlayerState extends State<OnlineVideoPlayer> {
     _initializeVideoPlayerFuture = _controller.initialize().then((_) async {
       if (!mounted) return;
       setState(() {});
+      widget.onInitialized?.call(_controller.value.duration);
       if (widget.initialPosition > Duration.zero) {
         await _controller.seekTo(widget.initialPosition);
       }
@@ -245,6 +250,12 @@ class _OnlineVideoPlayerState extends State<OnlineVideoPlayer> {
           return Stack(fit: StackFit.expand, children: [
             if (widget.thumbnail != null && widget.thumbnail!.isNotEmpty)
               Image.memory(widget.thumbnail!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+            if ((widget.thumbnail == null || widget.thumbnail!.isEmpty) &&
+                widget.thumbnailUrl != null &&
+                widget.thumbnailUrl!.isNotEmpty)
+              Image.network(widget.thumbnailUrl!,
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => const SizedBox.shrink()),
             const ColoredBox(color: Colors.black54),

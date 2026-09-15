@@ -6,17 +6,14 @@ import '../activity_listing/getactivity_bloc/getrecent_activities_bloc.dart';
 import 'dashboard_bloc/recently_played_model.dart';
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:mindfully_evolve_app/screens/subscriptionmanagement/subscription_management.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:video_player/video_player.dart';
 
 import '../../utils/color_constants.dart';
 import '../../utils/fonts.dart';
@@ -66,32 +63,6 @@ class _HomePageState extends State<HomePage> {
     _debounce?.cancel();
     _homePageBloc.close();
     super.dispose();
-  }
-
-  Future<Uint8List> fetchImageBytes(String url) async {
-    final response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      return response.bodyBytes;
-    } else {
-      throw Exception('Failed to load image');
-    }
-  }
-
-  Future<String> _getVideoDuration(String url) async {
-    try {
-      final controller = VideoPlayerController.networkUrl(Uri.parse(url));
-      await controller.initialize();
-      final duration = controller.value.duration;
-      controller.dispose();
-      final minutes =
-          duration.inMinutes.remainder(60).toString().padLeft(2, '0');
-      final seconds =
-          duration.inSeconds.remainder(60).toString().padLeft(2, '0');
-      return '$minutes:$seconds';
-    } catch (e) {
-      debugPrint("Unable to read the video duration.");
-      return "--:--";
-    }
   }
 
   Future<XFile?> captureWidget(GlobalKey key, String fileName) async {
@@ -193,13 +164,7 @@ class _HomePageState extends State<HomePage> {
       required List<String> tags,
       required bool isFavorite,
       String? duration}) async {
-    Uint8List bytes = Uint8List(0);
-    try {
-      bytes = await fetchImageBytes(HomeDashboard.imageUrl(thumbnail));
-    } catch (_) {}
     final videoUrl = HomeDashboard.imageUrl(video);
-    final length = duration ?? await _getVideoDuration(videoUrl);
-    if (!mounted) return;
     await _openPage(MultiBlocProvider(
         providers: [
           BlocProvider(create: (_) => PostActivityBloc()),
@@ -207,9 +172,10 @@ class _HomePageState extends State<HomePage> {
         ],
         child: ActivityDetailScreen(
             videoUrl: videoUrl,
-            thumbnail: bytes,
+            thumbnail: null,
+            thumbnailUrl: HomeDashboard.imageUrl(thumbnail),
             name: name,
-            duration: length,
+            duration: duration ?? '--:--',
             tags: tags,
             description: description,
             activityId: id,

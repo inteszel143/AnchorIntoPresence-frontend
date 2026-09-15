@@ -18,6 +18,7 @@ import 'activity_bloc/post_activity_event.dart';
 class ActivityDetailScreen extends StatefulWidget {
   final String videoUrl;
   final Uint8List? thumbnail;
+  final String? thumbnailUrl;
   final String name;
   final String duration;
   final List<String> tags;
@@ -29,6 +30,7 @@ class ActivityDetailScreen extends StatefulWidget {
     super.key,
     required this.videoUrl,
     required this.thumbnail,
+    this.thumbnailUrl,
     required this.name,
     required this.duration,
     required this.tags,
@@ -47,11 +49,13 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
   // Keeps track of the user's current video progress for activity tracking and completion.
   final ValueNotifier<Duration> watchedDuration = ValueNotifier(Duration.zero);
   bool hasSentStartedEvent = false;
+  late String _duration;
 
   @override
   void initState() {
     super.initState();
     isFavoriteNotifier = ValueNotifier(widget.isFavorite);
+    _duration = widget.duration;
   }
 
   @override
@@ -116,8 +120,8 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
                                 ?.copyWith(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 14),
                         Wrap(spacing: 8, runSpacing: 8, children: [
-                          if (widget.duration != '--:--')
-                            _chip(context, widget.duration,
+                          if (_duration != '--:--' && _duration.isNotEmpty)
+                            _chip(context, _duration,
                                 icon: Icons.schedule_rounded),
                           for (final tag in widget.tags) _chip(context, tag),
                         ]),
@@ -136,6 +140,12 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
                                 child: OnlineVideoPlayer(
                                   videoUrl: widget.videoUrl,
                                   thumbnail: widget.thumbnail,
+                                  thumbnailUrl: widget.thumbnailUrl,
+                                  onInitialized: (duration) {
+                                    if (!mounted) return;
+                                    setState(() =>
+                                        _duration = formatDuration(duration));
+                                  },
                                   onProgress: (position) {
                                     watchedDuration.value = position;
                                     if (!hasSentStartedEvent &&
@@ -146,7 +156,7 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
                                               activityId: widget.activityId,
                                               videoTimestamp:
                                                   formatDuration(position),
-                                              totalVideoTime: widget.duration,
+                                              totalVideoTime: _duration,
                                               isCompleted: false));
                                     }
                                   },
@@ -210,7 +220,7 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
                                         MarkAsCompleteCheckbox(
                                       activityId: widget.activityId,
                                       videoTimestamp: formatDuration(position),
-                                      totalVideoTime: widget.duration,
+                                      totalVideoTime: _duration,
                                       isChecked: false,
                                     ),
                                   ),
