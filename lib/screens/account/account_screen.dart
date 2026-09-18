@@ -41,9 +41,6 @@ class AccountOnboardingScreen extends StatelessWidget {
                       Center(
                         child: Image.asset(
                           'assets/icons/tina-logo.png',
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? Theme.of(context).colorScheme.onSurface
-                              : null,
                           width: 120,
                           height: 100,
                           fit: BoxFit.contain,

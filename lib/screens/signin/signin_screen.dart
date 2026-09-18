@@ -129,13 +129,6 @@ class _SigninScreenState extends State<SigninScreen> {
                                             Center(
                                               child: Image.asset(
                                                   'assets/icons/tina-logo.png',
-                                                  color: Theme.of(context)
-                                                              .brightness ==
-                                                          Brightness.dark
-                                                      ? Theme.of(context)
-                                                          .colorScheme
-                                                          .onSurface
-                                                      : null,
                                                   width: 180,
                                                   height: 160,
                                                   fit: BoxFit.contain,

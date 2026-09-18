@@ -30,26 +30,33 @@ startup behavior is preserved.
 
 ## Brand palette and dark mode
 
-The illustrated welcome follows the app's active `ThemeData` (system light/dark
-mode in the main app). Backgrounds, text, buttons, progress indicators, disabled
-states and system bars use the app's warm neutral palette. The sunrise and sunset
-mascots use transparent watercolor artwork that blends into either theme without
-a bright image panel. Theme and step select the artwork independently:
+The illustrated welcome now uses the **Golden Stillness** direction from
+`../design/mandala-light-concepts/golden-stillness.png` (the selected
+`output/mandala-light-concepts/01-golden-stillness.png` reference).
 
-| Step | Light mode | Dark mode | Expression |
-| --- | --- | --- | --- |
-| Find your calm | `sunrise.png` | `sunset.png` | Calm, gentle smile |
-| Make room for rest | `sunrise-rest.png` | `sunset-rest.png` | Sleepy, relaxed yawn |
-| Feel more connected | `sunrise-connected.png` | `sunset-connected.png` | Happy, welcoming smile |
+All three steps use the global `AppBackground` from
+`lib/common/widgets/app_scaffold.dart`, including its existing light/dark cloud
+textures (`assets/images/app-background-light.png` and `app-background-dark.png`)
+and the shared theme surface color. The background covers the complete screen,
+including the safe areas, and stays fixed while the onboarding pages swipe.
 
-All images live in `assets/images/onboarding/`. Sunrise appears only in light
-mode and sunset only in dark mode. Changing theme preserves the current step
-and its expression. Expression variants were made with the built-in imagegen
-tool; prompts are recorded in `docs/onboarding-artwork-prompts.md`.
-The shared `BeachIllustration` widget frames each sun image with a sandy
-shoreline and two muted palm trees. Its scenery adapts to light and dark mode
-and scales with the illustration area.
-Changing theme preserves the current onboarding page. The legacy screen is untouched.
+The mandala uses `assets/images/onboarding/golden-stillness-petals.png`, a
+transparent PNG containing only the gold petals. The background disc, dotted
+halo and outer circle have been removed. Light mode uses `golden-stillness-petals-light.png`, cleaned of residual
+background haze. Dark mode keeps `golden-stillness-petals.png`. Clouds remain
+visible between the petals in both appearances.
+Light-mode onboarding applies `textureContrast: 1.6` to the shared background
+to make its pale clouds clearer. Other screens retain the default contrast.
+The older source crop and generated halo variants are retained as references.
+
+The UI follows the system appearance through the existing app `ThemeData`;
+dark mode uses a champagne-gold primary button and indicators. Changing system
+appearance preserves the current page.
+
+Skip, Next, Back, swiping, and Start keep their existing behavior. Large text
+and short/landscape displays can scroll the content while the action stays
+reachable. The previous beach artwork and legacy screen remain available in
+the repository.
 
 Render both themes and run navigation/contrast checks with:
 

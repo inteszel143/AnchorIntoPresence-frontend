@@ -63,9 +63,6 @@ class ResetPassword extends StatelessWidget {
                       width: 110,
                       height: 92,
                       fit: BoxFit.contain,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Theme.of(context).colorScheme.onSurface
-                          : null,
                       semanticLabel: 'Tina Moore',
                     ),
                   ),

@@ -4,7 +4,10 @@ import 'package:flutter/services.dart';
 /// The shared onboarding-inspired backdrop for app pages.
 /// Paint it per route so one screen never shows through another during navigation.
 class AppBackground extends StatelessWidget {
-  const AppBackground({super.key});
+  const AppBackground({super.key, this.textureContrast = 1});
+
+  /// Keep existing routes unchanged; onboarding can emphasize pale clouds.
+  final double textureContrast;
 
   @override
   Widget build(BuildContext context) {
@@ -13,10 +16,34 @@ class AppBackground extends StatelessWidget {
       child: ExcludeSemantics(
         child: ColoredBox(
           color: Theme.of(context).colorScheme.surface,
-          child: Image.asset(
-            'assets/images/app-background-${dark ? 'dark' : 'light'}.png',
-            fit: BoxFit.cover,
-            alignment: Alignment.topCenter,
+          child: ColorFiltered(
+            colorFilter: ColorFilter.matrix([
+              textureContrast,
+              0,
+              0,
+              0,
+              255 * (1 - textureContrast),
+              0,
+              textureContrast,
+              0,
+              0,
+              255 * (1 - textureContrast),
+              0,
+              0,
+              textureContrast,
+              0,
+              255 * (1 - textureContrast),
+              0,
+              0,
+              0,
+              1,
+              0,
+            ]),
+            child: Image.asset(
+              'assets/images/app-background-${dark ? 'dark' : 'light'}.png',
+              fit: BoxFit.cover,
+              alignment: Alignment.topCenter,
+            ),
           ),
         ),
       ),

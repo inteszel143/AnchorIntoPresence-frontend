@@ -14,6 +14,7 @@ class MarkAsCompleteCheckbox extends StatelessWidget {
   final String videoTimestamp;
   final String totalVideoTime;
   final bool isChecked;
+  final bool enabled;
 
   const MarkAsCompleteCheckbox({
     super.key,
@@ -21,6 +22,7 @@ class MarkAsCompleteCheckbox extends StatelessWidget {
     required this.videoTimestamp,
     required this.totalVideoTime,
     required this.isChecked,
+    this.enabled = true,
   });
 
   @override
@@ -72,22 +74,24 @@ class MarkAsCompleteCheckbox extends StatelessWidget {
                     activeColor: Theme.of(context).colorScheme.primary,
                     checkColor: Theme.of(context).colorScheme.onPrimary,
                     value: isComplete,
-                    onChanged: (value) {
-                      context
-                          .read<CheckboxCubit>()
-                          .toggleCheckbox(activityId, value!);
+                    onChanged: !enabled
+                        ? null
+                        : (value) {
+                            context
+                                .read<CheckboxCubit>()
+                                .toggleCheckbox(activityId, value!);
 
-                      if (value) {
-                        context.read<PostActivityBloc>().add(
-                              MarkActivityComplete(
-                                activityId: activityId,
-                                videoTimestamp: videoTimestamp,
-                                totalVideoTime: totalVideoTime,
-                                isCompleted: true,
-                              ),
-                            );
-                      }
-                    },
+                            if (value) {
+                              context.read<PostActivityBloc>().add(
+                                    MarkActivityComplete(
+                                      activityId: activityId,
+                                      videoTimestamp: videoTimestamp,
+                                      totalVideoTime: totalVideoTime,
+                                      isCompleted: true,
+                                    ),
+                                  );
+                            }
+                          },
                   ),
                 ),
               ),

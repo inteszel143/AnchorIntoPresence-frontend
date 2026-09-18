@@ -136,9 +136,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         width: 110,
                         height: 92,
                         fit: BoxFit.contain,
-                        color: colors.brightness == Brightness.dark
-                            ? colors.onSurface
-                            : null,
                         semanticLabel: 'Tina Moore',
                       ),
                     ),

@@ -1,12 +1,17 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mindfully_evolve_app/screens/activity_details/activity_details.dart';
+import 'package:mindfully_evolve_app/screens/activity_details/activity_bloc/post_activity_bloc.dart';
 import 'package:mindfully_evolve_app/common/custom_videoplayer.dart';
 // The fake implements the platform interface used by video_player.
 // ignore: depend_on_referenced_packages
 import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 
 class FakeVideoPlatform extends VideoPlayerPlatform {
+  FakeVideoPlatform({this.autoInitialize = true});
+  final bool autoInitialize;
   final streams = <int, StreamController<VideoEvent>>{};
   final positions = <int, Duration>{};
   final playing = <int, bool>{};
@@ -15,12 +20,16 @@ class FakeVideoPlatform extends VideoPlayerPlatform {
   @override
   Future<int?> create(DataSource source) async {
     final id = streams.length;
-    streams[id] = StreamController<VideoEvent>()
-      ..add(VideoEvent(
-          eventType: VideoEventType.initialized,
-          size: const Size(1600, 900),
-          duration: const Duration(minutes: 10)));
+    streams[id] = StreamController<VideoEvent>();
+    if (autoInitialize) initializeVideo(id);
     return id;
+  }
+
+  void initializeVideo(int id) {
+    streams[id]!.add(VideoEvent(
+        eventType: VideoEventType.initialized,
+        size: const Size(1600, 900),
+        duration: const Duration(minutes: 10)));
   }
 
   @override
@@ -58,6 +67,44 @@ class FakeVideoPlatform extends VideoPlayerPlatform {
 }
 
 void main() {
+  testWidgets('details appear before video loads and reuse its duration',
+      (tester) async {
+    final previous = VideoPlayerPlatform.instance;
+    final platform = FakeVideoPlatform(autoInitialize: false);
+    VideoPlayerPlatform.instance = platform;
+    addTearDown(() => VideoPlayerPlatform.instance = previous);
+    await tester.pumpWidget(MaterialApp(
+      home: BlocProvider(
+        create: (_) => PostActivityBloc(),
+        child: const ActivityDetailScreen(
+          videoUrl: 'https://example.com/video.mp4',
+          thumbnail: null,
+          name: 'Finding calm',
+          duration: '--:--',
+          tags: [],
+          description: 'Take a quiet moment',
+          activityId: 'test',
+          isFavorite: false,
+        ),
+      ),
+    ));
+    await tester.pump();
+    expect(find.text('Finding calm'), findsWidgets);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.text('10:00'), findsNothing);
+    expect(tester.widget<Checkbox>(find.byType(Checkbox)).onChanged, isNull);
+    expect(platform.streams.length, 1);
+
+    platform.initializeVideo(0);
+    await tester.pumpAndSettle();
+    expect(find.text('10:00'), findsOneWidget);
+    expect(tester.widget<Checkbox>(find.byType(Checkbox)).onChanged, isNotNull);
+    expect(platform.streams.length, 1);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpAndSettle();
+  });
+
   testWidgets(
       'player has no time overlay and supports seeking and hidden controls',
       (tester) async {

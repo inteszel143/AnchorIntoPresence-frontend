@@ -141,7 +141,6 @@ class _SignupScreenState extends State<SignupScreen> {
                                                                               width: 96,
                                                                               height: 64,
                                                                               fit: BoxFit.contain,
-                                                                              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).colorScheme.onSurface : null,
                                                                               semanticLabel: 'Tina Moore')),
                                                                       const Align(
                                                                         alignment:

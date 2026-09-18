@@ -222,6 +222,8 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
                                       videoTimestamp: formatDuration(position),
                                       totalVideoTime: _duration,
                                       isChecked: false,
+                                      enabled: _duration.isNotEmpty &&
+                                          _duration != '--:--',
                                     ),
                                   ),
                                 ),

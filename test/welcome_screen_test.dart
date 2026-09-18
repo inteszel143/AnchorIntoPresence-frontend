@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mindfully_evolve_app/common/app_theme.dart';
+import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import 'package:mindfully_evolve_app/common/main_screen.dart';
 import 'package:mindfully_evolve_app/screens/account/account_screen.dart';
 import 'package:mindfully_evolve_app/screens/welcome/illustrated_welcome_screen.dart';
@@ -112,7 +113,7 @@ void main() {
     }
   });
 
-  testWidgets('theme selects the mascot and each step selects its expression',
+  testWidgets('light and dark mode preserve the mandala and current step',
       (tester) async {
     tester.platformDispatcher.platformBrightnessTestValue = Brightness.light;
     addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
@@ -122,14 +123,15 @@ void main() {
       themeMode: ThemeMode.system,
       home: const IllustratedWelcomeScreen(),
     ));
-    // Theme selects sunrise/sunset without changing the current step.
+    expect(find.byType(AppBackground), findsOneWidget);
+    // Appearance changes preserve the current page and its gold artwork.
     for (final brightness in [Brightness.dark, Brightness.light]) {
       tester.platformDispatcher.platformBrightnessTestValue = brightness;
       await tester.pumpAndSettle();
       expect(find.text('Find your calm'), findsOneWidget);
       expect(
           find.image(AssetImage(
-              'assets/images/onboarding/${brightness == Brightness.dark ? 'sunset' : 'sunrise'}.png')),
+              'assets/images/onboarding/onboarding-mandala-subtle${brightness == Brightness.light ? '-light' : ''}.png')),
           findsOneWidget);
     }
     await tester.tap(find.text('Next'));
@@ -153,7 +155,7 @@ void main() {
           brightness == Brightness.dark ? lessThan(.1) : greaterThan(.8));
       expect(
           find.image(AssetImage(
-              'assets/images/onboarding/${brightness == Brightness.dark ? 'sunset' : 'sunrise'}-rest.png')),
+              'assets/images/onboarding/onboarding-mandala-subtle${brightness == Brightness.light ? '-light' : ''}.png')),
           findsOneWidget);
       final button = tester.widget<FilledButton>(find.byType(FilledButton));
       final buttonColors = [
@@ -179,7 +181,7 @@ void main() {
       expect(find.text('Feel more connected'), findsOneWidget);
       expect(
           find.image(AssetImage(
-              'assets/images/onboarding/${brightness == Brightness.dark ? 'sunset' : 'sunrise'}-connected.png')),
+              'assets/images/onboarding/onboarding-mandala-subtle${brightness == Brightness.light ? '-light' : ''}.png')),
           findsOneWidget);
       expect(tester.takeException(), isNull);
     }
@@ -211,11 +213,12 @@ void main() {
           ),
         ),
       ));
-      for (final expression in ['', '-rest', '-connected']) {
-        final name = '${dark ? 'sunset' : 'sunrise'}$expression';
-        await tester.runAsync(() => precacheImage(
-            AssetImage('assets/images/onboarding/$name.png'),
-            boundaryKey.currentContext!));
+      for (final asset in [
+        'assets/images/onboarding/onboarding-mandala-subtle${dark ? '' : '-light'}.png',
+        'assets/images/app-background-${dark ? 'dark' : 'light'}.png',
+      ]) {
+        await tester.runAsync(() =>
+            precacheImage(AssetImage(asset), boundaryKey.currentContext!));
       }
       for (var page = 0; page < 3; page++) {
         await tester.pumpAndSettle();
