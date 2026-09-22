@@ -4,7 +4,14 @@ import 'package:flutter/services.dart';
 /// The shared onboarding-inspired backdrop for app pages.
 /// Paint it per route so one screen never shows through another during navigation.
 class AppBackground extends StatelessWidget {
-  const AppBackground({super.key, this.textureContrast = 1});
+  const AppBackground({
+    super.key,
+    this.textureContrast = 1,
+    this.bottomClouds = false,
+  });
+
+  /// Mirror the top clouds at full strength along the bottom of onboarding.
+  final bool bottomClouds;
 
   /// Keep existing routes unchanged; onboarding can emphasize pale clouds.
   final double textureContrast;
@@ -39,10 +46,36 @@ class AppBackground extends StatelessWidget {
               1,
               0,
             ]),
-            child: Image.asset(
-              'assets/images/app-background-${dark ? 'dark' : 'light'}.png',
-              fit: BoxFit.cover,
-              alignment: Alignment.topCenter,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.asset(
+                  'assets/images/app-background-${dark ? 'dark' : 'light'}.png',
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topCenter,
+                ),
+                if (bottomClouds)
+                  ShaderMask(
+                    blendMode: BlendMode.dstIn,
+                    shaderCallback: (bounds) => const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.white,
+                      ],
+                      stops: [.45, .55],
+                    ).createShader(bounds),
+                    child: Transform.flip(
+                      flipY: true,
+                      child: Image.asset(
+                        'assets/images/app-background-${dark ? 'dark' : 'light'}.png',
+                        fit: BoxFit.cover,
+                        alignment: Alignment.topCenter,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
         ),

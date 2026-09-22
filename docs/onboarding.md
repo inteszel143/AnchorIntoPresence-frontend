@@ -46,7 +46,10 @@ halo and outer circle have been removed. Light mode uses `golden-stillness-petal
 background haze. Dark mode keeps `golden-stillness-petals.png`. Clouds remain
 visible between the petals in both appearances.
 Light-mode onboarding applies `textureContrast: 1.6` to the shared background
-to make its pale clouds clearer. Other screens retain the default contrast.
+to make its pale clouds clearer. Onboarding also enables `bottomClouds`, which
+mirrors the top cloud texture vertically at full strength across the bottom,
+with a short blend at the center so both ends have matching cloud detail. Other screens retain the
+default contrast and background.
 The older source crop and generated halo variants are retained as references.
 
 The UI follows the system appearance through the existing app `ThemeData`;

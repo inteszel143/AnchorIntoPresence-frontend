@@ -4,7 +4,7 @@ import '../../common/widgets/auth_entrance.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import '../../common/widgets/google_sign_in_button.dart';
 import '../../common/widgets/auth_text_field.dart';
 import 'package:mindfully_evolve_app/utils/image_constants.dart';
 import 'package:mindfully_evolve_app/utils/string_constants.dart';
@@ -470,22 +470,13 @@ class _SignupScreenState extends State<SignupScreen> {
                                                                           10),
                                                                   Center(
                                                                     child:
-                                                                        SocialLoginButton(
-                                                                      'Continue with Google',
-                                                                      Image.asset(
-                                                                          ImageConstants
-                                                                              .googleIcon),
+                                                                        GoogleSignInButton(
                                                                       height:
                                                                           48,
-                                                                      onPressed:
-                                                                          () async {
-                                                                        final userCredential =
-                                                                            await signUpWithGoogle();
-
-                                                                        if (userCredential ==
-                                                                                null ||
-                                                                            userCredential.user ==
-                                                                                null) {
+                                                                      onSignedIn:
+                                                                          (userCredential) async {
+                                                                        if (userCredential.user ==
+                                                                            null) {
                                                                           return;
                                                                         }
                                                                         if (!context
@@ -638,24 +629,6 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                   ),
                 )));
-  }
-}
-
-Future<UserCredential?> signUpWithGoogle() async {
-  try {
-    final googleUser = await GoogleSignIn().signIn();
-    if (googleUser == null) return null;
-
-    final googleAuth = await googleUser.authentication;
-
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
-
-    return await FirebaseAuth.instance.signInWithCredential(credential);
-  } catch (e) {
-    return null;
   }
 }
 

@@ -6,7 +6,7 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import '../../common/widgets/google_sign_in_button.dart';
 import 'package:mindfully_evolve_app/common/main_screen.dart';
 import 'package:mindfully_evolve_app/screens/feeling_category/feelingcategory_screen.dart';
 import 'package:mindfully_evolve_app/screens/signin/signin_bloc/signin_state.dart';
@@ -365,18 +365,11 @@ class _SigninScreenState extends State<SigninScreen> {
                                             ),
                                             SizedBox(height: 20),
                                             Center(
-                                              child: SocialLoginButton(
-                                                'Continue with Google',
-                                                Image.asset(
-                                                    ImageConstants.googleIcon),
-                                                onPressed: () async {
-                                                  final userCredential =
-                                                      await signInWithGoogle(); // Await the sign-in
-
-                                                  // Check if the userCredential is not null and the user is valid
-                                                  if (userCredential != null &&
-                                                      userCredential.user !=
-                                                          null) {
+                                              child: GoogleSignInButton(
+                                                onSignedIn:
+                                                    (userCredential) async {
+                                                  if (userCredential.user !=
+                                                      null) {
                                                     final email = userCredential
                                                             .user?.email ??
                                                         ''; // Safe null check
@@ -497,37 +490,6 @@ class _SigninScreenState extends State<SigninScreen> {
         },
       ),
     ));
-  }
-}
-
-Future<UserCredential?> signInWithGoogle() async {
-  try {
-    // Create an instance of GoogleSignIn
-    final GoogleSignIn googleSignIn = GoogleSignIn();
-
-    // Start the Google sign-in process
-    final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-
-    if (googleUser == null) {
-      // The user canceled the sign-in, return null
-      return null;
-    }
-
-    // Obtain authentication details from the sign-in
-    final GoogleSignInAuthentication googleAuth =
-        await googleUser.authentication;
-
-    // Create a credential for Firebase Authentication
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
-
-    // Sign in to Firebase with the credential
-    return await FirebaseAuth.instance.signInWithCredential(credential);
-  } catch (e) {
-    // Handle errors (e.g., network errors, invalid credentials)
-    return null;
   }
 }
 

@@ -106,7 +106,10 @@ class _IllustratedWelcomeScreenState extends State<IllustratedWelcomeScreen> {
           fit: StackFit.expand,
           children: [
             Positioned.fill(
-              child: AppBackground(textureContrast: dark ? 1 : 1.6),
+              child: AppBackground(
+                textureContrast: dark ? 1 : 1.6,
+                bottomClouds: true,
+              ),
             ),
             SafeArea(
               top: false,

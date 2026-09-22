@@ -58,7 +58,7 @@ class SocialSigninResponseModel {
     return SocialSigninResponseModel(
       message: json['message'] ?? '',
       data: json['data'] != null ? SocialSigninData.fromJson(json['data']) : null,
-      token: json['data']['token'] ?? '',  // token is inside data in the response
+      token: json['data']?['token'] ?? json['token'] ?? '',  // token is inside data in the response
     );
   }
 }
