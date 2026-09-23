@@ -1,4 +1,4 @@
-import '../common/auth/auth_diagnostics.dart';
+import '../common/auth/social_login_exception.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -448,7 +448,7 @@ class ApiService {
     }
   }
 
-  static Future<ProfileDataModel> fetchProfileData(String token, {bool authDiagnostics = false}) async {
+  static Future<ProfileDataModel> fetchProfileData(String token) async {
     try {
       final response = await http.get(
         Uri.parse(Urls.getUserProfile),
@@ -457,9 +457,6 @@ class ApiService {
         },
       );
 
-      if (authDiagnostics) {
-        logAuthStage('profile.response', status: response.statusCode);
-      }
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         return ProfileDataModel.fromJson(data['data']);
@@ -904,7 +901,6 @@ class ApiService {
   }) async {
     final url = Uri.parse(Urls.socialLogin);
     try {
-      logAuthStage('backend.socialLogin.request');
       final response = await http.post(
         url,
         headers: {
@@ -918,8 +914,6 @@ class ApiService {
           "fcmToken": fcmToken,
         }),
       ).timeout(const Duration(seconds: 20));
-
-      logAuthStage('backend.socialLogin.response', status: response.statusCode);
       final decoded = jsonDecode(response.body);
       if (decoded is! Map<String, dynamic>) {
         throw const FormatException('Expected a response object');
@@ -933,17 +927,13 @@ class ApiService {
       return SocialSigninResponseModel.fromJson(decoded);
     } on SocialLoginException {
       rethrow;
-    } on SocketException catch (error) {
-      logAuthStage('backend.socialLogin.network', error: error);
+    } on SocketException {
       throw const SocialLoginException('Unable to reach the sign-in server. Please check your connection.');
-    } on http.ClientException catch (error) {
-      logAuthStage('backend.socialLogin.transport', error: error);
+    } on http.ClientException {
       throw const SocialLoginException('Unable to connect securely to the sign-in server. Please try again.');
-    } on TimeoutException catch (error) {
-      logAuthStage('backend.socialLogin.timeout', error: error);
+    } on TimeoutException {
       throw const SocialLoginException('The sign-in server took too long to respond. Please try again.');
     } catch (error) {
-      logAuthStage('backend.socialLogin.responseParsing', error: error);
       throw const SocialLoginException('The sign-in server returned an unexpected response. Please try again later.');
     }
   }

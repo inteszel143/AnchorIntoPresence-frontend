@@ -1,4 +1,4 @@
-import '../../../common/auth/auth_diagnostics.dart';
+import '../../../common/auth/social_login_exception.dart';
 import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -58,11 +58,7 @@ class SigninBloc extends Bloc<SigninEvent, SigninState> {
     emit(SigninLoading());
     var stage = 'pushToken';
     try {
-      logAuthStage(stage);
       final fcmToken = await getFCMTokenForSignin();
-
-      logAuthStage(
-          'pushToken.${fcmToken?.isNotEmpty == true ? 'available' : 'unavailable'}');
       stage = 'backend.socialLogin';
       final data = await ApiService.socialLogin(
         email: event.email,
@@ -73,33 +69,26 @@ class SigninBloc extends Bloc<SigninEvent, SigninState> {
 
       if (data.data?.email?.isNotEmpty == true && data.token.isNotEmpty) {
         stage = 'profile.load';
-        logAuthStage(stage);
-        final userProfileFuture =
-            ApiService.fetchProfileData(data.token, authDiagnostics: true);
+        final userProfileFuture = ApiService.fetchProfileData(data.token);
         final results = await Future.wait([userProfileFuture]);
         final profileData = results[0];
         stage = 'session.save';
-        logAuthStage(stage);
         await LocalStorage.saveToken(data.token);
         globals.alreadyPurchasedProductId = profileData.productId ?? '';
         globals.isSubscribed = profileData.subscriptionStatus == 'active';
-        logAuthStage('socialLogin.complete');
         emit(SocialSigninSuccess(
           data.token,
           data.data?.name,
           data.data?.image,
         ));
       } else {
-        logAuthStage('backend.socialLogin.invalidSession');
         emit(SigninFailure(data.message.isNotEmpty
             ? data.message
             : 'Google sign-in could not complete. Please try again.'));
       }
     } on SocialLoginException catch (error) {
-      logAuthStage(stage, error: error);
       emit(SigninFailure(error.message));
     } catch (error) {
-      logAuthStage(stage, error: error);
       emit(SigninFailure(switch (stage) {
         'profile.load' =>
           'Signed in with Google, but your profile could not load. Please try again.',

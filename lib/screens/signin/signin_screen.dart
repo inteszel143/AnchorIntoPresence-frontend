@@ -84,6 +84,7 @@ class _SigninScreenState extends State<SigninScreen> {
                       });
                     } else if (state is SocialSigninSuccess) {
                       WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (!context.mounted) return;
                         Navigator.pushAndRemoveUntil(
                           context,
                           MaterialPageRoute(

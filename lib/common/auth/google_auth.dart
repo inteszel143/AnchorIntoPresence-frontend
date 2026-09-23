@@ -1,31 +1,17 @@
-import 'auth_diagnostics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 Future<UserCredential?> authenticateWithGoogle() async {
-  var stage = 'google.accountPicker';
-  try {
-    logAuthStage(stage);
-    final account = await GoogleSignIn().signIn();
-    if (account == null) return null; // The account picker was dismissed.
-    stage = 'google.tokens';
-    logAuthStage(stage);
-    final tokens = await account.authentication;
-    stage = 'firebase.credentialExchange';
-    logAuthStage(stage);
-    final credential = await FirebaseAuth.instance.signInWithCredential(
-      GoogleAuthProvider.credential(
-        accessToken: tokens.accessToken,
-        idToken: tokens.idToken,
-      ),
-    );
-    logAuthStage('firebase.authenticated');
-    return credential;
-  } catch (error) {
-    logAuthStage(stage, error: error);
-    rethrow;
-  }
+  final account = await GoogleSignIn().signIn();
+  if (account == null) return null; // The account picker was dismissed.
+  final tokens = await account.authentication;
+  return FirebaseAuth.instance.signInWithCredential(
+    GoogleAuthProvider.credential(
+      accessToken: tokens.accessToken,
+      idToken: tokens.idToken,
+    ),
+  );
 }
 
 String googleSignInErrorMessage(Object error) {

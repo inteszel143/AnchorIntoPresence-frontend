@@ -1,6 +1,9 @@
 class Urls {
   static const String logout = '$baseUrl/api/auth/logout';
-  static const String baseUrl = 'https://admin.anchorintopresence.net';
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://admin.anchorintopresence.net',
+  );
   static const String baseUrlimages = 'https://d1ckq51qwp5orx.cloudfront.net';
   static const String postActivity = '$baseUrl/api/users/activities/';
   static const String getActivity = '$baseUrl/api/users/activities';

@@ -32,7 +32,7 @@ Future<String?> getFCMTokenForSignin() async {
       }
     }
   } catch (_) {
-    debugPrint('Push token is not available yet.');
+    // Push registration is optional; fall back to the cached token.
   }
   return LocalStorage.getFCMToken();
 }
