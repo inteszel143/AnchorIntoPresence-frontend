@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/color_constants.dart';
 
 /// An invitation within each tab, keeping navigation available to nonmembers.
 class SubscriptionTabPage extends StatelessWidget {
@@ -14,9 +15,7 @@ class SubscriptionTabPage extends StatelessWidget {
   static const _content = [
     (
       title: 'Home',
-      accent: Color(0xFF595959),
-      lightAccent: Color(0xFFBEA899),
-      tint: Color(0xFFDFCCC0),
+      tint: ColorCodes.sand,
       subtitle: 'Your daily space to reconnect',
       icon: Icons.wb_sunny_outlined,
       headline: 'Make room for a calmer you.',
@@ -30,9 +29,7 @@ class SubscriptionTabPage extends StatelessWidget {
     ),
     (
       title: 'Community',
-      accent: Color(0xFF595959),
-      lightAccent: Color(0xFFBEA899),
-      tint: Color(0xFFDFCCC0),
+      tint: ColorCodes.blush,
       subtitle: 'A little more connected',
       icon: Icons.groups_outlined,
       headline: 'Feel connected on your journey.',
@@ -46,9 +43,7 @@ class SubscriptionTabPage extends StatelessWidget {
     ),
     (
       title: 'Track',
-      accent: Color(0xFF595959),
-      lightAccent: Color(0xFFD8E2DC),
-      tint: Color(0xFFD8E2DC),
+      tint: ColorCodes.sage,
       subtitle: 'Small steps, meaningful progress',
       icon: Icons.insights_rounded,
       headline: 'See your practice take shape.',
@@ -68,11 +63,6 @@ class SubscriptionTabPage extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final dark = theme.brightness == Brightness.dark;
-    final accent = dark ? content.lightAccent : content.accent;
-    final cardTint = dark
-        ? Color.alphaBlend(
-            content.accent.withValues(alpha: .22), colors.surface)
-        : content.tint;
     return SafeArea(
       child: SingleChildScrollView(
         key: PageStorageKey('subscription-tab-$tabIndex'),
@@ -85,7 +75,7 @@ class SubscriptionTabPage extends StatelessWidget {
               children: [
                 Text('ANCHOR INTO PRESENCE',
                     style: theme.textTheme.labelSmall?.copyWith(
-                      color: accent,
+                      color: colors.onSurfaceVariant,
                       letterSpacing: 2.4,
                       fontWeight: FontWeight.w700,
                     )),
@@ -108,7 +98,7 @@ class SubscriptionTabPage extends StatelessWidget {
                   width: 44,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: accent,
+                    color: ColorCodes.rose,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -120,14 +110,14 @@ class SubscriptionTabPage extends StatelessWidget {
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [cardTint, colors.surfaceContainerLow],
+                      colors: [content.tint, ColorCodes.cream],
                     ),
                     borderRadius: BorderRadius.circular(28),
-                    border: Border.all(color: accent.withValues(alpha: .18)),
+                    border: Border.all(color: ColorCodes.mauve),
                     boxShadow: [
                       BoxShadow(
-                        color:
-                            content.accent.withValues(alpha: dark ? .08 : .07),
+                        color: ColorCodes.charcoal
+                            .withValues(alpha: dark ? .08 : .07),
                         blurRadius: 28,
                         offset: const Offset(0, 10),
                       ),
@@ -139,36 +129,39 @@ class SubscriptionTabPage extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(18),
                         decoration: BoxDecoration(
-                          color: accent.withValues(alpha: .12),
+                          color: ColorCodes.rose,
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(content.icon, size: 40, color: accent),
+                        child: Icon(content.icon,
+                            size: 40, color: ColorCodes.charcoal),
                       ),
                       const SizedBox(height: 24),
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 7),
                         decoration: BoxDecoration(
-                          color: accent.withValues(alpha: .1),
+                          color: ColorCodes.cream,
+                          border: Border.all(color: ColorCodes.clay),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text('MEMBERSHIP INCLUDES',
                             style: theme.textTheme.labelSmall?.copyWith(
                               letterSpacing: 1.3,
                               fontWeight: FontWeight.w700,
-                              color: accent,
+                              color: ColorCodes.charcoal,
                             )),
                       ),
                       const SizedBox(height: 12),
                       Text(content.headline,
                           style: theme.textTheme.headlineMedium?.copyWith(
                             fontWeight: FontWeight.w600,
+                            color: ColorCodes.charcoal,
                           )),
                       const SizedBox(height: 14),
                       Text(content.description,
                           style: theme.textTheme.bodyLarge?.copyWith(
                             height: 1.5,
-                            color: colors.onSurfaceVariant,
+                            color: ColorCodes.charcoal,
                           )),
                       const SizedBox(height: 24),
                       for (final benefit in content.benefits)
@@ -178,11 +171,13 @@ class SubscriptionTabPage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Icon(Icons.check_circle_outline_rounded,
-                                  size: 21, color: accent),
+                                  size: 21, color: ColorCodes.charcoal),
                               const SizedBox(width: 12),
                               Expanded(
                                   child: Text(benefit,
-                                      style: theme.textTheme.bodyMedium)),
+                                      style: theme.textTheme.bodyMedium
+                                          ?.copyWith(
+                                              color: ColorCodes.charcoal))),
                             ],
                           ),
                         ),
@@ -192,11 +187,10 @@ class SubscriptionTabPage extends StatelessWidget {
                         child: FilledButton(
                           onPressed: onSubscribe,
                           style: FilledButton.styleFrom(
-                            backgroundColor:
-                                dark ? content.lightAccent : content.accent,
-                            foregroundColor:
-                                dark ? const Color(0xFF211F1C) : Colors.white,
+                            backgroundColor: ColorCodes.charcoal,
+                            foregroundColor: ColorCodes.cream,
                             shape: RoundedRectangleBorder(
+                                side: const BorderSide(color: ColorCodes.mauve),
                                 borderRadius: BorderRadius.circular(16)),
                           ),
                           child: const Padding(
@@ -211,7 +205,7 @@ class SubscriptionTabPage extends StatelessWidget {
                         'One subscription. Access to Home, Community, and Track.',
                         textAlign: TextAlign.center,
                         style: theme.textTheme.bodySmall
-                            ?.copyWith(color: colors.onSurfaceVariant),
+                            ?.copyWith(color: ColorCodes.charcoal),
                       ),
                     ],
                   ),
