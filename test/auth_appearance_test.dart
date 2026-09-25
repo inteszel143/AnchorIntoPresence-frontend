@@ -67,7 +67,7 @@ void main() {
     addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
     await tester.pumpWidget(const MaterialApp(home: SignupScreen()));
     await tester.pumpAndSettle();
-    final fields = find.byType(TextFormField);
+    final fields = find.byType(TextField);
     await tester.enterText(fields.at(1), 'invalid');
     await tester.enterText(fields.at(2), 'abcdef');
     await tester.ensureVisible(find.byTooltip('Show password'));

@@ -90,6 +90,7 @@ void main() {
       await tester.tap(find.text('Reply'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'I appreciate this.');
+      await tester.pump();
       await tester.tap(find.byTooltip('Send comment'));
       await tester.pump();
       expect(bloc.sent?.parentCommentId, 'comment');

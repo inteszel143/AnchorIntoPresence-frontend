@@ -79,6 +79,9 @@ void main() {
     bloc.emit(bloc.state.copyWith(error: 'Please try again'));
     await tester.pumpAndSettle();
     expect(find.text('  Jane Smith  '), findsOneWidget);
+    // Let the error snackbar dismiss before tapping the button beneath it.
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
     FocusManager.instance.primaryFocus?.unfocus();
     await tester.pumpAndSettle();
     await tester.drag(find.byType(CustomScrollView), const Offset(0, -700));
