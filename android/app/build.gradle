@@ -10,7 +10,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-auth:20.6.0'
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'com.google.firebase:firebase-messaging:23.1.1'
-    implementation 'com.android.billingclient:billing:5.0.0'
+    // Google Play Billing 8+ is supplied by in_app_purchase_android.
 }
 
 
