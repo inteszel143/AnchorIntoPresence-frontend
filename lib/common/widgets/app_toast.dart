@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mindfully_evolve_app/utils/color_constants.dart';
 
 /// Shared compact, animated bottom notification for app-wide feedback.
 /// Uses the app's ScaffoldMessenger so messages survive route changes.
@@ -20,7 +21,7 @@ class AppToast {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
-          side: const BorderSide(color: Color(0xFFA49393)),
+          side: const BorderSide(color: ColorCodes.taupe),
         ),
         content: Row(children: [
           Icon(

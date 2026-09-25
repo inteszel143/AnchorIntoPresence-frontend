@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:mindfully_evolve_app/utils/color_constants.dart';
 
 const moodOptions = [
-  ('Grounded', '😌', Color(0xFFD8E2DC)),
-  ('Aligned', '😊', Color(0xFFDFCCC0)),
-  ('Calm', '☺️', Color(0xFFEED6D3)),
-  ('Steady', '🙂', Color(0xFFB2A89F)),
-  ('Connected', '🥰', Color(0xFFE8B4B8)),
+  ('Grounded', '😌', ColorCodes.cream),
+  ('Aligned', '😊', ColorCodes.sand),
+  ('Calm', '☺️', ColorCodes.sand),
+  ('Steady', '🙂', ColorCodes.taupe),
+  ('Connected', '🥰', ColorCodes.clay),
 ];
 
 (String, String, Color)? moodOptionFor(String? value) {

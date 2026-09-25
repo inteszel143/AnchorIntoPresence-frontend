@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 
 class ColorCodes {
-  // Client palette. Existing semantic names below keep screens consistent.
+  // Approved brand palette. Semantic roles below keep screens consistent.
   static const Color cream = Color(0xFFF0EAE6);
   static const Color taupe = Color(0xFFB2A89F);
-  static const Color rose = Color(0xFFE8B4B8);
-  static const Color blush = Color(0xFFEED6D3);
-  static const Color mauve = Color(0xFFA49393);
-  static const Color sage = Color(0xFFD8E2DC);
   static const Color charcoal = Color(0xFF595959);
   static const Color sand = Color(0xFFDFCCC0);
   static const Color clay = Color(0xFFBEA899);
@@ -20,14 +16,14 @@ class ColorCodes {
   static const Color mainheadingcolor = charcoal;
   static const Color blackcolor = Color(0xff000000);
   static const Color bottomandsearchtextcolor = charcoal;
-  static const Color tag1color = sage;
+  static const Color tag1color = sand;
   static const Color tag2color = clay;
-  static const Color tag3color = rose;
+  static const Color tag3color = taupe;
   static const Color searchboxcolor = taupe;
   static const Color whitecolor = cream;
   static const Color transparentcolor = Colors.transparent;
   static const Color grey300Color = sand;
-  static const Color greyColor = mauve;
+  static const Color greyColor = taupe;
   static const Color grey600Color = charcoal;
   static const Color confirmationtextcolor = charcoal;
   static const Color canceltextcolor = charcoal;
@@ -49,15 +45,15 @@ class ColorCodes {
   static const Color resendotptextcolor = charcoal;
   static const Color selecteddatetextcolor = charcoal;
   static const Color settingiconcontainercolor = cream;
-  static const Color signinsignupcontainercolor = blush;
+  static const Color signinsignupcontainercolor = sand;
   static const Color signinsignupcontainerbordercolor = sand;
   static const Color signinsignupcontainertextcolor = Color(0xffffffff);
-  static const Color donutchartgreencolor = sage;
-  static const Color donutchartpinkcolor = blush;
+  static const Color donutchartgreencolor = sand;
+  static const Color donutchartpinkcolor = clay;
   static const Color buildbargreycolor = cream;
   static const Color calendergridcontainerbordercolor = Color(0xffaeaeae1f);
   static const Color misseddaystextcolor = Color(0xffDE3B34);
-  static const Color todaydatecolor = rose;
+  static const Color todaydatecolor = clay;
   static const Color neartodaydatecolor = taupe;
   static const Color currentmonthtextcolor = charcoal;
   static const Color userprofiletextcontainerbordercolor = sand;

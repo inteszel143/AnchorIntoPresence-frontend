@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../../common/widgets/tab_content_page.dart';
-import '../../common/app_theme.dart';
 import '../../common/widgets/postdeletionconfirmation_dialog.dart';
 import '../../utils/global.dart';
 import '../../utils/urls.dart';
@@ -99,9 +98,9 @@ class CommunityPostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // White cards use dark foregrounds in both app appearances.
-    final colors = AppTheme.light.colorScheme;
-    final text = Theme.of(context).textTheme.apply(
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final text = theme.textTheme.apply(
           bodyColor: colors.onSurface,
           displayColor: colors.onSurface,
         );
@@ -109,7 +108,10 @@ class CommunityPostCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.circular(24)),
+          color: theme.brightness == Brightness.dark
+              ? colors.surfaceContainerHighest
+              : Colors.white,
+          borderRadius: BorderRadius.circular(24)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           ClipOval(

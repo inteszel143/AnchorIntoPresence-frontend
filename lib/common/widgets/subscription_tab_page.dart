@@ -29,7 +29,7 @@ class SubscriptionTabPage extends StatelessWidget {
     ),
     (
       title: 'Community',
-      tint: ColorCodes.blush,
+      tint: ColorCodes.sand,
       subtitle: 'A little more connected',
       icon: Icons.groups_outlined,
       headline: 'Feel connected on your journey.',
@@ -43,7 +43,7 @@ class SubscriptionTabPage extends StatelessWidget {
     ),
     (
       title: 'Track',
-      tint: ColorCodes.sage,
+      tint: ColorCodes.sand,
       subtitle: 'Small steps, meaningful progress',
       icon: Icons.insights_rounded,
       headline: 'See your practice take shape.',
@@ -98,7 +98,7 @@ class SubscriptionTabPage extends StatelessWidget {
                   width: 44,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: ColorCodes.rose,
+                    color: ColorCodes.clay,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -113,7 +113,7 @@ class SubscriptionTabPage extends StatelessWidget {
                       colors: [content.tint, ColorCodes.cream],
                     ),
                     borderRadius: BorderRadius.circular(28),
-                    border: Border.all(color: ColorCodes.mauve),
+                    border: Border.all(color: ColorCodes.taupe),
                     boxShadow: [
                       BoxShadow(
                         color: ColorCodes.charcoal
@@ -129,7 +129,7 @@ class SubscriptionTabPage extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(18),
                         decoration: BoxDecoration(
-                          color: ColorCodes.rose,
+                          color: ColorCodes.clay,
                           shape: BoxShape.circle,
                         ),
                         child: Icon(content.icon,
@@ -190,7 +190,7 @@ class SubscriptionTabPage extends StatelessWidget {
                             backgroundColor: ColorCodes.charcoal,
                             foregroundColor: ColorCodes.cream,
                             shape: RoundedRectangleBorder(
-                                side: const BorderSide(color: ColorCodes.mauve),
+                                side: const BorderSide(color: ColorCodes.taupe),
                                 borderRadius: BorderRadius.circular(16)),
                           ),
                           child: const Padding(
