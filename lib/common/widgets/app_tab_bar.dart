@@ -20,7 +20,8 @@ class AppTabBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
     final selected = Theme.of(context).colorScheme.primary;
-    final unselected = Theme.of(context).colorScheme.onSurfaceVariant;
+    final unselected = (dark ? Colors.grey.shade400 : Colors.grey.shade600)
+        .withValues(alpha: 0.8);
     const radius = BorderRadius.vertical(top: Radius.circular(28));
     return DecoratedBox(
       decoration: BoxDecoration(
