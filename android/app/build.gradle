@@ -4,6 +4,13 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 
 }
+// Keep upload credentials in the ignored android/key.properties file.
+def uploadKeyProperties = new Properties()
+def uploadKeyPropertiesFile = rootProject.file("key.properties")
+if (uploadKeyPropertiesFile.exists()) {
+    uploadKeyPropertiesFile.withInputStream { uploadKeyProperties.load(it) }
+}
+
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
@@ -38,11 +45,23 @@ android {
         multiDexEnabled true
     }
 
+    signingConfigs {
+        release {
+            if (uploadKeyPropertiesFile.exists()) {
+                keyAlias = uploadKeyProperties["keyAlias"]
+                keyPassword = uploadKeyProperties["keyPassword"]
+                storeFile = rootProject.file(uploadKeyProperties["storeFile"])
+                storePassword = uploadKeyProperties["storePassword"]
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             shrinkResources false
-            signingConfig = signingConfigs.debug
+            // Without upload credentials, produce an unsigned bundle only.
+            signingConfig = uploadKeyPropertiesFile.exists() ? signingConfigs.release : null
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
