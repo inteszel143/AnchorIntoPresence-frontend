@@ -19,6 +19,14 @@ allprojects {
 rootProject.buildDir = "../build"
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
+    plugins.withId('com.android.library') {
+        androidComponents.finalizeDsl { extension ->
+            // Older Flutter plugins must also meet AndroidX compile SDK requirements.
+            if (extension.compileSdk == null || extension.compileSdk < 36) {
+                extension.compileSdk = 36
+            }
+        }
+    }
 }
 subprojects {
     project.evaluationDependsOn(":app")
@@ -27,5 +35,4 @@ subprojects {
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
-
 
