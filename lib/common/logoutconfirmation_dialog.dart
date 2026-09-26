@@ -1,8 +1,10 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../screens/signin/signin_screen.dart';
 import '../utils/string_constants.dart';
 import 'logout_session.dart';
+import 'widgets/confirmation_sheet_content.dart';
 
 Future<void> showLogoutConfirmationDialog(BuildContext context) async {
   await showModalBottomSheet<void>(
@@ -15,7 +17,10 @@ Future<void> showLogoutConfirmationDialog(BuildContext context) async {
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
     ),
-    builder: (_) => const _LogoutSheet(),
+    builder: (_) => BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+      child: const _LogoutSheet(),
+    ),
   );
 }
 
@@ -56,7 +61,6 @@ class _LogoutSheetState extends State<_LogoutSheet> {
 
   @override
   Widget build(BuildContext sheetContext) {
-    final colors = Theme.of(sheetContext).colorScheme;
     return PopScope(
       canPop: !_loading,
       child: GestureDetector(
@@ -67,85 +71,14 @@ class _LogoutSheetState extends State<_LogoutSheet> {
                   Navigator.pop(sheetContext);
                 }
               },
-        child: SafeArea(
-          top: false,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Center(
-                  child: Container(
-                    width: 32,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: colors.onSurfaceVariant.withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: IconButton(
-                    tooltip: 'Close',
-                    onPressed:
-                        _loading ? null : () => Navigator.pop(sheetContext),
-                    icon: const Icon(Icons.close_rounded),
-                  ),
-                ),
-                Center(
-                  child: CircleAvatar(
-                    radius: 32,
-                    backgroundColor: colors.surfaceContainerHighest,
-                    child: Icon(Icons.logout_rounded,
-                        size: 28, color: colors.primary),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  Strings.areYouSureForSignOut,
-                  textAlign: TextAlign.center,
-                  style:
-                      Theme.of(sheetContext).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                ),
-                if (_error != null) ...[
-                  const SizedBox(height: 16),
-                  Text(_error!,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: colors.error)),
-                ],
-                const SizedBox(height: 28),
-                FilledButton(
-                  onPressed: _loading ? null : _logout,
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 16),
-                  ),
-                  child: _loading
-                      ? SizedBox.square(
-                          dimension: 22,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: colors.onSurface,
-                              semanticsLabel: 'Logging out'))
-                      : const Text(Strings.logout),
-                ),
-                const SizedBox(height: 10),
-                OutlinedButton(
-                  onPressed:
-                      _loading ? null : () => Navigator.pop(sheetContext),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 16),
-                  ),
-                  child: const Text(Strings.cancel),
-                ),
-              ],
-            ),
-          ),
+        child: ConfirmationSheetContent(
+          icon: Icons.logout_rounded,
+          message: Strings.areYouSureForSignOut,
+          confirmLabel: Strings.logout,
+          loading: _loading,
+          error: _error,
+          onConfirm: _loading ? null : _logout,
+          onCancel: _loading ? null : () => Navigator.pop(sheetContext),
         ),
       ),
     );
