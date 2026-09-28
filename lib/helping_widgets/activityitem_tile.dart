@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import '../common/widgets/loading_skeleton.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -107,8 +108,7 @@ class _ActivityItemTileState extends State<ActivityItemTile> {
   Widget _collectionCard(
       AsyncSnapshot<Uint8List?> thumbnail, AsyncSnapshot<String> duration) {
     final colors = Theme.of(context).colorScheme;
-    final ready = thumbnail.connectionState == ConnectionState.done &&
-        duration.connectionState == ConnectionState.done;
+    final durationReady = duration.connectionState == ConnectionState.done;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -128,11 +128,17 @@ class _ActivityItemTileState extends State<ActivityItemTile> {
                       fit: BoxFit.contain,
                       errorBuilder: (_, __, ___) => Icon(Icons.spa_outlined,
                           size: 40, color: colors.onSurfaceVariant))
-                  : Center(
-                      child: thumbnail.connectionState == ConnectionState.done
-                          ? Icon(Icons.spa_outlined,
-                              size: 40, color: colors.onSurfaceVariant)
-                          : const CircularProgressIndicator(strokeWidth: 2)),
+                  : thumbnail.connectionState == ConnectionState.done
+                      ? Center(
+                          child: Icon(Icons.spa_outlined,
+                              size: 40, color: colors.onSurfaceVariant))
+                      : const LoadingSkeleton(
+                          label: 'Loading video thumbnail',
+                          child: SkeletonBlock(
+                            height: double.infinity,
+                            radius: 17,
+                          ),
+                        ),
             ),
           ),
         ),
@@ -142,8 +148,17 @@ class _ActivityItemTileState extends State<ActivityItemTile> {
               color: colors.onSurfaceVariant, size: 17),
           const SizedBox(width: 6),
           Expanded(
-            child: Text(ready ? duration.data ?? '--:--' : 'Loading…',
-                style: TextStyle(color: colors.onSurfaceVariant, fontSize: 12)),
+            child: durationReady
+                ? Text(duration.data ?? '--:--',
+                    style:
+                        TextStyle(color: colors.onSurfaceVariant, fontSize: 12))
+                : const Align(
+                    alignment: Alignment.centerLeft,
+                    child: LoadingSkeleton(
+                      label: 'Loading video duration',
+                      child: SkeletonBlock(width: 48, height: 12),
+                    ),
+                  ),
           ),
           IconButton.filledTonal(
             tooltip: isLiked ? 'Remove from favorites' : 'Save meditation',

@@ -9,6 +9,11 @@
       "version": "1.0.8",
       "build": 12,
       "status": "built"
+    },
+    {
+      "version": "1.0.9",
+      "build": 13,
+      "status": "reserved"
     }
   ],
   "android": [
@@ -21,6 +26,11 @@
       "version": "1.11.3",
       "build": 82,
       "status": "built"
+    },
+    {
+      "version": "1.11.4",
+      "build": 83,
+      "status": "reserved"
     }
   ]
 }

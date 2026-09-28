@@ -1,4 +1,5 @@
 import '../../common/widgets/custom_appbar.dart';
+import 'meditate_loading.dart';
 import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import '../../common/widgets/app_toast.dart';
@@ -262,9 +263,12 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                           ],
                         )))
                   else if (all == null)
-                    const SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: Center(child: CircularProgressIndicator()))
+                    const SliverPadding(
+                      padding: EdgeInsets.fromLTRB(20, 0, 20, 24),
+                      sliver: SliverToBoxAdapter(
+                        child: MeditateLoadingSkeleton(),
+                      ),
+                    )
                   else if (filtered!.isEmpty)
                     SliverFillRemaining(
                         hasScrollBody: false,
