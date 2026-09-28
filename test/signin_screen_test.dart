@@ -2,9 +2,54 @@ import 'package:mindfully_evolve_app/common/widgets/button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mindfully_evolve_app/common/widgets/loading_overlay.dart';
+import 'package:mindfully_evolve_app/screens/signin/signin_bloc/signin_bloc.dart';
+import 'package:mindfully_evolve_app/screens/signin/signin_bloc/signin_state.dart';
 import 'package:mindfully_evolve_app/screens/signin/signin_screen.dart';
 
 void main() {
+  testWidgets('loading covers the screen and clears previous notifications',
+      (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+
+    await tester.pumpWidget(const MaterialApp(home: SigninScreen()));
+    await tester.pumpAndSettle();
+    final formContext = tester.element(find.byType(Form));
+    final bloc = formContext.read<SigninBloc>();
+    ScaffoldMessenger.of(formContext).showSnackBar(
+      const SnackBar(content: Text('Previous error')),
+    );
+    await tester.pumpAndSettle();
+
+    // Drive the UI state without making a real authentication request.
+    bloc.emit(SigninLoading());
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Previous error'), findsNothing);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    final blur = find.descendant(
+      of: find.byType(LoadingOverlay),
+      matching: find.byType(BackdropFilter),
+    );
+    for (final keyboardHeight in [300.0, 0.0]) {
+      tester.view.viewInsets = FakeViewPadding(bottom: keyboardHeight);
+      await tester.pump();
+      expect(tester.getRect(blur), const Rect.fromLTWH(0, 0, 390, 844));
+      expect(tester.takeException(), isNull);
+    }
+
+    bloc.emit(SigninFailure('Please try again'));
+    await tester.pumpAndSettle();
+    expect(find.byType(BackdropFilter), findsNothing);
+    expect(find.text('Please try again'), findsOneWidget);
+  });
+
   testWidgets(
       'sign in fits narrow and wide screens and supports password visibility',
       (tester) async {

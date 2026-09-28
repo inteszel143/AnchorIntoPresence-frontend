@@ -11,7 +11,6 @@ class HomeDashboard extends StatelessWidget {
       required this.state,
       required this.onProfile,
       required this.onSearch,
-      required this.onFavorites,
       required this.onMeditate,
       required this.onRecent,
       required this.onNotifications,
@@ -19,12 +18,7 @@ class HomeDashboard extends StatelessWidget {
       required this.onCategory,
       required this.onResume});
   final HomePageLoadedState state;
-  final VoidCallback onProfile,
-      onSearch,
-      onFavorites,
-      onMeditate,
-      onRecent,
-      onNotifications;
+  final VoidCallback onProfile, onSearch, onMeditate, onRecent, onNotifications;
   final ValueChanged<ActivityData> onActivity;
   final ValueChanged<String> onCategory;
   final ValueChanged<RecentlyPlayedActivity> onResume;
@@ -60,17 +54,33 @@ class HomeDashboard extends StatelessWidget {
     final pauses =
         state.homePageData.data['Daily Pause']?.activities ?? <ActivityData>[];
     final recentItems = state.recentlyPlayedData;
-    Widget heading(String title, VoidCallback onSeeAll) => Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 12, 16),
-          child: Row(children: [
-            Expanded(
-                child: Text(title,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleLarge
-                        ?.copyWith(fontWeight: FontWeight.w600))),
-            TextButton(onPressed: onSeeAll, child: const Text('See all')),
-          ]),
+    Widget heading(String title, VoidCallback onSeeAll,
+            {String? description}) =>
+        Padding(
+          padding:
+              EdgeInsets.fromLTRB(20, 0, 12, description == null ? 16 : 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                Expanded(
+                  child: Text(title,
+                      style: (description == null
+                              ? Theme.of(context).textTheme.titleLarge
+                              : Theme.of(context).textTheme.titleMedium)
+                          ?.copyWith(fontWeight: FontWeight.w600)),
+                ),
+                TextButton(onPressed: onSeeAll, child: const Text('See all')),
+              ]),
+              if (description != null)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Text(description,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: colors.onSurfaceVariant, height: 1.4)),
+                ),
+            ],
+          ),
         );
     Widget activityCard({
       required String thumbnail,
@@ -136,25 +146,167 @@ class HomeDashboard extends StatelessWidget {
           ));
     }
 
-    Widget rail(List<ActivityData> items) => SizedBox(
-          height: 270 + (MediaQuery.textScalerOf(context).scale(14) - 14) * 4,
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            scrollDirection: Axis.horizontal,
-            itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 14),
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return activityCard(
-                thumbnail: item.thumbnail,
-                category: item.categoryName,
-                title: item.name,
-                subtitle: item.tagName?.join(' · ') ?? '',
-                onTap: () => onActivity(item),
-              );
-            },
+    Widget practiceCard(List<ActivityData> items, {required bool anchor}) {
+      final category = anchor ? 'Daily Anchor' : 'Daily Pause';
+      final tint = Color.alphaBlend(
+          colors.primaryContainer.withValues(alpha: anchor ? .18 : .07),
+          colors.surface);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: colors.primaryContainer,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                  anchor
+                      ? Icons.self_improvement_rounded
+                      : Icons.wb_sunny_outlined,
+                  size: 18,
+                  color: colors.onPrimaryContainer),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(category,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w600)),
+            ),
+            TextButton(
+              onPressed: () => onCategory(category),
+              child: const Text('See all'),
+            ),
+          ]),
+          const SizedBox(height: 4),
+          Text(
+            anchor
+                ? 'The guided meditation for today'
+                : 'An inspiration to carry with you today',
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(color: colors.onSurfaceVariant, height: 1.5),
           ),
-        );
+          const SizedBox(height: 12),
+          LayoutBuilder(builder: (context, constraints) {
+            final stacked = constraints.maxWidth < 260 ||
+                MediaQuery.textScalerOf(context).scale(16) > 24;
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (var index = 0; index < items.length; index++) ...[
+                    if (index > 0) const SizedBox(width: 12),
+                    SizedBox(
+                      width: constraints.maxWidth,
+                      child: Material(
+                        color: tint,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          side: BorderSide(color: colors.outlineVariant),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: InkWell(
+                          onTap: () => onActivity(items[index]),
+                          child: Padding(
+                            padding: const EdgeInsets.all(14),
+                            child: Flex(
+                              direction:
+                                  stacked ? Axis.vertical : Axis.horizontal,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(14),
+                                  child: _image(context, items[index].thumbnail,
+                                      width: stacked
+                                          ? constraints.maxWidth - 28
+                                          : 80,
+                                      height: stacked ? 120 : 96,
+                                      fit: BoxFit.cover),
+                                ),
+                                SizedBox(
+                                    width: stacked ? 0 : 14,
+                                    height: stacked ? 14 : 0),
+                                Flexible(
+                                  flex: stacked ? 0 : 1,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(items[index].name,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium
+                                              ?.copyWith(
+                                                  fontWeight: FontWeight.w600,
+                                                  height: 1.35)),
+                                      if (items[index].tagName?.isNotEmpty ==
+                                          true) ...[
+                                        const SizedBox(height: 6),
+                                        Text(items[index].tagName!.join(' · '),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(
+                                                    color: colors
+                                                        .onSurfaceVariant)),
+                                      ],
+                                      const SizedBox(height: 14),
+                                      Row(children: [
+                                        Icon(
+                                            anchor
+                                                ? Icons
+                                                    .play_circle_filled_rounded
+                                                : Icons
+                                                    .arrow_circle_right_outlined,
+                                            size: 24,
+                                            color: colors.primary),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                              anchor
+                                                  ? 'Begin practice'
+                                                  : 'Take a pause',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .labelLarge
+                                                  ?.copyWith(
+                                                      color: colors.primary)),
+                                        ),
+                                      ]),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            );
+          }),
+          if (items.length > 1)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text('Swipe to explore ${items.length} practices',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: colors.onSurfaceVariant)),
+            ),
+        ],
+      );
+    }
+
     return Center(
         child: ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 680),
@@ -217,42 +369,56 @@ class HomeDashboard extends StatelessWidget {
             }),
           ),
           const SizedBox(height: 24),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
+          Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(children: [
-              for (final item in [
-                (Icons.favorite_border_rounded, 'Favorites', onFavorites),
-                (Icons.self_improvement_rounded, 'Meditate', onMeditate),
-                (Icons.history_rounded, 'Recently played', onRecent),
-              ]) ...[
-                ActionChip(
-                    avatar: Icon(item.$1, size: 18),
-                    label: Text(item.$2),
-                    onPressed: item.$3,
-                    backgroundColor: colors.surfaceContainerHighest,
-                    shape: const StadiumBorder(),
-                    side: BorderSide.none,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 8)),
-                const SizedBox(width: 10),
-              ],
-            ]),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: onMeditate,
+                icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+                iconAlignment: IconAlignment.end,
+                label: const Text('Explore Meditations'),
+              ),
+            ),
           ),
           const SizedBox(height: 24),
-          if (anchors.isNotEmpty) ...[
-            heading(
-                'Your daily recommendations', () => onCategory('Daily Anchor')),
-            rail(anchors),
-            const SizedBox(height: 28),
-          ],
-          if (pauses.isNotEmpty) ...[
-            heading('A moment to pause', () => onCategory('Daily Pause')),
-            rail(pauses),
-          ],
+          Semantics(
+            container: true,
+            child: Container(
+              key: const ValueKey('daily-ritual'),
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Your Practice Today',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleLarge
+                          ?.copyWith(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 6),
+                  Text('A little space to come back to yourself.',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: colors.onSurfaceVariant, height: 1.5)),
+                  const SizedBox(height: 20),
+                  if (anchors.isNotEmpty) practiceCard(anchors, anchor: true),
+                  if (anchors.isNotEmpty && pauses.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: Divider(height: 1, color: colors.outlineVariant),
+                    ),
+                  if (pauses.isNotEmpty) practiceCard(pauses, anchor: false),
+                  if (anchors.isEmpty && pauses.isEmpty)
+                    Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Text('Your daily practices will appear here.',
+                            style: TextStyle(color: colors.onSurfaceVariant))),
+                ],
+              ),
+            ),
+          ),
           if (recentItems.isNotEmpty) ...[
-            if (pauses.isNotEmpty) const SizedBox(height: 28),
-            heading('Continue your journey', onRecent),
+            const SizedBox(height: 32),
+            heading('Continue Listening', onRecent),
             SizedBox(
               height:
                   270 + (MediaQuery.textScalerOf(context).scale(14) - 14) * 4,
@@ -278,11 +444,6 @@ class HomeDashboard extends StatelessWidget {
             ),
             const SizedBox(height: 28),
           ],
-          if (anchors.isEmpty && pauses.isEmpty)
-            Padding(
-                padding: const EdgeInsets.all(20),
-                child: Text('Your daily practices will appear here.',
-                    style: TextStyle(color: colors.onSurfaceVariant))),
         ],
       ),
     ));

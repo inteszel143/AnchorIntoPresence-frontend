@@ -1,7 +1,6 @@
 import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import 'home_dashboard.dart';
 import 'home_model.dart';
-import '../activity_listing/favourite_activities.dart';
 import '../activity_listing/getactivity_bloc/getrecent_activities_bloc.dart';
 import 'dashboard_bloc/recently_played_model.dart';
 import 'dart:async';
@@ -206,7 +205,6 @@ class _HomePageState extends State<HomePage> {
                       onProfile: () => _openPage(const UserprofileScreen()),
                       onSearch: () => widget.onMeditate?.call(),
                       onMeditate: () => widget.onMeditate?.call(),
-                      onFavorites: () => _openPage(const FavouriteActivity()),
                       onRecent: () => _openPage(RecentActivity(
                           recentlyPlayedActivities: state.recentlyPlayedData)),
                       onNotifications: () => _openPage(BlocProvider.value(

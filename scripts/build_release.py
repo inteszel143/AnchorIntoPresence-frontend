@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Increment the shared Flutter build number, then build store artifacts."""
+"""Build store artifacts using separate, persistent platform version records."""
 import argparse
 import fcntl
+import json
 from pathlib import Path
 import re
 import shutil
@@ -15,6 +16,43 @@ def build_release(root, target, version=None, flutter="flutter", run=subprocess.
         # Hold the lock through the build so a concurrent release cannot change
         # pubspec while Flutter is reading it.
         fcntl.flock(lock, fcntl.LOCK_EX)
+        records_path = root / 'release_versions.json'
+        if records_path.exists():
+            records = json.loads(records_path.read_text())
+            platforms = ['android', 'ios'] if target == 'both' else [
+                'android' if target == 'apk' else target]
+            pending = []
+            for platform in platforms:
+                previous = records[platform][-1]
+                parts = list(map(int, previous['version'].split('.')))
+                parts[2] += 1
+                next_version = version or '.'.join(map(str, parts))
+                if not re.fullmatch(r'\d+\.\d+\.\d+', next_version):
+                    raise ValueError('Version must be major.minor.patch')
+                if tuple(map(int, next_version.split('.'))) < tuple(map(int, previous['version'].split('.'))):
+                    raise ValueError('Release version cannot decrease')
+                pending.append((platform, {
+                    'version': next_version,
+                    'build': previous['build'] + 1,
+                    'status': 'reserved',
+                }))
+            def save_records():
+                temporary = records_path.with_suffix('.json.tmp')
+                temporary.write_text(json.dumps(records, indent=2) + '\n')
+                temporary.replace(records_path)
+            for platform, entry in pending:
+                records[platform].append(entry)
+            save_records()
+            for platform, entry in pending:
+                artifact = 'ipa' if platform == 'ios' else ('apk' if target == 'apk' else 'appbundle')
+                print(f"Reserved {platform} {entry['version']} ({entry['build']})", flush=True)
+                run([flutter, 'build', artifact, '--release',
+                     f"--build-name={entry['version']}", f"--build-number={entry['build']}",
+                     '--dart-define=API_BASE_URL=https://admin.anchorintopresence.net'],
+                    cwd=root, check=True)
+                entry['status'] = 'built'
+                save_records()
+            return
         pubspec = root / 'pubspec.yaml'
         source = pubspec.read_bytes().decode('utf-8')
         pattern = r'(?m)^(version:\s*)(\d+\.\d+\.\d+)\+(\d+)([ \t]*(?:#[^\r\n]*)?)(\r?)$'

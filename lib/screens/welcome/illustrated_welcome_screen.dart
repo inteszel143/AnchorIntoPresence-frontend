@@ -22,17 +22,17 @@ class _IllustratedWelcomeScreenState extends State<IllustratedWelcomeScreen> {
     (
       title: 'Find your calm',
       description:
-          'Slow down with guided meditations.\nTake a breath and come back to the present.',
+          'Slow down.\nTake a breath.\nCome back to what is true for you.',
     ),
     (
-      title: 'Make room for rest',
+      title: 'Come back to yourself',
       description:
-          'Let the busy moments soften.\nCreate a little space to pause and unwind.',
+          'Create space to soften, settle, and simply be.',
     ),
     (
       title: 'Feel more connected',
       description:
-          'Check in with yourself and grow together.\nSmall steps toward a more mindful day.',
+          'Begin your day grounded, present, and aligned with what matters most.',
     ),
   ];
 

@@ -54,12 +54,16 @@ class _SigninScreenState extends State<SigninScreen> {
       create: (context) => SigninBloc(),
       child: Builder(
         builder: (context) {
-          return AppScaffold(
-            body: LoadingOverlay(
-              isLoading: context.watch<SigninBloc>().state is SigninLoading,
-              child: BlocListener<SigninBloc, SigninState>(
+          return LoadingOverlay(
+            isLoading: context.watch<SigninBloc>().state is SigninLoading,
+            child: AppScaffold(
+              body: BlocListener<SigninBloc, SigninState>(
                 listener: (context, state) {
-                  if (state is SigninSuccess) {
+                  if (state is SigninLoading) {
+                    ScaffoldMessenger.of(context)
+                      ..clearSnackBars()
+                      ..removeCurrentSnackBar();
+                  } else if (state is SigninSuccess) {
                     final isFirst = state.isFirst;
                     WidgetsBinding.instance.addPostFrameCallback((_) async {
                       final categorySelected =

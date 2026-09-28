@@ -91,7 +91,6 @@ void main() {
         state: state,
         onProfile: () {},
         onSearch: () {},
-        onFavorites: () {},
         onMeditate: () {},
         onRecent: () {},
         onNotifications: () {},
@@ -124,6 +123,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     var openedRecent = false;
+    String? openedActivity;
     await tester.pumpWidget(MaterialApp(
       theme: AppTheme.light,
       home: Scaffold(
@@ -131,25 +131,39 @@ void main() {
         state: fixture(),
         onProfile: () {},
         onSearch: () {},
-        onFavorites: () {},
         onMeditate: () {},
         onRecent: () => openedRecent = true,
         onNotifications: () {},
-        onActivity: (_) {},
+        onActivity: (item) => openedActivity = item.id,
         onCategory: (_) {},
         onResume: (_) {},
       )),
     ));
     await tester.pumpAndSettle();
-    final anchorY =
-        tester.getTopLeft(find.text('Your daily recommendations')).dy;
-    final pauseY = tester.getTopLeft(find.text('A moment to pause')).dy;
-    final continueY = tester.getTopLeft(find.text('Continue your journey')).dy;
+    final ritual = find.byKey(const ValueKey('daily-ritual'));
+    expect(find.descendant(of: ritual, matching: find.text('Daily Anchor')),
+        findsOneWidget);
+    expect(find.descendant(of: ritual, matching: find.text('Daily Pause')),
+        findsOneWidget);
+    expect(
+        find.descendant(of: ritual, matching: find.text('Continue Listening')),
+        findsNothing);
+    await tester.tap(find.text('A gentle beginning'));
+    expect(openedActivity, 'anchor');
+    await tester.tap(find.text('Return to this moment'));
+    expect(openedActivity, 'pause');
+    final anchorY = tester.getTopLeft(find.text('Daily Anchor').first).dy;
+    final pauseY = tester.getTopLeft(find.text('Daily Pause').first).dy;
+    final continueY = tester.getTopLeft(find.text('Continue Listening')).dy;
+    expect(tester.getTopLeft(find.text('Your Practice Today')).dy,
+        lessThan(anchorY));
+    expect(find.text('The guided meditation for today'), findsOneWidget);
+    expect(find.text('An inspiration to carry with you today'), findsOneWidget);
     expect(anchorY, lessThan(pauseY));
     expect(pauseY, lessThan(continueY));
     final heading = find
         .ancestor(
-            of: find.text('Continue your journey'), matching: find.byType(Row))
+            of: find.text('Continue Listening'), matching: find.byType(Row))
         .first;
     await tester
         .tap(find.descendant(of: heading, matching: find.text('See all')));
@@ -177,8 +191,7 @@ void main() {
                           mood: scale == 1 ? 'grounded' : 'connected'),
                       onProfile: () => action = 'profile',
                       onSearch: () => action = 'search',
-                      onFavorites: () => action = 'favorites',
-                      onMeditate: () {},
+                      onMeditate: () => action = 'meditate',
                       onRecent: () {},
                       onNotifications: () => action = 'notifications',
                       onActivity: (item) => action = item.id,
@@ -213,9 +226,13 @@ void main() {
         await tester.tap(find.byWidgetPredicate((widget) =>
             widget is Semantics && widget.properties.label == 'Open profile'));
         expect(action, 'profile');
-        await tester.ensureVisible(find.text('Favorites'));
-        await tester.tap(find.text('Favorites'));
-        expect(action, 'favorites');
+        expect(find.byType(ActionChip), findsNothing);
+        expect(find.text('Favorites'), findsNothing);
+        expect(find.text('Meditate'), findsNothing);
+        expect(find.text('Recently played'), findsNothing);
+        await tester.ensureVisible(find.text('Explore Meditations'));
+        await tester.tap(find.text('Explore Meditations'));
+        expect(action, 'meditate');
         await tester.scrollUntilVisible(find.text('Finding calm'), 200,
             scrollable: find.byType(Scrollable).first);
         await Scrollable.ensureVisible(

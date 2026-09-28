@@ -37,13 +37,13 @@ void main() {
     expect(find.text('Find your calm'), findsOneWidget);
     await tester.tap(find.text('Next'));
     await tester.pumpAndSettle();
-    expect(find.text('Make room for rest'), findsOneWidget);
+    expect(find.text('Come back to yourself'), findsOneWidget);
     await tester.tap(find.byTooltip('Previous page'));
     await tester.pumpAndSettle();
     expect(find.text('Find your calm'), findsOneWidget);
     await tester.drag(find.byType(PageView), const Offset(-700, 0));
     await tester.pumpAndSettle();
-    expect(find.text('Make room for rest'), findsOneWidget);
+    expect(find.text('Come back to yourself'), findsOneWidget);
     await tester.tap(find.text('Next'));
     await tester.pumpAndSettle();
     expect(find.text('Feel more connected'), findsOneWidget);
@@ -140,11 +140,11 @@ void main() {
     for (final brightness in [Brightness.dark, Brightness.light]) {
       tester.platformDispatcher.platformBrightnessTestValue = brightness;
       await tester.pumpAndSettle();
-      expect(find.text('Make room for rest'), findsOneWidget);
+      expect(find.text('Come back to yourself'), findsOneWidget);
       final background =
           tester.widget<Scaffold>(find.byType(Scaffold)).backgroundColor!;
       final foreground =
-          tester.widget<Text>(find.text('Make room for rest')).style!.color!;
+          tester.widget<Text>(find.text('Come back to yourself')).style!.color!;
       final luminances = [
         background.computeLuminance(),
         foreground.computeLuminance()

@@ -95,7 +95,8 @@ class _ActivityItemTileState extends State<ActivityItemTile> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Couldn’t update favorites. Please try again.')),
+          const SnackBar(
+              content: Text('Couldn’t update favorites. Please try again.')),
         );
       }
     } finally {
@@ -120,63 +121,50 @@ class _ActivityItemTileState extends State<ActivityItemTile> {
           borderRadius: BorderRadius.circular(17),
           child: AspectRatio(
             aspectRatio: 16 / 8,
-            child: Stack(fit: StackFit.expand, children: [
-              ColoredBox(
-                color: colors.surface,
-                child: thumbnail.data != null
-                    ? Image.memory(thumbnail.data!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Icon(Icons.spa_outlined,
-                            size: 40, color: colors.onSurfaceVariant))
-                    : Center(
-                        child: thumbnail.connectionState == ConnectionState.done
-                            ? Icon(Icons.spa_outlined,
-                                size: 40, color: colors.onSurfaceVariant)
-                            : const CircularProgressIndicator(strokeWidth: 2)),
-              ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: IconButton.filledTonal(
-                  tooltip:
-                      isLiked ? 'Remove from favorites' : 'Save meditation',
-                  style: IconButton.styleFrom(
-                      backgroundColor: colors.surfaceContainerHighest),
-                  onPressed: _savingFavorite ? null : _toggleCollectionFavorite,
-                  icon: Icon(
-                      isLiked
-                          ? Icons.favorite_rounded
-                          : Icons.favorite_border_rounded,
-                      color: isLiked ? Colors.red : colors.onSurfaceVariant),
-                ),
-              ),
-              Positioned(
-                left: 10,
-                bottom: 10,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: .65),
-                      borderRadius: BorderRadius.circular(20)),
-                  child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    const Icon(Icons.play_arrow_rounded,
-                        color: Colors.white, size: 17),
-                    const SizedBox(width: 4),
-                    Text(ready ? duration.data ?? '--:--' : 'Loading…',
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 12)),
-                  ]),
-                ),
-              ),
-            ]),
+            child: ColoredBox(
+              color: colors.surface,
+              child: thumbnail.data != null
+                  ? Image.memory(thumbnail.data!,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => Icon(Icons.spa_outlined,
+                          size: 40, color: colors.onSurfaceVariant))
+                  : Center(
+                      child: thumbnail.connectionState == ConnectionState.done
+                          ? Icon(Icons.spa_outlined,
+                              size: 40, color: colors.onSurfaceVariant)
+                          : const CircularProgressIndicator(strokeWidth: 2)),
+            ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
+        Row(children: [
+          Icon(Icons.schedule_rounded,
+              color: colors.onSurfaceVariant, size: 17),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(ready ? duration.data ?? '--:--' : 'Loading…',
+                style: TextStyle(color: colors.onSurfaceVariant, fontSize: 12)),
+          ),
+          IconButton.filledTonal(
+            tooltip: isLiked ? 'Remove from favorites' : 'Save meditation',
+            style: IconButton.styleFrom(backgroundColor: colors.surface),
+            onPressed: _savingFavorite ? null : _toggleCollectionFavorite,
+            icon: Icon(
+                isLiked
+                    ? Icons.favorite_rounded
+                    : Icons.favorite_border_rounded,
+                color: isLiked ? Colors.red : colors.onSurfaceVariant),
+          ),
+        ]),
+        const SizedBox(height: 8),
         Text(widget.heading,
+            softWrap: true,
+            maxLines: null,
+            overflow: TextOverflow.visible,
             style: TextStyle(
                 fontFamily: Fonts.heading,
                 fontSize: 20,
+                height: 1.3,
                 fontWeight: FontWeight.w600,
                 color: colors.onSurface)),
         const SizedBox(height: 7),

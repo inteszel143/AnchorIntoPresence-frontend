@@ -1,4 +1,5 @@
 import importlib.util
+import json
 from pathlib import Path
 import plistlib
 import subprocess
@@ -50,6 +51,27 @@ class ReleaseVersionTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 module.build_release(self.root, 'ios', version, run=self.run_build)
         self.assertEqual(self.pubspec.read_bytes(), before)
+
+    def test_platform_records_increment_independently(self):
+        path = self.root / 'release_versions.json'
+        path.write_text(json.dumps({
+            'ios': [{'version': '1.0.7', 'build': 11, 'status': 'uploaded'}],
+            'android': [{'version': '1.11.2', 'build': 81, 'status': 'built'}],
+        }))
+        original = self.pubspec.read_bytes()
+        module.build_release(self.root, 'ios', run=self.run_build)
+        self.assertIn('--build-name=1.0.8', self.calls[-1])
+        self.assertIn('--build-number=12', self.calls[-1])
+        records = json.loads(path.read_text())
+        self.assertEqual(records['ios'][-1]['status'], 'built')
+        self.assertEqual(len(records['android']), 1)
+        self.assertEqual(self.pubspec.read_bytes(), original)
+        def fail(command, **kwargs):
+            raise subprocess.CalledProcessError(1, command)
+        with self.assertRaises(subprocess.CalledProcessError):
+            module.build_release(self.root, 'ios', run=fail)
+        module.build_release(self.root, 'ios', run=self.run_build)
+        self.assertIn('--build-number=14', self.calls[-1])
 
     def test_ios_reads_flutter_version_fields(self):
         path = Path(__file__).parents[1] / 'ios/Runner/Info.plist'

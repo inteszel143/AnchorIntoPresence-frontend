@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mindfully_evolve_app/common/app_theme.dart';
@@ -53,6 +54,59 @@ class FavoriteToastFixtureBloc extends LibraryFixtureBloc {
 }
 
 void main() {
+  testWidgets('card metadata stays below artwork and long titles wrap fully',
+      (tester) async {
+    const title =
+        'Metta...Returning to Love — A gentle practice for reconnecting with yourself';
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    for (final theme in [AppTheme.light, AppTheme.dark]) {
+      for (final width in [320.0, 600.0]) {
+        for (final scale in [1.0, 2.0]) {
+          tester.view.physicalSize = Size(width, 1000);
+          await tester.pumpWidget(MaterialApp(
+            theme: theme,
+            home: MediaQuery(
+              data: MediaQueryData(textScaler: TextScaler.linear(scale)),
+              child: const Scaffold(
+                body: SingleChildScrollView(
+                  padding: EdgeInsets.all(20),
+                  child: ActivityItemTile(
+                    collectionStyle: true,
+                    videoUrl: '',
+                    videoDuration: '--:--',
+                    heading: title,
+                    tags: ['Love'],
+                    description: 'A gentle meditation.',
+                    id: 'long-title',
+                    thumbnail: '',
+                  ),
+                ),
+              ),
+            ),
+          ));
+          await tester.pumpAndSettle();
+          final artwork = tester.getRect(find.byType(AspectRatio));
+          final duration = tester.getRect(find.text('--:--'));
+          final favorite = tester.getRect(find.byTooltip('Save meditation'));
+          final titleRect = tester.getRect(find.text(title));
+          expect(duration.top, greaterThanOrEqualTo(artwork.bottom));
+          expect(favorite.top, greaterThanOrEqualTo(artwork.bottom));
+          expect(titleRect.top, greaterThanOrEqualTo(duration.bottom));
+          expect(titleRect.top, greaterThanOrEqualTo(favorite.bottom));
+          final paragraph =
+              tester.renderObject<RenderParagraph>(find.text(title));
+          expect(paragraph.didExceedMaxLines, isFalse);
+          expect(tester.widget<Text>(find.text(title)).overflow,
+              TextOverflow.visible);
+          expect(tester.takeException(), isNull);
+          await tester.pumpWidget(const SizedBox());
+        }
+      }
+    }
+  });
+
   testWidgets('heart action shows a floating confirmation that dismisses',
       (tester) async {
     await tester.pumpWidget(MaterialApp(
@@ -61,7 +115,10 @@ void main() {
           child: const MeditationLibrary()),
     ));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byTooltip('Remove from favorites').first);
+    await tester.scrollUntilVisible(
+        find.byTooltip('Remove from favorites').first, 150,
+        scrollable: find.byType(Scrollable).first);
+    await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Remove from favorites').first);
     await tester.pumpAndSettle();
     expect(find.text('Removed from Favorites.'), findsOneWidget);
