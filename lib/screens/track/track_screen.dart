@@ -6,6 +6,7 @@ import '../../common/widgets/tab_content_page.dart';
 import 'track_bloc/track_bloc.dart';
 import 'track_bloc/track_event.dart';
 import 'track_bloc/track_state.dart';
+import 'track_loading.dart';
 import '../totalmedication/total_meditaion.dart';
 
 class TrackScreen extends StatelessWidget {
@@ -37,21 +38,24 @@ class TrackOverview extends StatelessWidget {
               sliver: SliverToBoxAdapter(
                   child: _summary(context, state as TrackLoadedState)),
             )
+          else if (state is TrackLoadingState || state is TrackInitialState)
+            const SliverPadding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              sliver: SliverToBoxAdapter(child: TrackLoadingSkeleton()),
+            )
           else
             SliverFillRemaining(
                 hasScrollBody: false,
                 child: Padding(
                     padding: const EdgeInsets.all(24),
                     child: Center(
-                        child: state is TrackLoadingState
-                            ? const CircularProgressIndicator()
-                            : Text(
-                                state is TrackErrorState
-                                    ? (state as TrackErrorState).error
-                                    : 'No activity yet',
-                                textAlign: TextAlign.center,
-                                style: text.bodyLarge?.copyWith(
-                                    color: colors.onSurfaceVariant))))),
+                        child: Text(
+                            state is TrackErrorState
+                                ? (state as TrackErrorState).error
+                                : 'No activity yet',
+                            textAlign: TextAlign.center,
+                            style: text.bodyLarge
+                                ?.copyWith(color: colors.onSurfaceVariant))))),
         ]);
   }
 

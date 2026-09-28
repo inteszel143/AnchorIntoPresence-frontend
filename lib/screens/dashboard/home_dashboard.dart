@@ -3,6 +3,7 @@ import '../../utils/urls.dart';
 import 'dashboard_bloc/home_state.dart';
 import 'dashboard_bloc/recently_played_model.dart';
 import 'home_model.dart';
+import 'home_loading.dart';
 
 /// Home's presentation uses only the user's existing profile and content data.
 class HomeDashboard extends StatelessWidget {
@@ -312,7 +313,7 @@ class HomeDashboard extends StatelessWidget {
       constraints: const BoxConstraints(maxWidth: 680),
       child: ListView(
         padding: const EdgeInsets.only(top: 20, bottom: 32),
-        children: [
+        children: <Widget>[
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: LayoutBuilder(builder: (context, constraints) {
@@ -444,7 +445,15 @@ class HomeDashboard extends StatelessWidget {
             ),
             const SizedBox(height: 28),
           ],
-        ],
+        ].asMap().entries.map((entry) {
+          final child = entry.value;
+          if (child is SizedBox && child.child == null) return child;
+          return HomeSectionEntrance(
+            key: ValueKey('home-section-${entry.key}'),
+            order: entry.key ~/ 2,
+            child: child,
+          );
+        }).toList(),
       ),
     ));
   }

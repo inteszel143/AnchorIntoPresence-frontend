@@ -11,6 +11,7 @@ import 'community_bloc/community_bloc.dart';
 import 'community_bloc/community_event.dart';
 import 'community_bloc/community_state.dart';
 import 'community_model.dart';
+import 'community_loading.dart';
 import 'post_likes_bottom_sheet.dart';
 
 class CommunityScreen extends StatelessWidget {
@@ -64,30 +65,31 @@ class CommunityFeed extends StatelessWidget {
                     itemCount: (state as CommunityLoaded).posts.length,
                     itemBuilder: (context, index) => CommunityPostCard(
                         post: (state as CommunityLoaded).posts[index])))
+          else if (state is CommunityLoading || state is CommunityInitial)
+            const SliverPadding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              sliver: SliverToBoxAdapter(child: CommunityLoadingSkeleton()),
+            )
           else
             SliverFillRemaining(
                 hasScrollBody: false,
                 child: Padding(
                     padding: const EdgeInsets.all(24),
                     child: Center(
-                        child: state is CommunityLoading
-                            ? const CircularProgressIndicator()
-                            : Column(mainAxisSize: MainAxisSize.min, children: [
-                                Icon(Icons.forum_outlined,
-                                    size: 40,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant),
-                                const SizedBox(height: 16),
-                                Text(
-                                    state is CommunityError
-                                        ? (state as CommunityError).message
-                                        : 'No posts yet',
-                                    textAlign: TextAlign.center,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium),
-                              ])))),
+                        child:
+                            Column(mainAxisSize: MainAxisSize.min, children: [
+                      Icon(Icons.forum_outlined,
+                          size: 40,
+                          color:
+                              Theme.of(context).colorScheme.onSurfaceVariant),
+                      const SizedBox(height: 16),
+                      Text(
+                          state is CommunityError
+                              ? (state as CommunityError).message
+                              : 'No posts yet',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.titleMedium),
+                    ])))),
         ],
       );
 }
@@ -101,9 +103,9 @@ class CommunityPostCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final text = theme.textTheme.apply(
-          bodyColor: colors.onSurface,
-          displayColor: colors.onSurface,
-        );
+      bodyColor: colors.onSurface,
+      displayColor: colors.onSurface,
+    );
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),

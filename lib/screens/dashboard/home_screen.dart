@@ -1,5 +1,6 @@
 import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import 'home_dashboard.dart';
+import 'home_loading.dart';
 import 'home_model.dart';
 import '../activity_listing/getactivity_bloc/getrecent_activities_bloc.dart';
 import 'dashboard_bloc/recently_played_model.dart';
@@ -191,10 +192,10 @@ class _HomePageState extends State<HomePage> {
               value: _homePageBloc,
               child: BlocBuilder<HomePageBloc, HomePageState>(
                 builder: (context, state) {
-                  // Only show full-screen spinner on the very first load,
-                  // when there's no previous data to show yet.
-                  if (state is HomePageLoadingState) {
-                    return Center(child: CircularProgressIndicator());
+                  // Keep the layout visible while the initial data loads.
+                  if (state is HomePageInitialState ||
+                      state is HomePageLoadingState) {
+                    return const HomeLoadingSkeleton();
                   } else if (state is HomePageNoDataState) {
                     return _buildSearchBarOnly(context);
                   } else if (state is HomePageErrorState) {

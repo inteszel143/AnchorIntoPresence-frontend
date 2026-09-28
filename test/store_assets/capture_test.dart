@@ -36,7 +36,10 @@ import 'package:mindfully_evolve_app/screens/profile/profile_screen.dart';
 import 'package:mindfully_evolve_app/screens/welcome/illustrated_welcome_screen.dart';
 import '../video_player_controls_test.dart' show FakeVideoPlatform;
 
-const output = '../output/app-store';
+const handheld = bool.fromEnvironment('HANDHELD_STORE');
+const output =
+    handheld ? '../output/app-store-handheld' : '../output/app-store';
+late Uint8List handArtwork;
 const cream = Color(0xFFF5F0E7);
 const ink = Color(0xFF373C35);
 
@@ -319,7 +322,82 @@ const captions = [
   ('08-welcome', 'Come back\nto yourself.', 'Begin with Anchor into Presence.'),
 ];
 
+Widget handheldPoster(int index, Uint8List screenshot) {
+  final bottomTitle = index.isOdd;
+  final artWidth = bottomTitle ? 606.0 : 640.0;
+  return ColoredBox(
+      color: cream,
+      child: Stack(children: [
+        Positioned(
+          left: (440 - artWidth) / 2,
+          top: bottomTitle ? -25 : 172,
+          width: artWidth,
+          height: artWidth * 1.5,
+          child: FittedBox(
+              child: SizedBox(
+                  width: 1024,
+                  height: 1536,
+                  child: Stack(children: [
+                    Positioned.fill(child: Image.memory(handArtwork)),
+                    Positioned(
+                        left: 269,
+                        top: 105,
+                        width: 488,
+                        height: 1072,
+                        child: ClipRRect(
+                            borderRadius: BorderRadius.circular(58),
+                            child: Image.memory(screenshot,
+                                fit: BoxFit.fill,
+                                filterQuality: FilterQuality.high))),
+                  ]))),
+        ),
+        if (bottomTitle)
+          const Positioned(
+              left: 0,
+              right: 0,
+              top: 670,
+              bottom: 0,
+              child: DecoratedBox(
+                  decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          stops: [0, .31, 1],
+                          colors: [Color(0x00F5F0E7), cream, cream])))),
+        Positioned(
+            left: 28,
+            right: 28,
+            top: bottomTitle ? 760 : 32,
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text('ANCHOR INTO PRESENCE',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 2.3,
+                          color: ink)),
+                  const SizedBox(height: 16),
+                  Text(captions[index].$2,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontFamily: 'Manrope',
+                          fontSize: 37,
+                          letterSpacing: -1.6,
+                          fontWeight: FontWeight.w700,
+                          height: 1.12,
+                          color: ink)),
+                  const SizedBox(height: 12),
+                  Text(captions[index].$3,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 13, height: 1.4, color: ink)),
+                ])),
+      ]));
+}
+
 Widget poster(int index, Uint8List screenshot) {
+  if (handheld) return handheldPoster(index, screenshot);
   const fg = ink;
   return ColoredBox(
       color: cream,
@@ -419,6 +497,9 @@ void main() {
   testWidgets('export eight App Store screenshots from production screens',
       (tester) async {
     if (!const bool.fromEnvironment('CAPTURE_STORE')) return;
+    if (handheld) {
+      handArtwork = File('$output/assets/hand-phone.png').readAsBytesSync();
+    }
     FlutterSecureStorage.setMockInitialValues({});
     SharedPreferences.setMockInitialValues({});
     final originalHttp = HttpOverrides.current;
@@ -444,7 +525,7 @@ void main() {
     }
     final posters = <Uint8List>[];
     for (var i = 0; i < 8; i++) {
-      tester.view.physicalSize = const Size(430, 896);
+      tester.view.physicalSize = Size(430, handheld ? 944 : 896);
       final key = GlobalKey();
       final page = switch (i) {
         0 => homeWidget(),
@@ -460,8 +541,8 @@ void main() {
           home: RepaintBoundary(
             key: key,
             child: MediaQuery(
-                data: const MediaQueryData(
-                    size: Size(430, 896),
+                data: MediaQueryData(
+                    size: Size(430, handheld ? 944 : 896),
                     padding: EdgeInsets.only(top: 44, bottom: 24)),
                 child: Stack(children: [
                   Positioned.fill(child: page),
@@ -526,8 +607,12 @@ void main() {
                   style: const TextStyle(
                       fontFamily: 'DM Sans', decoration: TextDecoration.none),
                   child: poster(i, raw)))));
-      await tester.runAsync(
-          () => precacheImage(MemoryImage(raw), posterKey.currentContext!));
+      await tester.runAsync(() async {
+        await precacheImage(MemoryImage(raw), posterKey.currentContext!);
+        if (handheld)
+          await precacheImage(
+              MemoryImage(handArtwork), posterKey.currentContext!);
+      });
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       posters.add(await save(
