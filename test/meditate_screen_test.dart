@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mindfully_evolve_app/common/app_theme.dart';
 import 'package:mindfully_evolve_app/helping_widgets/activityitem_tile.dart';
 import 'package:mindfully_evolve_app/screens/meditate/meditate_screen.dart';
+import 'package:mindfully_evolve_app/screens/activity_listing/category_collection.dart';
 import 'package:mindfully_evolve_app/screens/activity_listing/getactivity_model.dart';
 import 'package:mindfully_evolve_app/screens/activity_listing/getactivity_bloc/getrecent_activities_bloc.dart';
 import 'package:mindfully_evolve_app/screens/activity_listing/getactivity_bloc/getrecent_activities_state.dart';
@@ -19,6 +20,7 @@ class LibraryFixtureBloc extends ActivityBloc {
         activities: [
           Activity(
               id: 'one',
+              categoryName: 'Daily Anchor',
               name: 'Morning pause',
               description: 'A gentle start',
               thumbnail: '',
@@ -27,6 +29,7 @@ class LibraryFixtureBloc extends ActivityBloc {
               tags: ['Calm']),
           Activity(
               id: 'two',
+              categoryName: 'Daily Pause',
               name: 'Evening rest',
               description: 'Wind down',
               thumbnail: '',
@@ -89,7 +92,7 @@ void main() {
           await tester.pumpAndSettle();
           final artwork = tester.getRect(find.byType(AspectRatio));
           final duration = tester.getRect(find.text('--:--'));
-          final favorite = tester.getRect(find.byTooltip('Save meditation'));
+          final favorite = tester.getRect(find.byTooltip('Save practice'));
           final titleRect = tester.getRect(find.text(title));
           expect(duration.top, greaterThanOrEqualTo(artwork.bottom));
           expect(favorite.top, greaterThanOrEqualTo(artwork.bottom));
@@ -128,9 +131,12 @@ void main() {
     await tester.pump(const Duration(seconds: 4));
     await tester.pumpAndSettle();
     expect(find.byType(SnackBar), findsNothing);
-    await tester.scrollUntilVisible(find.byTooltip('Save meditation'), 200,
+    await tester.scrollUntilVisible(find.byTooltip('Save practice'), 200,
         scrollable: find.byType(Scrollable).first);
-    await tester.tap(find.byTooltip('Save meditation'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byTooltip('Save practice'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Save practice'));
     await tester.pumpAndSettle();
     expect(find.text('Added to Favorites.'), findsOneWidget);
     expect(tester.takeException(), isNull);
@@ -150,10 +156,16 @@ void main() {
           child: const MeditationLibrary()),
     ));
     await tester.pumpAndSettle();
+    expect(find.text('Library'), findsWidgets);
+    expect(find.text('Search Library'), findsOneWidget);
+    expect(find.byTooltip('Back'), findsNothing);
     await tester.enterText(find.byType(TextField), 'Evening');
     await tester.pumpAndSettle();
     expect(
-        tester.widget<ActivityItemTile>(find.byType(ActivityItemTile)).heading,
+        tester
+            .widget<PauseCollectionCard>(find.byType(PauseCollectionCard))
+            .activity
+            .name,
         'Evening rest');
     await tester.ensureVisible(find.text('Favorites'));
     await tester.pumpAndSettle();
@@ -171,14 +183,76 @@ void main() {
     await tester.tap(find.widgetWithText(FilterChip, 'Sleep'));
     await tester.pumpAndSettle();
     expect(find.byType(ActivityItemTile), findsNothing);
-    await tester.ensureVisible(find.text('All practices'));
+    await tester.ensureVisible(find.text('All'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('All practices'));
+    await tester.tap(find.text('All'));
     await tester.pumpAndSettle();
     expect(
-        tester.widget<ActivityItemTile>(find.byType(ActivityItemTile)).heading,
+        tester
+            .widget<PauseCollectionCard>(find.byType(PauseCollectionCard))
+            .activity
+            .name,
         'Evening rest');
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('category filters and search identify anchors and pauses',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: BlocProvider<ActivityBloc>(
+        create: (_) => LibraryFixtureBloc(),
+        child: const MeditationLibrary(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    Future<void> choose(String label) async {
+      final chip = find.widgetWithText(ChoiceChip, label);
+      await tester.ensureVisible(chip);
+      await tester.pumpAndSettle();
+      await tester.tap(chip);
+      await tester.pumpAndSettle();
+    }
+
+    await choose('Daily Anchors');
+    expect(find.byType(PauseCollectionCard), findsNothing);
+    expect(
+        tester
+            .widget<ActivityItemTile>(find.byType(ActivityItemTile))
+            .categoryLabel,
+        'Daily Anchor');
+    await choose('Daily Pauses');
+    expect(find.byType(ActivityItemTile), findsNothing);
+    expect(find.text('Daily Pause'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), 'Morning');
+    await tester.pumpAndSettle();
+    expect(find.text('No practices match your search.'), findsOneWidget);
+    await choose('All');
+    expect(find.byType(ActivityItemTile), findsOneWidget);
+    await tester.enterText(find.byType(TextField), 'daily pause');
+    await tester.pumpAndSettle();
+    expect(find.byType(PauseCollectionCard), findsOneWidget);
+    expect(find.byType(ActivityItemTile), findsNothing);
+    await tester.ensureVisible(find.text('Evening rest'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Evening rest'));
+    await tester.pumpAndSettle();
+    expect(find.byType(Dialog), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  test('activity category comes from API metadata, not video availability', () {
+    Activity parse(String category, String? video) => Activity.fromJson({
+          '_id': 'test',
+          'name': 'Practice',
+          'description': '',
+          'thumbnail': '',
+          'video': video,
+          'categoryName': category,
+          'tags': [],
+        });
+    expect(parse('Daily Pause', '/clip.mp4').isDailyPause, isTrue);
+    expect(parse('Daily Anchor', null).isDailyAnchor, isTrue);
+    expect(parse('', null).isDailyPause, isFalse);
   });
 
   test(

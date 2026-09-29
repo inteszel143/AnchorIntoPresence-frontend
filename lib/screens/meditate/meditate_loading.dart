@@ -6,7 +6,7 @@ class MeditateLoadingSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => LoadingSkeleton(
-        label: 'Loading meditations',
+        label: 'Loading library',
         child: Column(
           children: List.generate(
             3,

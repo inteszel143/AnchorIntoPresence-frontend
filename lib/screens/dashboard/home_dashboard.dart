@@ -12,14 +12,13 @@ class HomeDashboard extends StatelessWidget {
       required this.state,
       required this.onProfile,
       required this.onSearch,
-      required this.onMeditate,
       required this.onRecent,
       required this.onNotifications,
       required this.onActivity,
       required this.onCategory,
       required this.onResume});
   final HomePageLoadedState state;
-  final VoidCallback onProfile, onSearch, onMeditate, onRecent, onNotifications;
+  final VoidCallback onProfile, onSearch, onRecent, onNotifications;
   final ValueChanged<ActivityData> onActivity;
   final ValueChanged<String> onCategory;
   final ValueChanged<RecentlyPlayedActivity> onResume;
@@ -54,7 +53,8 @@ class HomeDashboard extends StatelessWidget {
         state.homePageData.data['Daily Anchor']?.activities ?? <ActivityData>[];
     final pauses =
         state.homePageData.data['Daily Pause']?.activities ?? <ActivityData>[];
-    final recentItems = state.recentlyPlayedData;
+    final recentItems =
+        state.recentlyPlayedData.where((item) => !item.isCompleted).toList();
     Widget heading(String title, VoidCallback onSeeAll,
             {String? description}) =>
         Padding(
@@ -324,7 +324,7 @@ class HomeDashboard extends StatelessWidget {
                       ?.copyWith(fontWeight: FontWeight.w600, height: 1.2));
               final actions = Row(mainAxisSize: MainAxisSize.min, children: [
                 IconButton.filledTonal(
-                    tooltip: 'Search meditations',
+                    tooltip: 'Search Library',
                     style: IconButton.styleFrom(
                         foregroundColor: colors.onSurface,
                         backgroundColor: colors.surfaceContainerHighest),
@@ -370,19 +370,6 @@ class HomeDashboard extends StatelessWidget {
             }),
           ),
           const SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                onPressed: onMeditate,
-                icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-                iconAlignment: IconAlignment.end,
-                label: const Text('Explore Meditations'),
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
           Semantics(
             container: true,
             child: Container(
@@ -411,7 +398,8 @@ class HomeDashboard extends StatelessWidget {
                   if (anchors.isEmpty && pauses.isEmpty)
                     Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Text('Your daily practices will appear here.',
+                        child: Text(
+                            'Today’s practices haven’t been posted yet.',
                             style: TextStyle(color: colors.onSurfaceVariant))),
                 ],
               ),
@@ -434,9 +422,7 @@ class HomeDashboard extends StatelessWidget {
                     thumbnail: recent.thumbnail,
                     category: recent.category?.name ?? 'Meditation',
                     title: recent.name,
-                    subtitle: recent.isCompleted
-                        ? 'Completed · Practice again'
-                        : 'Last played ${recent.videoTimestamp}',
+                    subtitle: 'Last played ${recent.videoTimestamp}',
                     onTap: () => onResume(recent),
                     subtitleMaxLines: 2,
                   );

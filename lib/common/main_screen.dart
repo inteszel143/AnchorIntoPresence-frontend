@@ -33,11 +33,8 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   List<Widget> get _pages => [
-        HomePage(
-          onMeditate: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(builder: (_) => const MeditateScreen()),
-          ),
-        ),
+        HomePage(onLibrary: () => _onItemTapped(1)),
+        const MeditateScreen(),
         CommunityScreen(),
         TrackScreen(),
         SettingScreen(isTab: true),
@@ -68,7 +65,7 @@ class _MainScreenState extends State<MainScreen> {
         children: List.generate(
             pages.length,
             (index) => _visited.contains(index)
-                ? (index < 3 && !globals.isSubscribed
+                ? (index < 4 && !globals.isSubscribed
                     ? SubscriptionTabPage(
                         tabIndex: index,
                         onSubscribe: _openSubscriptionPlans,

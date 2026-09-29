@@ -245,15 +245,16 @@ Widget homeWidget() => tab(
             state: home,
             onProfile: () {},
             onSearch: () {},
-            onMeditate: () {},
             onRecent: () {},
             onNotifications: () {},
             onActivity: (_) {},
             onCategory: (_) {},
             onResume: (_) {})),
     0);
-Widget library() => BlocProvider<ActivityBloc>(
-    create: (_) => StoreLibrary(), child: const MeditationLibrary());
+Widget library() => tab(
+    BlocProvider<ActivityBloc>(
+        create: (_) => StoreLibrary(), child: const MeditationLibrary()),
+    1);
 Widget profile() => MultiBlocProvider(providers: [
       BlocProvider<HomePageBloc>(create: (_) => StoreHome()),
       BlocProvider<TrackBloc>(create: (_) => StoreTrack()),
@@ -281,7 +282,7 @@ Widget community() => tab(
             sharesCount: 0,
             createdAt: DateTime.now().subtract(Duration(hours: i + 1))),
     ])),
-    1);
+    2);
 
 const captions = [
   (
@@ -531,7 +532,7 @@ void main() {
         0 => homeWidget(),
         1 || 2 => library(),
         3 => RecentActivity(recentlyPlayedActivities: recent),
-        4 => tab(TrackOverview(state: TrackLoadedState(summary)), 2),
+        4 => tab(TrackOverview(state: TrackLoadedState(summary)), 3),
         5 => community(),
         6 => profile(),
         _ => const IllustratedWelcomeScreen(),

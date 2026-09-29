@@ -13,14 +13,14 @@ import 'package:mindfully_evolve_app/utils/global.dart' as globals;
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
-  testWidgets('nonmembers can navigate the three gated tabs without a modal',
+  testWidgets('nonmembers can navigate the four gated tabs without a modal',
       (tester) async {
     final previous = globals.isSubscribed;
     globals.isSubscribed = false;
     addTearDown(() => globals.isSubscribed = previous);
     await tester.pumpWidget(const MaterialApp(home: MainScreen()));
 
-    for (final index in [0, 1, 2, 0]) {
+    for (final index in [0, 1, 2, 3, 0]) {
       final tabBar = tester.widget<AppTabBar>(find.byType(AppTabBar));
       tabBar.onTap(index);
       await tester.pump();
@@ -51,7 +51,7 @@ void main() {
         data: const MediaQueryData(textScaler: TextScaler.linear(1.5)),
         child: Scaffold(
             body: SubscriptionTabPage(
-          tabIndex: 2,
+          tabIndex: 3,
           onSubscribe: () => openedPlans = true,
         )),
       ),
@@ -62,7 +62,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('fourth tab opens Settings without requiring a subscription',
+  testWidgets('fifth tab opens Settings without requiring a subscription',
       (tester) async {
     FlutterSecureStorage.setMockInitialValues({});
     final previous = globals.isSubscribed;
@@ -71,27 +71,27 @@ void main() {
     await tester.pumpWidget(MultiBlocProvider(providers: [
       BlocProvider(create: (_) => HomePageBloc()),
       BlocProvider(create: (_) => TrackBloc()),
-    ], child: const MaterialApp(home: MainScreen(initialIndex: 3))));
+    ], child: const MaterialApp(home: MainScreen(initialIndex: 4))));
     await tester.pump();
     expect(
         tester.widget<IndexedStack>(find.byType(IndexedStack)).children.length,
-        4);
+        5);
     expect(find.byType(SettingScreen), findsOneWidget);
     expect(find.byTooltip('Back'), findsNothing);
     expect(find.text('Meditate'), findsNothing);
     await tester.tap(find.text('Community'));
     await tester.pump();
-    expect(tester.widget<AppTabBar>(find.byType(AppTabBar)).selectedIndex, 1);
+    expect(tester.widget<AppTabBar>(find.byType(AppTabBar)).selectedIndex, 2);
     expect(
         tester
             .widget<SubscriptionTabPage>(find.byType(SubscriptionTabPage))
             .tabIndex,
-        1);
+        2);
     expect(find.text('Feel connected on your journey.'), findsOneWidget);
     await tester.tap(find.descendant(
         of: find.byType(AppTabBar), matching: find.text('Settings')));
     await tester.pump();
-    expect(tester.widget<IndexedStack>(find.byType(IndexedStack)).index, 3);
+    expect(tester.widget<IndexedStack>(find.byType(IndexedStack)).index, 4);
     expect(find.byType(SettingScreen), findsOneWidget);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());

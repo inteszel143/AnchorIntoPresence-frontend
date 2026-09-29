@@ -1,5 +1,6 @@
 import '../../common/widgets/custom_appbar.dart';
 import 'meditate_loading.dart';
+import '../activity_listing/category_collection.dart';
 import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import '../../common/widgets/app_toast.dart';
@@ -20,7 +21,7 @@ class MeditateScreen extends StatelessWidget {
       );
 }
 
-/// Browses the existing meditation collection without a separate content API.
+/// Browses anchors and pauses with shared category, favorite, and search filters.
 class MeditationLibrary extends StatefulWidget {
   const MeditationLibrary({super.key});
 
@@ -30,7 +31,8 @@ class MeditationLibrary extends StatefulWidget {
 
 class _MeditationLibraryState extends State<MeditationLibrary> {
   final _search = TextEditingController();
-  bool _favoritesOnly = false;
+  String _filter = 'All';
+  bool get _favoritesOnly => _filter == 'Favorites';
   String? _tag;
 
   IconData _tagIcon(String tag) {
@@ -62,14 +64,14 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
         isDark ? colors.onSurfaceVariant : const Color(0xFF595959);
     return AppScaffold(
       body: ScrollTitlePage(
-        title: 'Meditate',
+        title: 'Library',
         child: Center(
             child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
           child: Column(children: [
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: CustomAppbar(headingTxt: ''),
+              child: CustomAppbar(headingTxt: '', showBackButton: false),
             ),
             Expanded(
                 child: BlocConsumer<ActivityBloc, ActivityState>(
@@ -102,9 +104,11 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                 final filtered = all
                     ?.where((item) =>
                         (!_favoritesOnly || item.isFavorite) &&
+                        (_filter != 'Daily Anchors' || item.isDailyAnchor) &&
+                        (_filter != 'Daily Pauses' || item.isDailyPause) &&
                         (selectedTag == null ||
                             item.tags.contains(selectedTag)) &&
-                        '${item.name} ${item.description} ${item.tags.join(' ')}'
+                        '${item.name} ${item.description} ${item.categoryLabel} ${item.tags.join(' ')}'
                             .toLowerCase()
                             .contains(query))
                     .toList();
@@ -116,7 +120,7 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 16),
-                        Text('Meditate',
+                        Text('Library',
                             style: Theme.of(context)
                                 .textTheme
                                 .headlineLarge
@@ -133,7 +137,7 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                           style: const TextStyle(fontSize: 14),
                           onChanged: (_) => setState(() {}),
                           decoration: InputDecoration(
-                            hintText: 'Search meditations',
+                            hintText: 'Search Library',
                             isDense: true,
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 14, vertical: 10),
@@ -161,51 +165,34 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                         SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child: Row(children: [
-                              ChoiceChip(
-                                  avatar: Icon(Icons.self_improvement_rounded,
-                                      size: 18,
-                                      color: !_favoritesOnly
-                                          ? colors.onSecondaryContainer
-                                          : inactiveTabForeground),
-                                  showCheckmark: false,
-                                  shape: const StadiumBorder(),
-                                  side: BorderSide.none,
-                                  backgroundColor: inactiveTabColor,
-                                  selectedColor: colors.secondaryContainer,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 6),
-                                  labelStyle: TextStyle(
+                              for (final filter in [
+                                'All',
+                                'Daily Anchors',
+                                'Daily Pauses',
+                                'Favorites'
+                              ])
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: ChoiceChip(
+                                    showCheckmark: false,
+                                    shape: const StadiumBorder(),
+                                    side: BorderSide.none,
+                                    backgroundColor: inactiveTabColor,
+                                    selectedColor: colors.secondaryContainer,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 6),
+                                    labelStyle: TextStyle(
                                       fontSize: 14,
-                                      color: !_favoritesOnly
+                                      color: _filter == filter
                                           ? colors.onSecondaryContainer
-                                          : inactiveTabForeground),
-                                  label: const Text('All practices'),
-                                  selected: !_favoritesOnly,
-                                  onSelected: (_) =>
-                                      setState(() => _favoritesOnly = false)),
-                              const SizedBox(width: 8),
-                              ChoiceChip(
-                                  avatar: Icon(Icons.favorite_border_rounded,
-                                      size: 18,
-                                      color: _favoritesOnly
-                                          ? colors.onSecondaryContainer
-                                          : inactiveTabForeground),
-                                  showCheckmark: false,
-                                  shape: const StadiumBorder(),
-                                  side: BorderSide.none,
-                                  backgroundColor: inactiveTabColor,
-                                  selectedColor: colors.secondaryContainer,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 6),
-                                  labelStyle: TextStyle(
-                                      fontSize: 14,
-                                      color: _favoritesOnly
-                                          ? colors.onSecondaryContainer
-                                          : inactiveTabForeground),
-                                  label: const Text('Favorites'),
-                                  selected: _favoritesOnly,
-                                  onSelected: (_) =>
-                                      setState(() => _favoritesOnly = true)),
+                                          : inactiveTabForeground,
+                                    ),
+                                    label: Text(filter),
+                                    selected: _filter == filter,
+                                    onSelected: (_) =>
+                                        setState(() => _filter = filter),
+                                  ),
+                                ),
                             ])),
                         if (tags.isNotEmpty) ...[
                           const SizedBox(height: 12),
@@ -278,7 +265,7 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                           child: Text(
                               _favoritesOnly
                                   ? 'No saved practices match your selection.'
-                                  : 'No meditations match your search.',
+                                  : 'No practices match your search.',
                               textAlign: TextAlign.center,
                               style: TextStyle(color: colors.onSurfaceVariant)),
                         )))
@@ -289,9 +276,17 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                           delegate:
                               SliverChildBuilderDelegate((context, index) {
                         final item = filtered[index];
+                        if (item.isDailyPause) {
+                          return PauseCollectionCard(
+                            key: ValueKey(item.id),
+                            activity: item,
+                            showLibraryActions: true,
+                          );
+                        }
                         return ActivityItemTile(
                             key: ValueKey(item.id),
                             collectionStyle: true,
+                            categoryLabel: item.categoryLabel,
                             videoUrl: item.video.replaceAll(' ', ''),
                             videoDuration: '--:--',
                             heading: item.name,

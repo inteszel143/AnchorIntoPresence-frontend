@@ -197,9 +197,13 @@ class ApiService {
   static Future<RecentlyPlayedResponse> fetchRecentlyPlayed({
     int page = 1,
     int limit = 10,
+    bool unfinishedOnly = false,
   }) async {
     final token = await LocalStorage.getToken() ?? '';
-    final url = Uri.parse('${Urls.recentlyPlayed}?page=$page&limit=$limit');
+    final url = Uri.parse(Urls.recentlyPlayed).replace(queryParameters: {
+      'page': '$page', 'limit': '$limit',
+      if (unfinishedOnly) 'unfinishedOnly': 'true',
+    });
 
     try {
       final response = await http.get(
@@ -496,10 +500,7 @@ class ApiService {
         'sort': sortOrder,
       };
 
-      if (searchQuery.trim().isEmpty) {
-        final todayDate = DateTime.now().toIso8601String().split('T')[0];
-        queryParams['date'] = todayDate;
-      }
+      queryParams['date'] = DateTime.now().toIso8601String().split('T')[0];
 
       final url = Uri.parse(Urls.homePageData).replace(
         queryParameters: queryParams,

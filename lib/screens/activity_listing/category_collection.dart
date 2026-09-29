@@ -175,8 +175,10 @@ class _CategoryCollectionState extends State<CategoryCollection> {
 }
 
 class PauseCollectionCard extends StatelessWidget {
-  const PauseCollectionCard({super.key, required this.activity});
+  const PauseCollectionCard(
+      {super.key, required this.activity, this.showLibraryActions = false});
   final Activity activity;
+  final bool showLibraryActions;
 
   Widget _image(BuildContext context) => Image.network(
         HomeDashboard.imageUrl(activity.thumbnail),
@@ -216,6 +218,13 @@ class PauseCollectionCard extends StatelessWidget {
                       child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                        if (showLibraryActions) ...[
+                          Text('Daily Pause',
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                  color: theme.colorScheme.primary,
+                                  fontWeight: FontWeight.w700)),
+                          const SizedBox(height: 6),
+                        ],
                         Text(activity.name, style: theme.textTheme.titleMedium),
                         const SizedBox(height: 6),
                         Text('Take a moment',
@@ -223,6 +232,22 @@ class PauseCollectionCard extends StatelessWidget {
                                 color: theme.colorScheme.onSurfaceVariant)),
                       ])),
                   const SizedBox(width: 12),
+                  if (showLibraryActions)
+                    IconButton.filledTonal(
+                      tooltip: activity.isFavorite
+                          ? 'Remove from favorites'
+                          : 'Save practice',
+                      onPressed: () => context
+                          .read<ActivityBloc>()
+                          .add(ToggleFavorite(activityId: activity.id)),
+                      icon: Icon(
+                          activity.isFavorite
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_border_rounded,
+                          color: activity.isFavorite
+                              ? theme.colorScheme.error
+                              : theme.colorScheme.onSurfaceVariant),
+                    ),
                   Icon(Icons.open_in_full_rounded,
                       size: 20, color: theme.colorScheme.onSurfaceVariant),
                 ])),

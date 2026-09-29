@@ -4,7 +4,10 @@ class Urls {
     'API_BASE_URL',
     defaultValue: 'https://admin.anchorintopresence.net',
   );
-  static const String baseUrlimages = 'https://d1ckq51qwp5orx.cloudfront.net';
+  static const String baseUrlimages = String.fromEnvironment(
+    'ASSET_BASE_URL',
+    defaultValue: 'https://d1ckq51qwp5orx.cloudfront.net',
+  );
   static const String postActivity = '$baseUrl/api/users/activities/';
   static const String getActivity = '$baseUrl/api/users/activities';
   static const String contactSupport = '$baseUrl/api/users/contact-support';

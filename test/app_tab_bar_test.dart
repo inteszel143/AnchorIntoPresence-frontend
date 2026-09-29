@@ -27,7 +27,7 @@ void main() {
           )));
       expect(find.text('Meditate'), findsNothing);
       for (final (index, label)
-          in ['Home', 'Community', 'Track', 'Settings'].indexed) {
+          in ['Home', 'Library', 'Community', 'Track', 'Settings'].indexed) {
         await tester.tap(find.text(label));
         await tester.pumpAndSettle();
         expect(selected, index);
@@ -64,7 +64,7 @@ void main() {
             child: Scaffold(
                 bottomNavigationBar: RepaintBoundary(
                     key: key,
-                    child: AppTabBar(selectedIndex: 3, onTap: (_) {}))),
+                    child: AppTabBar(selectedIndex: 4, onTap: (_) {}))),
           )));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);

@@ -28,6 +28,20 @@ class SubscriptionTabPage extends StatelessWidget {
       ],
     ),
     (
+      title: 'Library',
+      tint: ColorCodes.sand,
+      subtitle: 'A practice for every moment',
+      icon: Icons.auto_stories_rounded,
+      headline: 'Find a little space for yourself.',
+      description:
+          'Explore Daily Anchors and Daily Pauses, and return to the practices that support you.',
+      benefits: [
+        'Browse Daily Anchors',
+        'Explore Daily Pauses',
+        'Save your favorite practices'
+      ],
+    ),
+    (
       title: 'Community',
       tint: ColorCodes.sand,
       subtitle: 'A little more connected',
@@ -202,7 +216,7 @@ class SubscriptionTabPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
                       Text(
-                        'One subscription. Access to Home, Community, and Track.',
+                        'One subscription. Access to Home, Library, Community, and Track.',
                         textAlign: TextAlign.center,
                         style: theme.textTheme.bodySmall
                             ?.copyWith(color: ColorCodes.charcoal),

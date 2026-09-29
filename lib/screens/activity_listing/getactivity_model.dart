@@ -8,6 +8,15 @@ class Activity {
   final String video;
   final bool isFavorite;
   final List<String> tags;
+  final String categoryName;
+
+  bool get isDailyPause => categoryName.trim().toLowerCase() == 'daily pause';
+  bool get isDailyAnchor => categoryName.trim().toLowerCase() == 'daily anchor';
+  String get categoryLabel => isDailyPause
+      ? 'Daily Pause'
+      : isDailyAnchor
+          ? 'Daily Anchor'
+          : categoryName;
 
   Activity({
     required this.id,
@@ -17,6 +26,7 @@ class Activity {
     required this.video,
     required this.isFavorite,
     required this.tags,
+    this.categoryName = '',
   });
 
   // Factory constructor to parse JSON response
@@ -33,9 +43,9 @@ class Activity {
           .toList();
     }
 
-    final baseUrl = Urls.baseUrl;
     final baseUrlimages = Urls.baseUrlimages;
     return Activity(
+      categoryName: json['categoryName']?.toString() ?? '',
       id: json['_id'],
       name: json['name'],
       description: json['description'],

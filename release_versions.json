@@ -13,7 +13,7 @@
     {
       "version": "1.0.9",
       "build": 13,
-      "status": "reserved"
+      "status": "built"
     }
   ],
   "android": [
@@ -30,7 +30,7 @@
     {
       "version": "1.11.4",
       "build": 83,
-      "status": "reserved"
+      "status": "built"
     }
   ]
 }

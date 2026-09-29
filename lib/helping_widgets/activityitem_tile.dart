@@ -29,6 +29,7 @@ class ActivityItemTile extends StatefulWidget {
   final String thumbnail;
   final String? categoryId;
   final bool collectionStyle;
+  final String? categoryLabel;
 
   const ActivityItemTile({
     super.key,
@@ -42,6 +43,7 @@ class ActivityItemTile extends StatefulWidget {
     required this.thumbnail,
     this.categoryId,
     this.collectionStyle = false,
+    this.categoryLabel,
   });
 
   @override
@@ -161,7 +163,7 @@ class _ActivityItemTileState extends State<ActivityItemTile> {
                   ),
           ),
           IconButton.filledTonal(
-            tooltip: isLiked ? 'Remove from favorites' : 'Save meditation',
+            tooltip: isLiked ? 'Remove from favorites' : 'Save practice',
             style: IconButton.styleFrom(backgroundColor: colors.surface),
             onPressed: _savingFavorite ? null : _toggleCollectionFavorite,
             icon: Icon(
@@ -172,6 +174,12 @@ class _ActivityItemTileState extends State<ActivityItemTile> {
           ),
         ]),
         const SizedBox(height: 8),
+        if (widget.categoryLabel?.isNotEmpty == true) ...[
+          Text(widget.categoryLabel!,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: colors.primary, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 6),
+        ],
         Text(widget.heading,
             softWrap: true,
             maxLines: null,

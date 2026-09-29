@@ -34,8 +34,8 @@ import 'dashboard_bloc/home_event.dart';
 import 'dashboard_bloc/home_state.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, this.onMeditate});
-  final VoidCallback? onMeditate;
+  const HomePage({super.key, this.onLibrary});
+  final VoidCallback? onLibrary;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -204,8 +204,7 @@ class _HomePageState extends State<HomePage> {
                     return HomeDashboard(
                       state: state,
                       onProfile: () => _openPage(const UserprofileScreen()),
-                      onSearch: () => widget.onMeditate?.call(),
-                      onMeditate: () => widget.onMeditate?.call(),
+                      onSearch: () => widget.onLibrary?.call(),
                       onRecent: () => _openPage(RecentActivity(
                           recentlyPlayedActivities: state.recentlyPlayedData)),
                       onNotifications: () => _openPage(BlocProvider.value(

@@ -91,7 +91,6 @@ void main() {
         state: state,
         onProfile: () {},
         onSearch: () {},
-        onMeditate: () {},
         onRecent: () {},
         onNotifications: () {},
         onActivity: (_) {},
@@ -131,7 +130,6 @@ void main() {
         state: fixture(),
         onProfile: () {},
         onSearch: () {},
-        onMeditate: () {},
         onRecent: () => openedRecent = true,
         onNotifications: () {},
         onActivity: (item) => openedActivity = item.id,
@@ -191,7 +189,6 @@ void main() {
                           mood: scale == 1 ? 'grounded' : 'connected'),
                       onProfile: () => action = 'profile',
                       onSearch: () => action = 'search',
-                      onMeditate: () => action = 'meditate',
                       onRecent: () {},
                       onNotifications: () => action = 'notifications',
                       onActivity: (item) => action = item.id,
@@ -203,7 +200,7 @@ void main() {
         expect(find.text('How are you feeling today?'), findsNothing);
         expect(
             find.byIcon(Icons.sentiment_satisfied_alt_rounded), findsNothing);
-        for (final tooltip in ['Search meditations', 'Notifications']) {
+        for (final tooltip in ['Search Library', 'Notifications']) {
           final buttonFinder = find.byWidgetPredicate(
               (widget) => widget is IconButton && widget.tooltip == tooltip);
           final button = tester.widget<IconButton>(buttonFinder);
@@ -218,7 +215,7 @@ void main() {
           expect((luminances.last + .05) / (luminances.first + .05),
               greaterThanOrEqualTo(4.5));
         }
-        await tester.tap(find.byTooltip('Search meditations'));
+        await tester.tap(find.byTooltip('Search Library'));
         expect(action, 'search');
         expect(find.widgetWithText(ActionChip, 'Notifications'), findsNothing);
         await tester.tap(find.byTooltip('Notifications'));
@@ -230,9 +227,7 @@ void main() {
         expect(find.text('Favorites'), findsNothing);
         expect(find.text('Meditate'), findsNothing);
         expect(find.text('Recently played'), findsNothing);
-        await tester.ensureVisible(find.text('Explore Meditations'));
-        await tester.tap(find.text('Explore Meditations'));
-        expect(action, 'meditate');
+        expect(find.text('Explore Meditations'), findsNothing);
         await tester.scrollUntilVisible(find.text('Finding calm'), 200,
             scrollable: find.byType(Scrollable).first);
         await Scrollable.ensureVisible(
