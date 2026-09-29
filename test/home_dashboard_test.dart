@@ -46,6 +46,8 @@ HomePageLoadedState fixture(
           ? [
               RecentlyPlayedActivity(
                   id: 'recent',
+                  category: RecentlyPlayedCategory(
+                      id: 'anchors', name: 'Daily Anchor'),
                   videoTimestamp: '02:10',
                   totalVideoTime: '10:00',
                   isCompleted: completed,
@@ -71,6 +73,7 @@ void main() {
     for (var index = 2; index <= 5; index++) {
       state.recentlyPlayedData.add(RecentlyPlayedActivity(
         id: 'recent-$index',
+        category: RecentlyPlayedCategory(id: 'anchors', name: 'Daily Anchor'),
         videoTimestamp: '01:00',
         totalVideoTime: '10:00',
         isCompleted: false,
@@ -184,9 +187,8 @@ void main() {
               data: MediaQueryData(textScaler: TextScaler.linear(scale)),
               child: Scaffold(
                   body: HomeDashboard(
-                      state: fixture(
-                          completed: scale == 2,
-                          mood: scale == 1 ? 'grounded' : 'connected'),
+                      state:
+                          fixture(mood: scale == 1 ? 'grounded' : 'connected'),
                       onProfile: () => action = 'profile',
                       onSearch: () => action = 'search',
                       onRecent: () {},
@@ -236,11 +238,7 @@ void main() {
         await tester.pumpAndSettle();
         await tester.tap(find.text('Finding calm'));
         expect(action, 'recent');
-        expect(
-            find.text(scale == 2
-                ? 'Completed · Practice again'
-                : 'Last played 02:10'),
-            findsOneWidget);
+        expect(find.text('Last played 02:10'), findsOneWidget);
         await tester.drag(find.byType(ListView).first, const Offset(0, -500));
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);

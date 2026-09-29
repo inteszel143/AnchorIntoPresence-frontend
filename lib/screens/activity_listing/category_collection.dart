@@ -1,14 +1,9 @@
 import 'dart:async';
-import 'dart:io';
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 import '../../common/widgets/collection_page.dart';
 import '../../helping_widgets/activityitem_tile.dart';
-import '../../utils/share_options.dart';
+import '../../common/widgets/daily_pause_preview.dart';
 import '../dashboard/home_dashboard.dart';
 import 'getactivity_model.dart';
 import 'getactivity_bloc/getrecent_activities_bloc.dart';
@@ -156,6 +151,7 @@ class _CategoryCollectionState extends State<CategoryCollection> {
               return ActivityItemTile(
                 key: ValueKey(item.id),
                 collectionStyle: true,
+                categoryLabel: 'Daily Anchor',
                 id: item.id,
                 categoryId: widget.categoryId,
                 heading: item.name,
@@ -192,9 +188,10 @@ class PauseCollectionCard extends StatelessWidget {
                             Theme.of(context).colorScheme.onSurfaceVariant)))),
       );
 
-  Future<void> _preview(BuildContext context) => showDialog<void>(
-        context: context,
-        builder: (context) => _PausePreview(activity: activity),
+  Future<void> _preview(BuildContext context) => showDailyPausePreview(
+        context,
+        title: activity.name,
+        thumbnail: activity.thumbnail,
       );
 
   @override
@@ -256,86 +253,4 @@ class PauseCollectionCard extends StatelessWidget {
       ),
     );
   }
-}
-
-class _PausePreview extends StatefulWidget {
-  const _PausePreview({required this.activity});
-  final Activity activity;
-  @override
-  State<_PausePreview> createState() => _PausePreviewState();
-}
-
-class _PausePreviewState extends State<_PausePreview> {
-  final _imageKey = GlobalKey();
-  bool _sharing = false;
-  bool _imageReady = false;
-
-  Future<void> _share() async {
-    setState(() => _sharing = true);
-    ui.Image? image;
-    try {
-      final boundary =
-          _imageKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-      image = await boundary.toImage(
-          pixelRatio: MediaQuery.devicePixelRatioOf(context));
-      final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-      final directory = await getTemporaryDirectory();
-      final file = File(
-          '${directory.path}/pause-${DateTime.now().microsecondsSinceEpoch}.png');
-      await file.writeAsBytes(bytes!.buffer.asUint8List());
-      if (mounted) {
-        ShareUtils.showShareOptionsWithImage(context, XFile(file.path));
-      }
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Couldn’t share this image. Please try again.')));
-      }
-    } finally {
-      image?.dispose();
-      if (mounted) setState(() => _sharing = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) => Dialog(
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        child: SingleChildScrollView(
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 8, 8),
-              child: Row(children: [
-                Expanded(
-                    child: Text(widget.activity.name,
-                        style: Theme.of(context).textTheme.titleMedium)),
-                IconButton(
-                    tooltip: 'Share moment',
-                    onPressed: _imageReady && !_sharing ? _share : null,
-                    icon: const Icon(Icons.share_outlined)),
-                IconButton(
-                    tooltip: 'Close preview',
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close_rounded)),
-              ])),
-          RepaintBoundary(
-              key: _imageKey,
-              child: Image.network(
-                HomeDashboard.imageUrl(widget.activity.thumbnail),
-                fit: BoxFit.contain,
-                frameBuilder: (context, child, frame, synchronous) {
-                  if (!_imageReady && (frame != null || synchronous)) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) setState(() => _imageReady = true);
-                    });
-                  }
-                  return child;
-                },
-                errorBuilder: (_, __, ___) => const Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Text(
-                        'This image couldn’t load. Please try again later.')),
-              )),
-        ])),
-      );
 }

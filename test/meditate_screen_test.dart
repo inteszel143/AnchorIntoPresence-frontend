@@ -77,6 +77,7 @@ void main() {
                   padding: EdgeInsets.all(20),
                   child: ActivityItemTile(
                     collectionStyle: true,
+                    categoryLabel: 'Daily Anchor',
                     videoUrl: '',
                     videoDuration: '--:--',
                     heading: title,
@@ -223,6 +224,8 @@ void main() {
     await choose('Daily Pauses');
     expect(find.byType(ActivityItemTile), findsNothing);
     expect(find.text('Daily Pause'), findsOneWidget);
+    expect(find.byIcon(Icons.schedule_rounded), findsNothing);
+    expect(find.text('--:--'), findsNothing);
     await tester.enterText(find.byType(TextField), 'Morning');
     await tester.pumpAndSettle();
     expect(find.text('No practices match your search.'), findsOneWidget);
@@ -236,7 +239,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Evening rest'));
     await tester.pumpAndSettle();
-    expect(find.byType(Dialog), findsOneWidget);
+    expect(find.text('Share this pause'), findsOneWidget);
+    expect(find.byTooltip('Close preview'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

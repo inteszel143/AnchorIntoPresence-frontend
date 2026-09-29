@@ -1,3 +1,4 @@
+import '../../common/widgets/daily_pause_preview.dart';
 import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import 'home_dashboard.dart';
 import 'home_loading.dart';
@@ -5,20 +6,14 @@ import 'home_model.dart';
 import '../activity_listing/getactivity_bloc/getrecent_activities_bloc.dart';
 import 'dashboard_bloc/recently_played_model.dart';
 import 'dart:async';
-import 'dart:io';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:mindfully_evolve_app/screens/subscriptionmanagement/subscription_management.dart';
-import 'package:path_provider/path_provider.dart';
 
 import '../../utils/color_constants.dart';
 import '../../utils/fonts.dart';
 import '../../utils/global.dart' as globals;
-import '../../utils/share_options.dart';
 import '../activity_details/activity_bloc/post_activity_bloc.dart';
 import '../activity_details/activity_details.dart';
 import '../activity_listing/activity_listing.dart';
@@ -65,30 +60,6 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  Future<XFile?> captureWidget(GlobalKey key, String fileName) async {
-    try {
-      final boundary =
-          key.currentContext!.findRenderObject() as RenderRepaintBoundary;
-
-      final ui.Image image = await boundary.toImage(
-        pixelRatio: MediaQuery.of(key.currentContext!).devicePixelRatio,
-      );
-
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-
-      final pngBytes = byteData!.buffer.asUint8List();
-
-      final directory = await getTemporaryDirectory();
-      final file = File('${directory.path}/$fileName.png');
-      await file.writeAsBytes(pngBytes);
-
-      return XFile(file.path);
-    } catch (e) {
-      debugPrint('Error capturing image: $e');
-      return null;
-    }
-  }
-
   Future<void> _openPage(Widget page) async {
     await Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
     if (!mounted) return;
@@ -110,39 +81,8 @@ class _HomePageState extends State<HomePage> {
     if (item.categoryName == 'Daily Pause' ||
         item.video == null ||
         item.video!.isEmpty) {
-      final key = GlobalKey();
-      await showDialog<void>(
-          context: context,
-          builder: (dialogContext) => Dialog(
-                clipBehavior: Clip.antiAlias,
-                child: SingleChildScrollView(
-                    child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                    IconButton(
-                        tooltip: 'Share',
-                        icon: const Icon(Icons.share_outlined),
-                        onPressed: () async {
-                          final file = await captureWidget(key, 'daily-pause');
-                          if (file != null && dialogContext.mounted) {
-                            ShareUtils.showShareOptionsWithImage(
-                                dialogContext, file);
-                          }
-                        }),
-                    IconButton(
-                        tooltip: 'Close',
-                        icon: const Icon(Icons.close_rounded),
-                        onPressed: () => Navigator.pop(dialogContext)),
-                  ]),
-                  RepaintBoundary(
-                      key: key,
-                      child: Image.network(
-                          HomeDashboard.imageUrl(item.thumbnail),
-                          fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) => const Padding(
-                              padding: EdgeInsets.all(24),
-                              child: Text('This image couldn’t load.')))),
-                ])),
-              ));
+      await showDailyPausePreview(context,
+          title: item.name, thumbnail: item.thumbnail);
       return;
     }
     await _openVideo(
@@ -206,7 +146,9 @@ class _HomePageState extends State<HomePage> {
                       onProfile: () => _openPage(const UserprofileScreen()),
                       onSearch: () => widget.onLibrary?.call(),
                       onRecent: () => _openPage(RecentActivity(
-                          recentlyPlayedActivities: state.recentlyPlayedData)),
+                          recentlyPlayedActivities: state.recentlyPlayedData
+                              .where((item) => item.canContinueListening)
+                              .toList())),
                       onNotifications: () => _openPage(BlocProvider.value(
                           value: context.read<NotificationBloc>(),
                           child: NotificatonScreen())),

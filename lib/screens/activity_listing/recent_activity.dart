@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../common/widgets/collection_page.dart';
 import '../../helping_widgets/activityitem_tile.dart';
+import 'category_collection.dart';
+import 'getactivity_model.dart';
 import '../dashboard/home_dashboard.dart';
 import '../dashboard/dashboard_bloc/recently_played_model.dart';
 
@@ -38,6 +40,20 @@ class RecentActivity extends StatelessWidget {
             SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
               final activity = recentlyPlayedActivities[index];
+              if (activity.category?.name.trim().toLowerCase() ==
+                  'daily pause') {
+                return PauseCollectionCard(
+                    activity: Activity(
+                  id: activity.id,
+                  name: activity.name,
+                  description: activity.description,
+                  thumbnail: activity.thumbnail,
+                  video: '',
+                  isFavorite: activity.isFavorite,
+                  tags: activity.tagNames,
+                  categoryName: 'Daily Pause',
+                ));
+              }
               return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -57,6 +73,7 @@ class RecentActivity extends StatelessWidget {
                     ActivityItemTile(
                         key: ValueKey(activity.id),
                         collectionStyle: true,
+                        categoryLabel: activity.category?.name,
                         id: activity.id,
                         heading: activity.name,
                         description: activity.description,

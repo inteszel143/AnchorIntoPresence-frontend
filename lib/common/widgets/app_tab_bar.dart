@@ -10,7 +10,7 @@ class AppTabBar extends StatelessWidget {
   final ValueChanged<int> onTap;
 
   static const _items = [
-    (Icons.home_rounded, 'Home'),
+    (Icons.pentagon_rounded, 'Home'),
     (Icons.auto_stories_rounded, 'Library'),
     (Icons.groups_rounded, 'Community'),
     (Icons.insights_rounded, 'Track'),

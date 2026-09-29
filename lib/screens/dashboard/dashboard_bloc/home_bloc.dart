@@ -78,7 +78,7 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
   /// Fetches recently played items with fallback to empty response
   Future<RecentlyPlayedResponse> _fetchRecentlyPlayed() async {
     try {
-      return await ApiService.fetchRecentlyPlayed(unfinishedOnly: true, limit: 10000);
+      return await ApiService.fetchRecentlyPlayed(limit: 10000);
     } catch (e) {
       // Return empty response on failure to prevent UI crash
       return RecentlyPlayedResponse.empty();

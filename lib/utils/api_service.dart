@@ -10,6 +10,7 @@ import 'package:mindfully_evolve_app/utils/status_codes.dart';
 import '../common/local_storage.dart';
 import '../screens/activity_details/activityresponse_model.dart';
 import '../screens/activity_listing/getactivity_model.dart';
+import '../screens/activity_listing/activity_categories.dart';
 import '../screens/comment/comment_model.dart';
 import '../screens/community/community_model.dart';
 import '../screens/contact_support/contact_support_model.dart';
@@ -330,7 +331,14 @@ class ApiService {
       final data = json.decode(response.body);
 
       if (response.statusCode == 200 && data['status'] == true) {
-        return ActivityResponse.fromJson(data);
+        final client = http.Client();
+        try {
+          final categorized = await resolveActivityCategories(
+            data, client: client, token: token, categoryId: categoryId);
+          return ActivityResponse.fromJson(categorized);
+        } finally {
+          client.close();
+        }
       } else if (response.statusCode >= 400 && response.statusCode < 500) {
         throw Exception(
             'Client Error: ${response.statusCode} - ${response.body}');

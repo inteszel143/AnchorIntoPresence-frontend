@@ -61,7 +61,9 @@ class _ActivityItemTileState extends State<ActivityItemTile> {
     isLiked = widget.isLiked;
     _thumbnailFuture =
         _fetchThumbnail('${Urls.baseUrlimages}${widget.thumbnail}');
-    _durationFuture = _getVideoDuration(widget.videoUrl);
+    _durationFuture = _hasDuration
+        ? _getVideoDuration(widget.videoUrl)
+        : Future.value('--:--');
   }
 
   @override
@@ -72,10 +74,16 @@ class _ActivityItemTileState extends State<ActivityItemTile> {
       _thumbnailFuture =
           _fetchThumbnail('${Urls.baseUrlimages}${widget.thumbnail}');
     }
-    if (oldWidget.videoUrl != widget.videoUrl) {
-      _durationFuture = _getVideoDuration(widget.videoUrl);
+    if (oldWidget.videoUrl != widget.videoUrl ||
+        oldWidget.categoryLabel != widget.categoryLabel) {
+      _durationFuture = _hasDuration
+          ? _getVideoDuration(widget.videoUrl)
+          : Future.value('--:--');
     }
   }
+
+  bool get _hasDuration =>
+      widget.categoryLabel?.trim().toLowerCase() == 'daily anchor';
 
   bool _savingFavorite = false;
 
@@ -146,22 +154,25 @@ class _ActivityItemTileState extends State<ActivityItemTile> {
         ),
         const SizedBox(height: 8),
         Row(children: [
-          Icon(Icons.schedule_rounded,
-              color: colors.onSurfaceVariant, size: 17),
-          const SizedBox(width: 6),
-          Expanded(
-            child: durationReady
-                ? Text(duration.data ?? '--:--',
-                    style:
-                        TextStyle(color: colors.onSurfaceVariant, fontSize: 12))
-                : const Align(
-                    alignment: Alignment.centerLeft,
-                    child: LoadingSkeleton(
-                      label: 'Loading video duration',
-                      child: SkeletonBlock(width: 48, height: 12),
+          if (_hasDuration) ...[
+            Icon(Icons.schedule_rounded,
+                color: colors.onSurfaceVariant, size: 17),
+            const SizedBox(width: 6),
+            Expanded(
+              child: durationReady
+                  ? Text(duration.data ?? '--:--',
+                      style: TextStyle(
+                          color: colors.onSurfaceVariant, fontSize: 12))
+                  : const Align(
+                      alignment: Alignment.centerLeft,
+                      child: LoadingSkeleton(
+                        label: 'Loading video duration',
+                        child: SkeletonBlock(width: 48, height: 12),
+                      ),
                     ),
-                  ),
-          ),
+            ),
+          ] else
+            const Spacer(),
           IconButton.filledTonal(
             tooltip: isLiked ? 'Remove from favorites' : 'Save practice',
             style: IconButton.styleFrom(backgroundColor: colors.surface),
@@ -370,31 +381,34 @@ class _ActivityItemTileState extends State<ActivityItemTile> {
                                             ),
                                           ),
                                         ),
-                                        // Duration
-                                        Positioned(
-                                          bottom: 5,
-                                          left: 5,
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 6, vertical: 2),
-                                            decoration: BoxDecoration(
-                                              color: ColorCodes.black54color
-                                                  .withValues(alpha: 0.6),
-                                              borderRadius:
-                                                  BorderRadius.circular(4),
-                                            ),
-                                            child: Text(
-                                              isDurationReady
-                                                  ? snapshotDuration.data!
-                                                  : "--:--",
-                                              style: const TextStyle(
-                                                color: ColorCodes.whitecolor,
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w500,
+                                        // Duration is only meaningful for guided Anchors.
+                                        if (_hasDuration)
+                                          Positioned(
+                                            bottom: 5,
+                                            left: 5,
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 6,
+                                                      vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: ColorCodes.black54color
+                                                    .withValues(alpha: 0.6),
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
+                                              ),
+                                              child: Text(
+                                                isDurationReady
+                                                    ? snapshotDuration.data!
+                                                    : "--:--",
+                                                style: const TextStyle(
+                                                  color: ColorCodes.whitecolor,
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
                                               ),
                                             ),
                                           ),
-                                        ),
                                       ],
                                     ),
                                   ),

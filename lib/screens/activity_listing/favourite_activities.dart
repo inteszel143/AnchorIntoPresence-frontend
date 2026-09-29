@@ -4,6 +4,7 @@ import '../../common/widgets/collection_page.dart';
 import '../../helping_widgets/activityitem_tile.dart';
 import 'getactivity_bloc/getrecent_activities_bloc.dart';
 import 'activity_list_cache.dart';
+import 'category_collection.dart';
 import 'getactivity_bloc/getrecent_activities_event.dart';
 import 'getactivity_bloc/getrecent_activities_state.dart';
 
@@ -92,9 +93,15 @@ class FavouriteActivity extends StatelessWidget {
                                   );
                                 }
                                 final activity = activities[index - 1];
+                                if (activity.isDailyPause) {
+                                  return PauseCollectionCard(
+                                      activity: activity,
+                                      showLibraryActions: true);
+                                }
                                 return ActivityItemTile(
                                   key: ValueKey(activity.id),
                                   collectionStyle: true,
+                                  categoryLabel: activity.categoryLabel,
                                   id: activity.id,
                                   heading: activity.name,
                                   description: activity.description,

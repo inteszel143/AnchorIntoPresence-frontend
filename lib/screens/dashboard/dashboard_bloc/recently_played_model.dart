@@ -69,6 +69,30 @@ class RecentlyPlayedActivity {
     required this.isFavorite,
   });
 
+  /// Home only resumes guided Anchors with recorded, unfinished playback.
+  bool get canContinueListening {
+    if (isCompleted || video.trim().isEmpty ||
+        category?.name.trim().toLowerCase() != 'daily anchor') {
+      return false;
+    }
+    final position = _timestampSeconds(videoTimestamp);
+    if (position == null || position <= 0) return false;
+    final total = _timestampSeconds(totalVideoTime);
+    return total == null || total <= 0 || position < total;
+  }
+
+  static int? _timestampSeconds(String value) {
+    final parts = value.trim().split(':');
+    if (parts.length < 2 || parts.length > 3) return null;
+    var seconds = 0;
+    for (var i = 0; i < parts.length; i++) {
+      final part = int.tryParse(parts[i]);
+      if (part == null || part < 0 || (i > 0 && part >= 60)) return null;
+      seconds = seconds * 60 + part;
+    }
+    return seconds;
+  }
+
   /// Getter for category ID
   String? get categoryId => category?.id;
 

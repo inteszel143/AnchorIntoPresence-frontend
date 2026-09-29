@@ -53,8 +53,9 @@ class HomeDashboard extends StatelessWidget {
         state.homePageData.data['Daily Anchor']?.activities ?? <ActivityData>[];
     final pauses =
         state.homePageData.data['Daily Pause']?.activities ?? <ActivityData>[];
-    final recentItems =
-        state.recentlyPlayedData.where((item) => !item.isCompleted).toList();
+    final recentItems = state.recentlyPlayedData
+        .where((item) => item.canContinueListening)
+        .toList();
     Widget heading(String title, VoidCallback onSeeAll,
             {String? description}) =>
         Padding(
