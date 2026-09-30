@@ -292,10 +292,10 @@ class SettingScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CustomAppbar(headingTxt: '', showBackButton: !isTab),
+                        CustomAppbar(headingTxt: '', showBackButton: !isTab, topPadding: 8),
                         Expanded(
                           child: SingleChildScrollView(
-                            padding: const EdgeInsets.only(top: 20, bottom: 28),
+                            padding: const EdgeInsets.only(top: 8, bottom: 28),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [

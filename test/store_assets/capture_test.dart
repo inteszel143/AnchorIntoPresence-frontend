@@ -24,7 +24,7 @@ import 'package:mindfully_evolve_app/screens/meditate/meditate_screen.dart';
 import 'package:mindfully_evolve_app/screens/activity_listing/getactivity_model.dart';
 import 'package:mindfully_evolve_app/screens/activity_listing/getactivity_bloc/getrecent_activities_bloc.dart';
 import 'package:mindfully_evolve_app/screens/activity_listing/getactivity_bloc/getrecent_activities_state.dart';
-import 'package:mindfully_evolve_app/screens/activity_listing/recent_activity.dart';
+import 'package:mindfully_evolve_app/common/widgets/daily_pause_preview.dart';
 import 'package:mindfully_evolve_app/screens/track/track_screen.dart';
 import 'package:mindfully_evolve_app/screens/track/track_model.dart';
 import 'package:mindfully_evolve_app/screens/track/track_bloc/track_bloc.dart';
@@ -127,7 +127,8 @@ final recent = [
         isCompleted: false,
         name: name,
         thumbnail: 'store-art.png',
-        video: '',
+        video: 'https://example.com/sample.mp4',
+        category: RecentlyPlayedCategory(id: 'anchor', name: 'Daily Anchor'),
         description: 'Make a little room for yourself.',
         duration: '10:00',
         tags: [],
@@ -228,7 +229,8 @@ class StoreLibrary extends ActivityBloc {
                 ][i],
                 description: 'Make a little room for yourself.',
                 thumbnail: 'store-art.png',
-                video: 'https://example.com/sample.mp4',
+                video: i == 2 ? '' : 'https://example.com/sample.mp4',
+                categoryName: i == 2 ? 'Daily Pause' : 'Daily Anchor',
                 isFavorite: i != 0,
                 tags: [i == 0 ? 'Calm' : 'Breath']),
         ])));
@@ -291,9 +293,9 @@ const captions = [
     'Your daily anchor, your moment to pause.'
   ),
   (
-    '02-meditate',
+    '02-library',
     'Make room\nfor yourself.',
-    'Explore guided meditations at your pace.'
+    'Explore Daily Anchors and Daily Pauses.'
   ),
   (
     '03-favorites',
@@ -301,9 +303,9 @@ const captions = [
     'Your favorite practices, easy to find.'
   ),
   (
-    '04-recent',
-    'Pick up your\nmoment of calm.',
-    'Return to the practices you have played.'
+    '04-daily-pause',
+    'A moment\nto simply be.',
+    'Pause and reflect, one moment at a time.'
   ),
   (
     '05-track',
@@ -321,6 +323,8 @@ const captions = [
     'A personal view of your time and consistency.'
   ),
   ('08-welcome', 'Come back\nto yourself.', 'Begin with Anchor into Presence.'),
+  ('09-daily-anchors', 'Find your\ndaily anchor.', 'Guided meditations for a little more presence.'),
+  ('10-daily-pauses', 'Space to pause.\nRoom to reflect.', 'Explore visual reflections in your Library.'),
 ];
 
 Widget handheldPoster(int index, Uint8List screenshot) {
@@ -495,7 +499,7 @@ Future<Uint8List> save(
 }
 
 void main() {
-  testWidgets('export eight App Store screenshots from production screens',
+  testWidgets('export ten App Store screenshots from production screens',
       (tester) async {
     if (!const bool.fromEnvironment('CAPTURE_STORE')) return;
     if (handheld) {
@@ -525,23 +529,23 @@ void main() {
           (FontLoader(font.$1)..addFont(rootBundle.load(font.$2))).load);
     }
     final posters = <Uint8List>[];
-    for (var i = 0; i < 8; i++) {
+    for (var i = 0; i < captions.length; i++) {
       tester.view.physicalSize = Size(430, handheld ? 944 : 896);
       final key = GlobalKey();
       final page = switch (i) {
         0 => homeWidget(),
-        1 || 2 => library(),
-        3 => RecentActivity(recentlyPlayedActivities: recent),
+        1 || 2 || 3 || 8 || 9 => library(),
         4 => tab(TrackOverview(state: TrackLoadedState(summary)), 3),
         5 => community(),
         6 => profile(),
         _ => const IllustratedWelcomeScreen(),
       };
-      await tester.pumpWidget(MaterialApp(
-          theme: AppTheme.light,
-          home: RepaintBoundary(
-            key: key,
-            child: MediaQuery(
+      await tester.pumpWidget(RepaintBoundary(
+          key: key,
+          child: MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.light,
+            home: MediaQuery(
                 data: MediaQueryData(
                     size: Size(430, handheld ? 944 : 896),
                     padding: EdgeInsets.only(top: 44, bottom: 24)),
@@ -581,7 +585,19 @@ void main() {
       });
       await tester.pumpAndSettle();
       if (i == 2) {
+        await tester.ensureVisible(find.text('Favorites'));
         await tester.tap(find.text('Favorites'));
+        await tester.pumpAndSettle();
+      }
+      if (i == 8 || i == 9) {
+        final filter = find.text(i == 8 ? 'Daily Anchors' : 'Daily Pauses');
+        await tester.ensureVisible(filter);
+        await tester.tap(filter);
+        await tester.pumpAndSettle();
+      }
+      if (i == 3) {
+        showDailyPausePreview(tester.element(find.byType(MeditationLibrary)),
+            title: 'A moment of stillness', thumbnail: 'store-art.png');
         await tester.pumpAndSettle();
       }
       final images = tester
@@ -620,7 +636,7 @@ void main() {
           tester, posterKey, '$output/screenshots/${captions[i].$1}.png', 3));
       await tester.pumpWidget(const SizedBox());
     }
-    tester.view.physicalSize = const Size(960, 1080);
+    tester.view.physicalSize = const Size(1200, 1080);
     final sheetKey = GlobalKey();
     await tester.pumpWidget(MaterialApp(
         home: RepaintBoundary(
@@ -640,7 +656,7 @@ void main() {
                       const SizedBox(height: 24),
                       Expanded(
                           child: GridView.count(
-                              crossAxisCount: 4,
+                              crossAxisCount: 5,
                               mainAxisSpacing: 16,
                               crossAxisSpacing: 16,
                               childAspectRatio: 440 / 956,

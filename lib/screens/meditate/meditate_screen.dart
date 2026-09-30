@@ -71,7 +71,7 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
           child: Column(children: [
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: CustomAppbar(headingTxt: '', showBackButton: false),
+              child: CustomAppbar(headingTxt: '', showBackButton: false, topPadding: 8),
             ),
             Expanded(
                 child: BlocConsumer<ActivityBloc, ActivityState>(
@@ -119,7 +119,7 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                         child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 8),
                         Text('Library',
                             style: Theme.of(context)
                                 .textTheme

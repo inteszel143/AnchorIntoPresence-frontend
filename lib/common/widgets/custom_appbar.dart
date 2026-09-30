@@ -12,6 +12,7 @@ class CustomAppbar extends StatelessWidget {
   final void Function()? onTap;
   final Widget? image;
   final double rightPadding;
+  final double topPadding;
   final bool showBackButton;
 
   const CustomAppbar({
@@ -22,6 +23,7 @@ class CustomAppbar extends StatelessWidget {
     this.onTap,
     this.image,
     this.rightPadding = 0,
+    this.topPadding = 16,
     this.showBackButton = true,
   });
 
@@ -44,7 +46,7 @@ class CustomAppbar extends StatelessWidget {
       ),
     );
     return Padding(
-      padding: EdgeInsets.fromLTRB(0, 16, rightPadding, 0),
+      padding: EdgeInsets.fromLTRB(0, topPadding, rightPadding, 0),
       child: SizedBox(
         height: 48,
         child: Row(
