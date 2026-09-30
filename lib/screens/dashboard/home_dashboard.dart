@@ -261,15 +261,12 @@ class HomeDashboard extends StatelessWidget {
                                       ],
                                       const SizedBox(height: 14),
                                       Row(children: [
-                                        Icon(
-                                            anchor
-                                                ? Icons
-                                                    .play_circle_filled_rounded
-                                                : Icons
-                                                    .arrow_circle_right_outlined,
-                                            size: 24,
-                                            color: colors.primary),
-                                        const SizedBox(width: 8),
+                                        if (anchor) ...[
+                                          Icon(Icons.play_circle_filled_rounded,
+                                              size: 24,
+                                              color: colors.primary),
+                                          const SizedBox(width: 8),
+                                        ],
                                         Expanded(
                                           child: Text(
                                               anchor

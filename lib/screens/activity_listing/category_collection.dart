@@ -222,8 +222,13 @@ class PauseCollectionCard extends StatelessWidget {
                                   fontWeight: FontWeight.w700)),
                           const SizedBox(height: 6),
                         ],
-                        Text(activity.name, style: theme.textTheme.titleMedium),
-                        const SizedBox(height: 6),
+                        if (!showLibraryActions ||
+                            activity.name.trim().toLowerCase() !=
+                                'daily pause') ...[
+                          Text(activity.name,
+                              style: theme.textTheme.titleMedium),
+                          const SizedBox(height: 6),
+                        ],
                         Text('Take a moment',
                             style: theme.textTheme.bodySmall?.copyWith(
                                 color: theme.colorScheme.onSurfaceVariant)),

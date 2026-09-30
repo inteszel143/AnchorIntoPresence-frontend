@@ -1,6 +1,9 @@
 import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import '../../common/widgets/scroll_title_page.dart';
 import 'subscription_plan_card.dart';
+import 'billing_history_tab.dart';
+import 'user_purchase_model.dart';
+import '../../utils/api_service.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -17,7 +20,6 @@ import '../../common/local_storage.dart';
 import '../../common/widgets/custom_appbar.dart';
 import '../../common/widgets/auth_theme.dart';
 import '../../utils/color_constants.dart';
-import '../../utils/fonts.dart';
 import '../../utils/global.dart' as globals;
 import '../signup/signup_screen.dart';
 
@@ -35,6 +37,8 @@ class _SubscriptionManagementScreenState
     extends State<SubscriptionManagementScreen> {
   late Set<String> _productIds;
   bool _hasNavigated = false;
+  bool _showBillingHistory = false;
+  Future<List<UserPurchase>?>? _billingHistory;
 
   late final SubscriptionBloc _bloc;
 
@@ -81,182 +85,133 @@ class _SubscriptionManagementScreenState
     }
   }
 
-  Future<void> _showConfirmationDialog(
+  Future<void> _showConfirmationSheet(
       BuildContext context, ProductDetails plan) async {
     final priceInfo = _resolveOfferPrice(plan);
-    final bool hasDiscount = priceInfo.originalPrice != null;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
 
-    return showDialog<void>(
+    return showModalBottomSheet<void>(
       context: context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) {
-        return Dialog(
-          backgroundColor:
-              Theme.of(context).colorScheme.surfaceContainerHighest,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      backgroundColor: colors.surface,
+      constraints: const BoxConstraints(maxWidth: 600),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      builder: (sheetContext) => SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text('Confirm your plan',
+                        style: theme.textTheme.headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.w600)),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    tooltip: 'Close',
+                    onPressed: () => Navigator.of(sheetContext).pop(),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text('A little more space for your daily practice.',
+                  style: theme.textTheme.bodyMedium
+                      ?.copyWith(color: colors.onSurfaceVariant, height: 1.5)),
+              const SizedBox(height: 24),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  border: Border.all(color: colors.outlineVariant),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Spacer(),
-                    GestureDetector(
-                      onTap: () => Navigator.of(dialogContext).pop(),
-                      child: Container(
-                        width: 28,
-                        height: 28,
-                        alignment: Alignment.center,
-                        child: Icon(
-                          Icons.close,
-                          size: 22,
-                          color: Theme.of(dialogContext).colorScheme.onSurface,
-                        ),
-                      ),
+                    Text(_cleanPlanTitle(plan.title),
+                        style: theme.textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(priceInfo.displayPrice,
+                            style: theme.textTheme.headlineMedium
+                                ?.copyWith(fontWeight: FontWeight.w700)),
+                        Text(
+                            plan.id.contains('month')
+                                ? 'per month'
+                                : 'per year',
+                            style: theme.textTheme.bodyMedium
+                                ?.copyWith(color: colors.onSurfaceVariant)),
+                      ],
                     ),
+                    if (priceInfo.originalPrice != null) ...[
+                      const SizedBox(height: 6),
+                      Text(priceInfo.originalPrice!,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                              color: colors.onSurfaceVariant,
+                              decoration: TextDecoration.lineThrough)),
+                    ],
                   ],
                 ),
-                Text(
-                  "Confirm Purchase",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: Fonts.headingLetterSpacing,
-                    fontFamily: Fonts.heading,
-                    color: Theme.of(dialogContext).colorScheme.onSurface,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                  'Review the final price and renewal terms in the store before completing your purchase.',
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: colors.onSurfaceVariant, height: 1.5)),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () {
+                    Navigator.of(sheetContext).pop();
+                    if (priceInfo.bestOfferToken != null) {
+                      _bloc.add(PurchasePlanWithOffer(
+                        plan: plan,
+                        offerToken: priceInfo.bestOfferToken!,
+                      ));
+                    } else {
+                      _bloc.add(PurchasePlan(plan: plan));
+                    }
+                  },
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 16),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                   ),
+                  child: const Text('Continue to purchase',
+                      textAlign: TextAlign.center),
                 ),
-                const SizedBox(height: 8),
-                RichText(
-                  textAlign: TextAlign.center,
-                  text: TextSpan(
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontFamily: Fonts.body,
-                      color:
-                          Theme.of(dialogContext).colorScheme.onSurfaceVariant,
-                      letterSpacing: 2,
-                      height: 1.0,
-                    ),
-                    children: [
-                      const TextSpan(text: "You are about to "),
-                      TextSpan(
-                        text: "purchase:",
-                        style: TextStyle(
-                          color: Theme.of(dialogContext).colorScheme.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      TextSpan(text: "\n${_cleanPlanTitle(plan.title)}"),
-                    ],
-                  ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () => Navigator.of(sheetContext).pop(),
+                  child: const Text('Not now'),
                 ),
-                const SizedBox(height: 8),
-                if (hasDiscount) ...[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        priceInfo.displayPrice,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontFamily: Fonts.body,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        priceInfo.originalPrice!,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade500,
-                          fontFamily: Fonts.body,
-                          decoration: TextDecoration.lineThrough,
-                        ),
-                      ),
-                    ],
-                  ),
-                ] else
-                  Text(
-                    "Price: ${priceInfo.displayPrice}",
-                    style: const TextStyle(
-                        letterSpacing: Fonts.headingLetterSpacing,
-                        fontFamily: Fonts.heading,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400),
-                  ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.of(dialogContext).pop(),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          side: BorderSide(color: Colors.grey.shade300),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: Text(
-                          'Cancel',
-                          style: TextStyle(
-                            color:
-                                Theme.of(dialogContext).colorScheme.onSurface,
-                            fontFamily: Fonts.body,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (priceInfo.bestOfferToken != null) {
-                            _bloc.add(PurchasePlanWithOffer(
-                              plan: plan,
-                              offerToken: priceInfo.bestOfferToken!,
-                            ));
-                          } else {
-                            _bloc.add(PurchasePlan(plan: plan));
-                          }
-                          Navigator.of(dialogContext).pop();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Theme.of(dialogContext).colorScheme.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: Text(
-                          'Confirm',
-                          style: TextStyle(
-                            color:
-                                Theme.of(dialogContext).colorScheme.onPrimary,
-                            fontFamily: Fonts.body,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -323,7 +278,7 @@ class _SubscriptionManagementScreenState
                 title: Strings.subscriptionManagement,
                 child: Center(
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 600),
+                    constraints: const BoxConstraints(maxWidth: 1000),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
@@ -353,18 +308,77 @@ class _SubscriptionManagementScreenState
                                               .colorScheme
                                               .onSurfaceVariant)),
                                   const SizedBox(height: 24),
-                                  Text('Choose your plan',
-                                      style: Theme.of(context)
+                                  DefaultTabController(
+                                    length: 2,
+                                    child: TabBar(
+                                      isScrollable: true,
+                                      tabAlignment: TabAlignment.start,
+                                      labelColor: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
+                                      unselectedLabelColor: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant
+                                          .withValues(alpha: .7),
+                                      labelStyle: Theme.of(context)
                                           .textTheme
-                                          .titleLarge),
-                                  const SizedBox(height: 6),
-                                  Text('Find a rhythm that works for you.',
-                                      style: TextStyle(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurfaceVariant)),
-                                  const SizedBox(height: 16),
-                                  _buildPlansTab(state),
+                                          .titleSmall
+                                          ?.copyWith(
+                                              fontWeight: FontWeight.w700),
+                                      unselectedLabelStyle: Theme.of(context)
+                                          .textTheme
+                                          .titleSmall
+                                          ?.copyWith(
+                                              fontWeight: FontWeight.w500),
+                                      labelPadding: const EdgeInsets.symmetric(
+                                          horizontal: 20),
+                                      indicatorSize: TabBarIndicatorSize.label,
+                                      indicatorWeight: 3,
+                                      indicatorColor:
+                                          Theme.of(context).colorScheme.primary,
+                                      dividerColor: Theme.of(context)
+                                          .colorScheme
+                                          .outlineVariant
+                                          .withValues(alpha: .5),
+                                      splashBorderRadius:
+                                          BorderRadius.circular(10),
+                                      tabs: const [
+                                        Tab(text: 'Plans'),
+                                        Tab(text: 'Billing History'),
+                                      ],
+                                      onTap: (index) {
+                                        setState(() {
+                                          _showBillingHistory = index == 1;
+                                          if (_showBillingHistory) {
+                                            _billingHistory ??=
+                                                _loadBillingHistory();
+                                          }
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  if (_showBillingHistory)
+                                    BillingHistoryTab(
+                                      purchases: _billingHistory!,
+                                      onRetry: () => setState(() {
+                                        _billingHistory = _loadBillingHistory();
+                                      }),
+                                    )
+                                  else ...[
+                                    Text('Choose your plan',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleLarge),
+                                    const SizedBox(height: 6),
+                                    Text('Find a rhythm that works for you.',
+                                        style: TextStyle(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurfaceVariant)),
+                                    const SizedBox(height: 16),
+                                    _buildPlansTab(state),
+                                  ],
                                 ],
                               ),
                             ),
@@ -380,6 +394,12 @@ class _SubscriptionManagementScreenState
         ),
       ),
     );
+  }
+
+  Future<List<UserPurchase>?> _loadBillingHistory() async {
+    final token = await LocalStorage.getToken();
+    if (token == null || token.isEmpty) return null;
+    return ApiService.fetchUserPurchases();
   }
 
   // Plans tab
@@ -511,7 +531,15 @@ class _SubscriptionManagementScreenState
         children: [
           LayoutBuilder(
             builder: (context, constraints) {
-              final columns = constraints.maxWidth >= 720 ? 3 : 1;
+              final largeText = MediaQuery.textScalerOf(context).scale(16) > 20;
+              final maxColumns = largeText
+                  ? 1
+                  : constraints.maxWidth >= 900
+                      ? 3
+                      : constraints.maxWidth >= 600
+                          ? 2
+                          : 1;
+              final columns = uniquePlans.length.clamp(1, maxColumns);
               final gap = columns == 1 ? 0.0 : 16.0;
               final cardWidth = columns == 1
                   ? constraints.maxWidth
@@ -539,35 +567,23 @@ class _SubscriptionManagementScreenState
               );
             },
           ),
-
-          const SizedBox(height: 20),
-          if (uniquePlans.isNotEmpty) _includedBenefits(),
-          // ── Redeem / Offer Code button ──────────────────────────────────
-          const SizedBox(height: 20),
-          if (Platform.isIOS)
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: OutlinedButton.icon(
+          if (Platform.isIOS) ...[
+            const SizedBox(height: 12),
+            Center(
+              child: TextButton.icon(
                 onPressed: () => _bloc.add(const RedeemOfferCode()),
                 icon: const Icon(Icons.local_offer_outlined, size: 18),
                 label: const Text('Redeem Code'),
-                style: OutlinedButton.styleFrom(
+                style: TextButton.styleFrom(
                   foregroundColor: Theme.of(context).colorScheme.onSurface,
-                  side: BorderSide(
-                    color: Theme.of(context).colorScheme.outline,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  textStyle: const TextStyle(
-                    fontFamily: Fonts.body,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
               ),
             ),
+          ],
+          const SizedBox(height: 24),
+          _includedBenefits(),
           const SizedBox(height: 12),
         ],
       );
@@ -608,17 +624,16 @@ class _SubscriptionManagementScreenState
             : 'per year',
         isActive: isActive,
         isFounding: plan.id.contains('founding'),
-        onChoose: () => _showConfirmationDialog(context, plan),
+        onChoose: () => _showConfirmationSheet(context, plan),
       );
 
   Widget _includedBenefits() {
     final colors = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.only(top: 24),
       decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(24),
+        border: Border(top: BorderSide(color: colors.outlineVariant)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

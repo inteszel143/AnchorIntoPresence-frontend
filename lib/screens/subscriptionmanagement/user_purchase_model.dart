@@ -6,6 +6,7 @@ class UserPurchase {
   final double amount;
   final String? planType;
   final DateTime purchaseDate;
+  final DateTime? nextBillingDate;
 
   UserPurchase({
     required this.userId,
@@ -15,6 +16,7 @@ class UserPurchase {
     required this.amount,
     this.planType,
     required this.purchaseDate,
+    this.nextBillingDate,
   });
 
   factory UserPurchase.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,8 @@ class UserPurchase {
       amount: (json['amount'] as num).toDouble(),
       planType: json['planType'] ?? 'monthly',
       purchaseDate: DateTime.parse(json['purchaseDate'] as String),
+      nextBillingDate:
+          DateTime.tryParse(json['nextBillingDate']?.toString() ?? ''),
     );
   }
 }
