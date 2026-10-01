@@ -4,7 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../common/widgets/collection_page.dart';
 import '../../helping_widgets/activityitem_tile.dart';
 import '../../common/widgets/daily_pause_preview.dart';
+import '../../common/widgets/loading_skeleton.dart';
 import '../dashboard/home_dashboard.dart';
+import '../meditate/meditate_loading.dart';
 import 'getactivity_model.dart';
 import 'getactivity_bloc/getrecent_activities_bloc.dart';
 import 'getactivity_bloc/getrecent_activities_event.dart';
@@ -55,10 +57,11 @@ class _CategoryCollectionState extends State<CategoryCollection> {
           ? 'Small reminders to slow down and return to this moment.'
           : 'Make a little room for yourself with a daily practice.',
       onRefresh: _fetch,
+      topPadding: widget.isPause ? 0 : 24,
       slivers: [
         SliverToBoxAdapter(
             child: Padding(
-          padding: const EdgeInsets.only(bottom: 24),
+          padding: EdgeInsets.only(bottom: widget.isPause ? 8 : 24),
           child: TextField(
             controller: _search,
             style: const TextStyle(fontSize: 14),
@@ -114,11 +117,33 @@ class _CategoryCollectionState extends State<CategoryCollection> {
               ));
             }
             if (state is! ActivityLoaded) {
-              return const SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Center(
-                      child: CircularProgressIndicator(
-                          semanticsLabel: 'Loading collection')));
+              if (!widget.isPause) {
+                return const SliverToBoxAdapter(
+                  child: MeditateLoadingSkeleton(
+                    label: 'Loading daily recommendations',
+                  ),
+                );
+              }
+              return SliverToBoxAdapter(
+                child: LoadingSkeleton(
+                  label: 'Loading moments to pause',
+                  child: Column(
+                    children: List.generate(
+                      3,
+                      (_) => const Padding(
+                        padding: EdgeInsets.only(bottom: 18),
+                        child: AspectRatio(
+                          aspectRatio: 16 / 10,
+                          child: SkeletonBlock(
+                            height: double.infinity,
+                            radius: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
             }
             final items = state.activities.activities;
             if (items.isEmpty) {
@@ -200,59 +225,55 @@ class PauseCollectionCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),
       child: Material(
-        color: theme.colorScheme.surfaceContainerHighest,
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(24),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: () => _preview(context),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            AspectRatio(aspectRatio: 16 / 10, child: _image(context)),
-            Padding(
-                padding: const EdgeInsets.all(18),
-                child: Row(children: [
-                  Expanded(
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                        if (showLibraryActions) ...[
-                          Text('Daily Pause',
-                              style: theme.textTheme.labelMedium?.copyWith(
-                                  color: theme.colorScheme.primary,
-                                  fontWeight: FontWeight.w700)),
-                          const SizedBox(height: 6),
-                        ],
-                        if (!showLibraryActions ||
-                            activity.name.trim().toLowerCase() !=
-                                'daily pause') ...[
-                          Text(activity.name,
-                              style: theme.textTheme.titleMedium),
-                          const SizedBox(height: 6),
-                        ],
-                        Text('Take a moment',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant)),
-                      ])),
-                  const SizedBox(width: 12),
-                  if (showLibraryActions)
-                    IconButton.filledTonal(
-                      tooltip: activity.isFavorite
-                          ? 'Remove from favorites'
-                          : 'Save practice',
-                      onPressed: () => context
-                          .read<ActivityBloc>()
-                          .add(ToggleFavorite(activityId: activity.id)),
-                      icon: Icon(
-                          activity.isFavorite
-                              ? Icons.favorite_rounded
-                              : Icons.favorite_border_rounded,
-                          color: activity.isFavorite
-                              ? theme.colorScheme.error
-                              : theme.colorScheme.onSurfaceVariant),
+            if (showLibraryActions)
+              Stack(fit: StackFit.passthrough, children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: _image(context),
+                ),
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: IconButton(
+                    tooltip: activity.isFavorite
+                        ? 'Remove from favorites'
+                        : 'Save practice',
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      minimumSize: const Size(48, 48),
                     ),
-                  Icon(Icons.open_in_full_rounded,
-                      size: 20, color: theme.colorScheme.onSurfaceVariant),
-                ])),
+                    onPressed: () => context
+                        .read<ActivityBloc>()
+                        .add(ToggleFavorite(activityId: activity.id)),
+                    icon: Icon(
+                        activity.isFavorite
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_border_rounded,
+                        color: activity.isFavorite
+                            ? theme.colorScheme.error
+                            : theme.colorScheme.onSurfaceVariant),
+                  ),
+                ),
+              ])
+            else
+              ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: _image(context),
+              ),
+            if (showLibraryActions &&
+                !{'daily pause', 'daily pauses', ''}
+                    .contains(activity.name.trim().toLowerCase()))
+              Padding(
+                  padding: const EdgeInsets.all(18),
+                  child:
+                      Text(activity.name, style: theme.textTheme.titleMedium)),
           ]),
         ),
       ),

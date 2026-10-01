@@ -10,9 +10,11 @@ class CollectionPage extends StatelessWidget {
       required this.title,
       required this.description,
       required this.slivers,
+      this.topPadding = 24,
       this.onRefresh});
   final String title, description;
   final List<Widget> slivers;
+  final double topPadding;
   final VoidCallback? onRefresh;
 
   @override
@@ -39,7 +41,7 @@ class CollectionPage extends StatelessWidget {
                   child: CustomScrollView(slivers: [
                 SliverToBoxAdapter(
                     child: Padding(
-                  padding: const EdgeInsets.only(top: 24, bottom: 24),
+                  padding: EdgeInsets.only(top: topPadding, bottom: 24),
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

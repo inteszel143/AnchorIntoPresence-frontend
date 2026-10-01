@@ -170,7 +170,7 @@ class CommunityPostCard extends StatelessWidget {
                           color: colors.onSurfaceVariant)))),
         ],
         const SizedBox(height: 16),
-        Text(post.message, style: text.bodyLarge?.copyWith(height: 1.6)),
+        Text(post.message, style: text.bodyMedium?.copyWith(height: 1.6)),
         const SizedBox(height: 16),
         Divider(height: 1, color: colors.outlineVariant.withValues(alpha: .4)),
         const SizedBox(height: 8),

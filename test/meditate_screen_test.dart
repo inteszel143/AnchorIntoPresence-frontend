@@ -223,7 +223,10 @@ void main() {
         'Daily Anchor');
     await choose('Daily Pauses');
     expect(find.byType(ActivityItemTile), findsNothing);
-    expect(find.text('Daily Pause'), findsOneWidget);
+    expect(find.byType(PauseCollectionCard), findsOneWidget);
+    expect(find.text('Daily Pause'), findsNothing);
+    expect(find.text('Take a moment'), findsNothing);
+    expect(find.byTooltip('Save practice'), findsOneWidget);
     expect(find.byIcon(Icons.schedule_rounded), findsNothing);
     expect(find.text('--:--'), findsNothing);
     await tester.enterText(find.byType(TextField), 'Morning');

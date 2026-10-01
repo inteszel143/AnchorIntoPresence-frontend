@@ -148,12 +148,7 @@ class _DailyPausePreviewState extends State<DailyPausePreview> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Text(widget.title,
-                      textAlign: TextAlign.center,
-                      style:
-                          theme.textTheme.titleMedium?.copyWith(height: 1.4)),
-                  const SizedBox(height: 8),
-                  Text('A little space to pause and reflect.',
+                  Text('Carry this with you',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyMedium?.copyWith(
                           color: colors.onSurfaceVariant, height: 1.5)),

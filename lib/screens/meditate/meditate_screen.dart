@@ -71,7 +71,8 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
           child: Column(children: [
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: CustomAppbar(headingTxt: '', showBackButton: false, topPadding: 8),
+              child: CustomAppbar(
+                  headingTxt: '', showBackButton: false, topPadding: 8),
             ),
             Expanded(
                 child: BlocConsumer<ActivityBloc, ActivityState>(
@@ -228,7 +229,7 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                             ]),
                           ),
                         ],
-                        const SizedBox(height: 20),
+                        SizedBox(height: _filter == 'Daily Pauses' ? 8 : 20),
                       ],
                     )),
                   ),

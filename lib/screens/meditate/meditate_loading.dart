@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import '../../common/widgets/loading_skeleton.dart';
 
 class MeditateLoadingSkeleton extends StatelessWidget {
-  const MeditateLoadingSkeleton({super.key});
+  const MeditateLoadingSkeleton({super.key, this.label = 'Loading library'});
+
+  final String label;
 
   @override
   Widget build(BuildContext context) => LoadingSkeleton(
-        label: 'Loading library',
+        label: label,
         child: Column(
           children: List.generate(
             3,

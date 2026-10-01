@@ -148,6 +148,48 @@ class HomeDashboard extends StatelessWidget {
           ));
     }
 
+    Widget pauseContent(ActivityData item) {
+      final title = item.name.trim();
+      final showTitle = title.isNotEmpty &&
+          !{'daily pause', 'daily pauses'}.contains(title.toLowerCase());
+      final showTags = item.tagName?.isNotEmpty == true;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AspectRatio(
+            aspectRatio: 16 / 10,
+            child: Center(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: _image(context, item.thumbnail),
+              ),
+            ),
+          ),
+          if (showTitle || showTags)
+            Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (showTitle)
+                    Text(title,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(
+                                fontWeight: FontWeight.w600, height: 1.35)),
+                  if (showTitle && showTags) const SizedBox(height: 8),
+                  if (showTags)
+                    Text(item.tagName!.join(' · '),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: colors.onSurfaceVariant, height: 1.4)),
+                ],
+              ),
+            ),
+        ],
+      );
+    }
+
     Widget practiceCard(List<ActivityData> items, {required bool anchor}) {
       final category = anchor ? 'Daily Anchor' : 'Daily Pause';
       final tint = Color.alphaBlend(
@@ -208,83 +250,99 @@ class HomeDashboard extends StatelessWidget {
                     SizedBox(
                       width: constraints.maxWidth,
                       child: Material(
-                        color: tint,
+                        color: anchor ? tint : Colors.transparent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
-                          side: BorderSide(color: colors.outlineVariant),
+                          side: anchor
+                              ? BorderSide(color: colors.outlineVariant)
+                              : BorderSide.none,
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: InkWell(
                           onTap: () => onActivity(items[index]),
-                          child: Padding(
-                            padding: const EdgeInsets.all(14),
-                            child: Flex(
-                              direction:
-                                  stacked ? Axis.vertical : Axis.horizontal,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(14),
-                                  child: _image(context, items[index].thumbnail,
-                                      width: stacked
-                                          ? constraints.maxWidth - 28
-                                          : 80,
-                                      height: stacked ? 120 : 96,
-                                      fit: BoxFit.cover),
-                                ),
-                                SizedBox(
-                                    width: stacked ? 0 : 14,
-                                    height: stacked ? 14 : 0),
-                                Flexible(
-                                  flex: stacked ? 0 : 1,
-                                  child: Column(
+                          child: !anchor
+                              ? pauseContent(items[index])
+                              : Padding(
+                                  padding: const EdgeInsets.all(14),
+                                  child: Flex(
+                                    direction: stacked
+                                        ? Axis.vertical
+                                        : Axis.horizontal,
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(items[index].name,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .titleMedium
-                                              ?.copyWith(
-                                                  fontWeight: FontWeight.w600,
-                                                  height: 1.35)),
-                                      if (items[index].tagName?.isNotEmpty ==
-                                          true) ...[
-                                        const SizedBox(height: 6),
-                                        Text(items[index].tagName!.join(' · '),
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall
-                                                ?.copyWith(
-                                                    color: colors
-                                                        .onSurfaceVariant)),
-                                      ],
-                                      const SizedBox(height: 14),
-                                      Row(children: [
-                                        if (anchor) ...[
-                                          Icon(Icons.play_circle_filled_rounded,
-                                              size: 24,
-                                              color: colors.primary),
-                                          const SizedBox(width: 8),
-                                        ],
-                                        Expanded(
-                                          child: Text(
-                                              anchor
-                                                  ? 'Begin practice'
-                                                  : 'Take a pause',
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .labelLarge
-                                                  ?.copyWith(
-                                                      color: colors.primary)),
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(14),
+                                        child: _image(
+                                            context, items[index].thumbnail,
+                                            width: stacked
+                                                ? constraints.maxWidth - 28
+                                                : 80,
+                                            height: stacked ? 120 : 96,
+                                            fit: BoxFit.cover),
+                                      ),
+                                      SizedBox(
+                                          width: stacked ? 0 : 14,
+                                          height: stacked ? 14 : 0),
+                                      Flexible(
+                                        flex: stacked ? 0 : 1,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(items[index].name,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .titleMedium
+                                                    ?.copyWith(
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        height: 1.35)),
+                                            if (items[index]
+                                                    .tagName
+                                                    ?.isNotEmpty ==
+                                                true) ...[
+                                              const SizedBox(height: 6),
+                                              Text(
+                                                  items[index]
+                                                      .tagName!
+                                                      .join(' · '),
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodySmall
+                                                      ?.copyWith(
+                                                          color: colors
+                                                              .onSurfaceVariant)),
+                                            ],
+                                            const SizedBox(height: 14),
+                                            Row(children: [
+                                              if (anchor) ...[
+                                                Icon(
+                                                    Icons
+                                                        .play_circle_filled_rounded,
+                                                    size: 24,
+                                                    color: colors.primary),
+                                                const SizedBox(width: 8),
+                                              ],
+                                              Expanded(
+                                                child: Text(
+                                                    anchor
+                                                        ? 'Begin practice'
+                                                        : 'Take a pause',
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .labelLarge
+                                                        ?.copyWith(
+                                                            color: colors
+                                                                .primary)),
+                                              ),
+                                            ]),
+                                          ],
                                         ),
-                                      ]),
+                                      ),
                                     ],
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
                         ),
                       ),
                     ),
@@ -315,11 +373,25 @@ class HomeDashboard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: LayoutBuilder(builder: (context, constraints) {
-              final greeting = Text('Hi,\n$firstName!',
-                  style: Theme.of(context)
-                      .textTheme
-                      .headlineLarge
-                      ?.copyWith(fontWeight: FontWeight.w600, height: 1.2));
+              final compact = constraints.maxWidth < 360;
+              final greetingStyle = (compact
+                      ? Theme.of(context).textTheme.headlineMedium
+                      : Theme.of(context).textTheme.headlineLarge)
+                  ?.copyWith(fontWeight: FontWeight.w600, height: 1.2);
+              final greeting = Semantics(
+                label: 'Hi, $firstName!',
+                excludeSemantics: true,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Hi,', style: greetingStyle),
+                    Text('$firstName!',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: greetingStyle),
+                  ],
+                ),
+              );
               final actions = Row(mainAxisSize: MainAxisSize.min, children: [
                 IconButton.filledTonal(
                     tooltip: 'Search Library',
@@ -328,7 +400,7 @@ class HomeDashboard extends StatelessWidget {
                         backgroundColor: colors.surfaceContainerHighest),
                     onPressed: onSearch,
                     icon: const Icon(Icons.search_rounded)),
-                const SizedBox(width: 8),
+                SizedBox(width: compact ? 4 : 8),
                 IconButton.filledTonal(
                     tooltip: 'Notifications',
                     style: IconButton.styleFrom(
@@ -336,7 +408,7 @@ class HomeDashboard extends StatelessWidget {
                         backgroundColor: colors.surfaceContainerHighest),
                     onPressed: onNotifications,
                     icon: const Icon(Icons.notifications_none_rounded)),
-                const SizedBox(width: 8),
+                SizedBox(width: compact ? 4 : 8),
                 Semantics(
                     button: true,
                     label: 'Open profile',
@@ -356,15 +428,13 @@ class HomeDashboard extends StatelessWidget {
                       )),
                     )),
               ]);
-              if (constraints.maxWidth < 360 ||
-                  MediaQuery.textScalerOf(context).scale(16) > 20) {
-                return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [greeting, const SizedBox(height: 12), actions]);
-              }
               return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [Expanded(child: greeting), actions]);
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(child: greeting),
+                    const SizedBox(width: 12),
+                    actions,
+                  ]);
             }),
           ),
           const SizedBox(height: 24),
