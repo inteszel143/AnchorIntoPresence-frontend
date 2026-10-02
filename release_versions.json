@@ -36,6 +36,11 @@
       "version": "1.11.4",
       "build": 83,
       "status": "built"
+    },
+    {
+      "version": "1.11.6",
+      "build": 85,
+      "status": "built"
     }
   ]
 }
