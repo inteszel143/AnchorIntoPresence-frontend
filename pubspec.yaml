@@ -18,7 +18,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # of the product and file versions while build-number is used as the build suffix.
 # Android release version. iOS uses MARKETING_VERSION / CURRENT_PROJECT_VERSION
 # in ios/Runner.xcodeproj/project.pbxproj.
-version: 1.11.5+84
+version: 1.11.6+85
 
 environment:
   sdk: ^3.6.2
