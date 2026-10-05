@@ -351,15 +351,6 @@ class HomeDashboard extends StatelessWidget {
               ),
             );
           }),
-          if (items.length > 1)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text('Swipe to explore ${items.length} practices',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: colors.onSurfaceVariant)),
-            ),
         ],
       );
     }
