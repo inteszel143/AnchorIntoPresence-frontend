@@ -130,7 +130,7 @@ class _ActivityItemTileState extends State<ActivityItemTile> {
         ClipRRect(
           borderRadius: BorderRadius.circular(17),
           child: AspectRatio(
-            aspectRatio: 16 / 8,
+            aspectRatio: 16 / 9,
             child: ColoredBox(
               color: colors.surface,
               child: thumbnail.data != null

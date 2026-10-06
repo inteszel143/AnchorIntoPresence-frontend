@@ -92,6 +92,7 @@ void main() {
           ));
           await tester.pumpAndSettle();
           final artwork = tester.getRect(find.byType(AspectRatio));
+          expect(artwork.width / artwork.height, closeTo(16 / 9, 0.001));
           final duration = tester.getRect(find.text('--:--'));
           final favorite = tester.getRect(find.byTooltip('Save practice'));
           final titleRect = tester.getRect(find.text(title));

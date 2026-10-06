@@ -50,6 +50,7 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
   final ValueNotifier<Duration> watchedDuration = ValueNotifier(Duration.zero);
   bool hasSentStartedEvent = false;
   late String _duration;
+  double _videoAspectRatio = 16 / 9;
 
   @override
   void initState() {
@@ -134,13 +135,17 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(20),
                             child: AspectRatio(
-                              aspectRatio: 16 / 10,
+                              aspectRatio: _videoAspectRatio,
                               child: ColoredBox(
                                 color: Colors.black,
                                 child: OnlineVideoPlayer(
                                   videoUrl: widget.videoUrl,
                                   thumbnail: widget.thumbnail,
                                   thumbnailUrl: widget.thumbnailUrl,
+                                  onAspectRatioChanged: (ratio) {
+                                    if (!mounted || ratio == _videoAspectRatio) return;
+                                    setState(() => _videoAspectRatio = ratio);
+                                  },
                                   onInitialized: (duration) {
                                     if (!mounted) return;
                                     setState(() =>

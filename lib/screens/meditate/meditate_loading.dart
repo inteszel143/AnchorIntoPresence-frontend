@@ -23,7 +23,7 @@ class MeditateLoadingSkeleton extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AspectRatio(
-                    aspectRatio: 16 / 8,
+                    aspectRatio: 16 / 9,
                     child: SkeletonBlock(height: double.infinity, radius: 17),
                   ),
                   SizedBox(height: 12),

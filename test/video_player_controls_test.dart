@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mindfully_evolve_app/screens/activity_details/activity_details.dart';
@@ -10,7 +11,8 @@ import 'package:mindfully_evolve_app/common/custom_videoplayer.dart';
 import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 
 class FakeVideoPlatform extends VideoPlayerPlatform {
-  FakeVideoPlatform({this.autoInitialize = true});
+  FakeVideoPlatform({this.autoInitialize = true, this.size = const Size(1600, 900)});
+  final Size size;
   final bool autoInitialize;
   final streams = <int, StreamController<VideoEvent>>{};
   final positions = <int, Duration>{};
@@ -28,7 +30,7 @@ class FakeVideoPlatform extends VideoPlayerPlatform {
   void initializeVideo(int id) {
     streams[id]!.add(VideoEvent(
         eventType: VideoEventType.initialized,
-        size: const Size(1600, 900),
+        size: size,
         duration: const Duration(minutes: 10)));
   }
 
@@ -104,6 +106,39 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     await tester.pumpAndSettle();
   });
+
+  for (final size in [const Size(1920, 1080), const Size(1440, 1080), const Size(900, 1600)]) {
+    testWidgets('practice frame matches video dimensions $size', (tester) async {
+      final previous = VideoPlayerPlatform.instance;
+      VideoPlayerPlatform.instance = FakeVideoPlatform(size: size);
+      addTearDown(() => VideoPlayerPlatform.instance = previous);
+      tester.view.physicalSize = const Size(390, 1000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(MaterialApp(
+        home: BlocProvider(
+          create: (_) => PostActivityBloc(),
+          child: const ActivityDetailScreen(
+            videoUrl: 'https://example.com/video.mp4', thumbnail: null,
+            name: 'Practice', duration: '--:--', tags: [],
+            description: 'A quiet moment', activityId: 'test', isFavorite: false,
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      final frame = tester.getRect(find.byType(OnlineVideoPlayer));
+      final video = tester.getRect(find.byType(VideoPlayer));
+      expect(frame.width / frame.height, closeTo(size.aspectRatio, .001));
+      expect(video.left, closeTo(frame.left, .001));
+      expect(video.top, closeTo(frame.top, .001));
+      expect(video.width, closeTo(frame.width, .001));
+      expect(video.height, closeTo(frame.height, .001));
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpAndSettle();
+    });
+  }
 
   testWidgets(
       'player has no time overlay and supports seeking and hidden controls',

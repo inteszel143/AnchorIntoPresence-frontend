@@ -9,6 +9,7 @@ class OnlineVideoPlayer extends StatefulWidget {
   final Uint8List? thumbnail;
   final String? thumbnailUrl;
   final ValueChanged<Duration>? onInitialized;
+  final ValueChanged<double>? onAspectRatioChanged;
   final bool isFullscreen;
   final Duration initialPosition;
   final Function(Duration)? onProgress;
@@ -19,6 +20,7 @@ class OnlineVideoPlayer extends StatefulWidget {
     this.thumbnail,
     this.thumbnailUrl,
     this.onInitialized,
+    this.onAspectRatioChanged,
     this.isFullscreen = false,
     this.initialPosition = Duration.zero,
     this.onProgress,
@@ -43,6 +45,10 @@ class _OnlineVideoPlayerState extends State<OnlineVideoPlayer> {
       if (!mounted) return;
       setState(() {});
       widget.onInitialized?.call(_controller.value.duration);
+      final ratio = _controller.value.aspectRatio;
+      if (ratio.isFinite && ratio > 0) {
+        widget.onAspectRatioChanged?.call(ratio);
+      }
       if (widget.initialPosition > Duration.zero) {
         await _controller.seekTo(widget.initialPosition);
       }
@@ -138,7 +144,7 @@ class _OnlineVideoPlayerState extends State<OnlineVideoPlayer> {
               child: ClipRRect(
                 borderRadius:
                     BorderRadius.circular(widget.isFullscreen ? 0 : 20),
-                child: Stack(alignment: Alignment.center, children: [
+                child: Stack(fit: StackFit.expand, alignment: Alignment.center, children: [
                   VideoPlayer(_controller),
                   Positioned.fill(
                       child: IgnorePointer(
