@@ -106,3 +106,7 @@ class FetchBillingHistory extends SubscriptionEvent {
 class RestorePurchasesEvent extends SubscriptionEvent {
   const RestorePurchasesEvent();
 }
+
+class PurchaseCancelled extends SubscriptionEvent {
+  const PurchaseCancelled();
+}

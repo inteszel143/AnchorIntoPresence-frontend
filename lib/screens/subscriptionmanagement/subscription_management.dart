@@ -1,3 +1,4 @@
+import 'purchase_feedback.dart';
 import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import '../../common/widgets/scroll_title_page.dart';
 import 'subscription_plan_card.dart';
@@ -266,6 +267,12 @@ class _SubscriptionManagementScreenState
               );
 
               _bloc.add(FetchSubscriptionPlans(productIds: _productIds));
+            } else if (state is SubscriptionCancelled) {
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(const SnackBar(
+                  content: Text(purchaseCancellationMessage),
+                ));
             } else if (state is SubscriptionError) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(state.message)),

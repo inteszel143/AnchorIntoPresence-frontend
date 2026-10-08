@@ -8,6 +8,7 @@ import 'package:in_app_purchase_storekit/in_app_purchase_storekit.dart';
 import 'package:mindfully_evolve_app/screens/subscriptionmanagement/subscription_management_bloc/subscriprion_management_event.dart';
 import 'package:mindfully_evolve_app/screens/subscriptionmanagement/subscription_management_bloc/subscriprion_management_state.dart';
 
+import '../purchase_feedback.dart';
 import '../../../common/local_storage.dart';
 import '../../../utils/api_service.dart';
 import '../../../utils/global.dart' as globals;
@@ -65,6 +66,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
     on<HandlePurchaseCompleted>(_onHandlePurchaseCompleted);
     on<HandlePurchaseRestored>(_onHandlePurchaseRestored);
     on<PurchaseFailed>(_onPurchaseFailed);
+    on<PurchaseCancelled>((event, emit) => _emitCancellation(emit));
     on<RestorePurchasesEvent>(_onRestorePurchases);
     on<FetchBillingHistory>(_onFetchBillingHistory);
     on<PurchasePlanWithOffer>(_onPurchasePlanWithOffer);
@@ -141,10 +143,11 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
         add(PurchasePlan(plan: event.plan));
       }
     } catch (e) {
-      final errorMessage = e is Exception
-          ? e.toString().replaceFirst('Exception: ', '')
-          : e.toString();
-      emit(SubscriptionError(message: errorMessage));
+      if (isUserPurchaseCancellation(e)) {
+        _emitCancellation(emit);
+      } else {
+        emit(const SubscriptionError(message: purchaseFailureMessage));
+      }
     }
   }
 
@@ -163,10 +166,11 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
       // of what the product ID says — even if it has "consumable" in the name.
       await _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam);
     } catch (e) {
-      final errorMessage = e is Exception
-          ? e.toString().replaceFirst('Exception: ', '')
-          : e.toString();
-      emit(SubscriptionError(message: errorMessage));
+      if (isUserPurchaseCancellation(e)) {
+        _emitCancellation(emit);
+      } else {
+        emit(const SubscriptionError(message: purchaseFailureMessage));
+      }
     }
   }
 
@@ -192,7 +196,13 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
       // After the user enters the code the result arrives via purchaseStream —
       // no further action needed here.
     } catch (e) {
-      emit(SubscriptionError(message: 'Could not open redemption sheet: $e'));
+      if (isUserPurchaseCancellation(e)) {
+        _emitCancellation(emit);
+      } else {
+        emit(const SubscriptionError(
+          message: 'We couldn’t open code redemption. Please try again in a moment.',
+        ));
+      }
     }
   }
 
@@ -382,13 +392,16 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
 
         // ── ERROR ────────────────────────────────────────────────────────
         case PurchaseStatus.error:
-          add(PurchaseFailed(
-              purchaseDetails.error?.message ?? "Purchase error"));
+          if (isUserPurchaseCancellation(purchaseDetails.error)) {
+            add(const PurchaseCancelled());
+          } else {
+            add(const PurchaseFailed(purchaseFailureMessage));
+          }
           break;
 
         // ── CANCELED ─────────────────────────────────────────────────────
         case PurchaseStatus.canceled:
-          add(PurchaseFailed("Purchase canceled"));
+          add(const PurchaseCancelled());
           break;
 
         // ── PENDING ──────────────────────────────────────────────────────
@@ -425,12 +438,26 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
     emit(SubscriptionRestored(productId: event.productId));
   }
 
+  void _emitCancellation(Emitter<SubscriptionState> emit) {
+    _restoreTriggered = false;
+    // Reset pending UI and allow repeated cancellations to show feedback.
+    emit(SubscriptionPlansLoaded(products: _cachedProducts));
+    emit(SubscriptionCancelled(products: _cachedProducts));
+  }
+
   // Handle purchase failed
   void _onPurchaseFailed(
     PurchaseFailed event,
     Emitter<SubscriptionState> emit,
   ) {
-    emit(SubscriptionError(message: event.message));
+    if (isUserPurchaseCancellation(event.message)) {
+      _emitCancellation(emit);
+    } else {
+      emit(const SubscriptionError(
+        message: 'We couldn’t confirm your purchase. If you completed payment, '
+            'try Restore purchases before purchasing again.',
+      ));
+    }
   }
 
   // Fetch billing history

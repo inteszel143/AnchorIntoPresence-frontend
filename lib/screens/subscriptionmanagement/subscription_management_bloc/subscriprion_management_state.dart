@@ -86,3 +86,8 @@ class BillingHistoryError extends SubscriptionState {
   @override
   List<Object?> get props => [error];
 }
+
+// Cancellation is a normal outcome: retain the plans and clear pending state.
+class SubscriptionCancelled extends SubscriptionPlansLoaded {
+  const SubscriptionCancelled({required super.products});
+}
