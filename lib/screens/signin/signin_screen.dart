@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../common/widgets/google_sign_in_button.dart';
 import 'package:mindfully_evolve_app/common/main_screen.dart';
-import 'package:mindfully_evolve_app/screens/feeling_category/feelingcategory_screen.dart';
 import 'package:mindfully_evolve_app/screens/signin/signin_bloc/signin_state.dart';
 import 'package:mindfully_evolve_app/screens/signup/signup_screen.dart';
 import 'package:mindfully_evolve_app/utils/image_constants.dart';
@@ -63,30 +62,8 @@ class _SigninScreenState extends State<SigninScreen> {
                     ScaffoldMessenger.of(context)
                       ..clearSnackBars()
                       ..removeCurrentSnackBar();
-                  } else if (state is SigninSuccess) {
-                    final isFirst = state.isFirst;
-                    WidgetsBinding.instance.addPostFrameCallback((_) async {
-                      final categorySelected =
-                          await LocalStorage.getCategorySelected();
-                      if (!context.mounted) {
-                        return;
-                      }
-                      if ((isFirst ?? false) || !categorySelected) {
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (_) => CategoryScreen()),
-                          (route) => false,
-                        );
-                      } else {
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) => MainScreen(initialIndex: 0)),
-                          (route) => false,
-                        );
-                      }
-                    });
-                  } else if (state is SocialSigninSuccess) {
+                  } else if (state is SigninSuccess ||
+                      state is SocialSigninSuccess) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       if (!context.mounted) return;
                       Navigator.pushAndRemoveUntil(

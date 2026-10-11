@@ -373,6 +373,10 @@ class _SubscriptionManagementScreenState
                                       }),
                                     )
                                   else ...[
+                                    if (Platform.isIOS) ...[
+                                      _buildRedeemCodeCard(context),
+                                      const SizedBox(height: 24),
+                                    ],
                                     Text('Choose your plan',
                                         style: Theme.of(context)
                                             .textTheme
@@ -574,21 +578,6 @@ class _SubscriptionManagementScreenState
               );
             },
           ),
-          if (Platform.isIOS) ...[
-            const SizedBox(height: 12),
-            Center(
-              child: TextButton.icon(
-                onPressed: () => _bloc.add(const RedeemOfferCode()),
-                icon: const Icon(Icons.local_offer_outlined, size: 18),
-                label: const Text('Redeem Code'),
-                style: TextButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.onSurface,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
-              ),
-            ),
-          ],
           const SizedBox(height: 24),
           _includedBenefits(),
           const SizedBox(height: 12),
@@ -610,6 +599,63 @@ class _SubscriptionManagementScreenState
         child: CircularProgressIndicator(
       color: ColorCodes.buttoncolor,
     ));
+  }
+
+  Widget _buildRedeemCodeCard(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return Semantics(
+      button: true,
+      child: Material(
+        color: Color.alphaBlend(
+            colors.primary.withValues(alpha: .05), colors.surface),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: colors.primary.withValues(alpha: .18)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => _bloc.add(const RedeemOfferCode()),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: colors.primary.withValues(alpha: .09),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(Icons.card_giftcard_rounded,
+                      size: 22, color: colors.primary),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Redeem code',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                              color: colors.onSurface,
+                              fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 4),
+                      Text('Have an offer code? Use it here.',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                              color: colors.onSurfaceVariant, height: 1.5)),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Icon(Icons.arrow_forward_rounded,
+                    size: 20, color: colors.primary),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildPlanCard(
