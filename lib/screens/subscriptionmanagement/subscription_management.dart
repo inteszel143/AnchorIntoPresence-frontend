@@ -1,4 +1,5 @@
 import 'purchase_feedback.dart';
+import 'android_offer_dialog.dart';
 import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import '../../common/widgets/scroll_title_page.dart';
 import 'subscription_plan_card.dart';
@@ -372,7 +373,7 @@ class _SubscriptionManagementScreenState
                                       }),
                                     )
                                   else ...[
-                                    if (Platform.isIOS) ...[
+                                    if (Platform.isIOS || Platform.isAndroid) ...[
                                       _buildRedeemCodeCard(context),
                                       const SizedBox(height: 24),
                                     ],
@@ -460,63 +461,14 @@ class _SubscriptionManagementScreenState
       );
     }
 
-    String? basePrice;
-    String? offerPrice;
-    String? offerToken;
-
-    for (final dynamic o in offers) {
-      String? id;
-      try {
-        id = o.offerId;
-      } catch (_) {}
-
-      List<dynamic>? phases;
-      try {
-        phases = o.pricingPhases.pricingPhaseList;
-      } catch (_) {
-        try {
-          phases = o.pricingPhases;
-        } catch (_) {}
-      }
-
-      if (phases == null || phases.isEmpty) continue;
-
-      final price = phases.first.formattedPrice?.toString() ?? '';
-
-      String token = '';
-      try {
-        token = o.offerToken ?? '';
-      } catch (_) {}
-
-      // 🔹 BASE PLAN
-      if (id == null) {
-        basePrice = phases.last.formattedPrice?.toString();
-      }
-
-      // 🔹 OFFER (discount)
-      else {
-        // pick first valid offer
-        if (offerPrice == null && price.isNotEmpty) {
-          offerPrice = price;
-          offerToken = token;
-        }
-      }
+    final selected = selectedAndroidOffer(plan);
+    if (selected == null || selected.pricingPhases.isEmpty) {
+      return (displayPrice: plan.price, originalPrice: null, bestOfferToken: null);
     }
-
-    // ✅ If offer exists → show discount
-    if (offerPrice != null && basePrice != null) {
-      return (
-        displayPrice: offerPrice,
-        originalPrice: basePrice,
-        bestOfferToken: offerToken,
-      );
-    }
-
-    // fallback
     return (
-      displayPrice: basePrice ?? plan.price,
+      displayPrice: selected.pricingPhases.first.formattedPrice,
       originalPrice: null,
-      bestOfferToken: null,
+      bestOfferToken: selected.offerIdToken,
     );
   }
 
@@ -529,6 +481,8 @@ class _SubscriptionManagementScreenState
     final seen = <String>{};
     final result = <ProductDetails>[];
     for (final p in products) {
+      if (p is GooglePlayProductDetails &&
+          androidRedeemCodes.contains(selectedAndroidOffer(p)?.offerId)) continue;
       final baseId = p.id.split(':').first;
       if (seen.add(baseId)) {
         result.add(p);
@@ -629,7 +583,21 @@ class _SubscriptionManagementScreenState
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () => _bloc.add(const RedeemOfferCode()),
+          onTap: () async {
+            if (Platform.isIOS) {
+              _bloc.add(const RedeemOfferCode());
+              return;
+            }
+            final product = await showDialog<GooglePlayProductDetails>(
+              context: context,
+              builder: (_) => const AndroidOfferDialog(),
+            );
+            if (!mounted || product == null) return;
+            _bloc.add(PurchasePlanWithOffer(
+              plan: product,
+              offerToken: selectedAndroidOffer(product)!.offerIdToken,
+            ));
+          },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
             child: Row(

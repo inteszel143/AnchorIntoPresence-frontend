@@ -8,6 +8,7 @@ import 'package:in_app_purchase_storekit/in_app_purchase_storekit.dart';
 import 'package:mindfully_evolve_app/screens/subscriptionmanagement/subscription_management_bloc/subscriprion_management_event.dart';
 import 'package:mindfully_evolve_app/screens/subscriptionmanagement/subscription_management_bloc/subscriprion_management_state.dart';
 
+import '../load_subscription_products.dart';
 import '../purchase_feedback.dart';
 import '../purchase_reporting.dart';
 import '../../../common/local_storage.dart';
@@ -84,19 +85,17 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
     FetchSubscriptionPlans event,
     Emitter<SubscriptionState> emit,
   ) async {
+    emit(SubscriptionInitial());
     try {
-      final productIds = SubscriptionProductIds.platformIds;
-
-      final ProductDetailsResponse response =
-          await _inAppPurchase.queryProductDetails(productIds);
-
-      if (response.notFoundIDs.isNotEmpty && response.productDetails.isEmpty) {
-        emit(const SubscriptionError(message: "Products not found"));
-        return;
-      }
-
-      _cachedProducts = response.productDetails;
+      _cachedProducts = await loadSubscriptionProducts(
+        isAvailable: _inAppPurchase.isAvailable,
+        query: _inAppPurchase.queryProductDetails,
+        productIds: event.productIds,
+        isAndroid: Platform.isAndroid,
+      );
       emit(SubscriptionPlansLoaded(products: _cachedProducts));
+    } on StateError catch (error) {
+      emit(SubscriptionError(message: error.message.toString()));
     } catch (e) {
       // Check if it's a network-related error
       String errorMessage = e.toString().toLowerCase();
@@ -123,18 +122,11 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
   ) async {
     try {
       if (Platform.isAndroid && event.offerToken != null) {
-        final googlePurchaseParam = GooglePlayPurchaseParam(
-          productDetails: event.plan,
-          applicationUserName: null,
-          changeSubscriptionParam: null,
-        );
-        // Pass the offer token via the Android-specific param
-        final androidAddition = _inAppPurchase
-            .getPlatformAddition<InAppPurchaseAndroidPlatformAddition>();
-        // Use buyNonConsumable — subscriptions are always non-consumable
+        _cachedProducts = [event.plan, ..._cachedProducts.where((p) => p.id != event.plan.id)];
         await _inAppPurchase.buyNonConsumable(
           purchaseParam: GooglePlayPurchaseParam(
             productDetails: event.plan,
+            offerToken: event.offerToken,
             applicationUserName: null,
             changeSubscriptionParam: null,
           ),
