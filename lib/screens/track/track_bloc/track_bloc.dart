@@ -10,23 +10,28 @@ import 'package:mindfully_evolve_app/utils/urls.dart';
 import '../../../common/local_storage.dart';
 
 class TrackBloc extends Bloc<TrackEvent, TrackState> {
-  TrackBloc() : super(TrackInitialState()) {
+  TrackBloc({http.Client? client}) : _client = client, super(TrackInitialState()) {
     on<TrackDataFetchEvent>(_onTrackDataFetchEvent);
   }
+  final http.Client? _client;
+  int _request = 0;
+
   Future<void> _onTrackDataFetchEvent(
     TrackDataFetchEvent event,
     Emitter<TrackState> emit,
   ) async {
+    final request = ++_request;
     emit(TrackLoadingState());
     try {
       final token = await LocalStorage.getToken() ?? '';
 
-      final response = await http.get(
+      final response = await (_client?.get ?? http.get)(
         Uri.parse(Urls.userTrack),
         headers: {
           'Authorization': 'Bearer $token',
         },
-      );
+      ).timeout(const Duration(seconds: 30));
+      if (isClosed || request != _request) return;
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseBody = jsonDecode(response.body);
@@ -37,6 +42,7 @@ class TrackBloc extends Bloc<TrackEvent, TrackState> {
         emit(TrackErrorState('Failed to load data. Please try again later.'));
       }
     } catch (e) {
+      if (isClosed || request != _request) return;
       emit(TrackErrorState('An error occurred: $e'));
     }
   }

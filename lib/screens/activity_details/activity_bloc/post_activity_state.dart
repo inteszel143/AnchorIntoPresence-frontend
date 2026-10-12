@@ -28,8 +28,10 @@ class PostActivitySuccess extends PostActivityState {
 class PostActivityFailure extends PostActivityState {
   final String error;
 
-  PostActivityFailure({required this.error});
+  final bool isCompletion;
+
+  PostActivityFailure({required this.error, this.isCompletion = true});
 
   @override
-  List<Object?> get props => [error];
+  List<Object?> get props => [error, isCompletion];
 }

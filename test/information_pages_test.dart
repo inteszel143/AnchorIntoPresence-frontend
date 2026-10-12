@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mindfully_evolve_app/utils/string_constants.dart';
 import 'package:mindfully_evolve_app/common/app_theme.dart';
 import 'package:mindfully_evolve_app/common/widgets/information_page.dart';
 import 'package:mindfully_evolve_app/common/widgets/legal_document.dart';
@@ -18,18 +17,19 @@ void main() {
     addTearDown(tester.view.resetViewInsets);
     await tester.pumpWidget(
         MaterialApp(theme: AppTheme.light, home: const ContactSupportscreen()));
-    await tester
-        .ensureVisible(find.widgetWithText(FilledButton, Strings.submit));
-    await tester.tap(find.widgetWithText(FilledButton, Strings.submit));
     await tester.pumpAndSettle();
-    expect(find.text('Please enter title'), findsOneWidget);
-    expect(find.text('Please enter description'), findsOneWidget);
+    await tester
+        .ensureVisible(find.widgetWithText(FilledButton, 'Send message'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Send message'));
+    await tester.pumpAndSettle();
+    expect(find.text('Please write a message so we can help.'), findsOneWidget);
     await tester.enterText(find.byType(TextFormField).first, 'My question');
     tester.view.viewInsets = const FakeViewPadding(bottom: 300);
     await tester.pumpAndSettle();
     expect(find.text('My question'), findsOneWidget);
     await tester
-        .ensureVisible(find.widgetWithText(FilledButton, Strings.submit));
+        .ensureVisible(find.widgetWithText(FilledButton, 'Send message'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });

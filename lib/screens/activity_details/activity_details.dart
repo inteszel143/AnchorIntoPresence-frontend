@@ -7,7 +7,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../common/custom_videoplayer.dart';
 import '../../common/widgets/custom_appbar.dart';
-import '../../helping_widgets/checkbox_cubic.dart';
 import '../../helping_widgets/postactivity_checkbox.dart';
 import '../activity_listing/getactivity_bloc/getrecent_activities_bloc.dart';
 import '../activity_listing/getactivity_bloc/getrecent_activities_event.dart';
@@ -217,9 +216,7 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
                                         color: colors.onSurfaceVariant,
                                         height: 1.5)),
                                 const SizedBox(height: 16),
-                                BlocProvider(
-                                  create: (_) => CheckboxCubit(),
-                                  child: ValueListenableBuilder<Duration>(
+                                ValueListenableBuilder<Duration>(
                                     valueListenable: watchedDuration,
                                     builder: (context, position, _) =>
                                         MarkAsCompleteCheckbox(
@@ -230,7 +227,6 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
                                       enabled: _duration.isNotEmpty &&
                                           _duration != '--:--',
                                     ),
-                                  ),
                                 ),
                               ]),
                         ),

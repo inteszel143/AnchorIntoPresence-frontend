@@ -7,14 +7,50 @@ import 'track_bloc/track_bloc.dart';
 import 'track_bloc/track_event.dart';
 import 'track_bloc/track_state.dart';
 import 'track_loading.dart';
+import 'activity_log_updates.dart';
+import 'your_week_card.dart';
 import '../totalmedication/total_meditaion.dart';
 
-class TrackScreen extends StatelessWidget {
-  const TrackScreen({super.key});
+class TrackScreen extends StatefulWidget {
+  const TrackScreen({super.key, this.isActive = true, this.createBloc});
+  final bool isActive;
+  final TrackBloc Function()? createBloc;
 
   @override
-  Widget build(BuildContext context) => BlocProvider(
-        create: (_) => TrackBloc()..add(TrackDataFetchEvent()),
+  State<TrackScreen> createState() => _TrackScreenState();
+}
+
+class _TrackScreenState extends State<TrackScreen> {
+  late final TrackBloc _bloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _bloc = widget.createBloc?.call() ?? TrackBloc();
+    activityLogRevision.addListener(_refresh);
+    _refresh();
+  }
+
+  void _refresh() {
+    if (widget.isActive) _bloc.add(TrackDataFetchEvent());
+  }
+
+  @override
+  void didUpdateWidget(covariant TrackScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive && !oldWidget.isActive) _refresh();
+  }
+
+  @override
+  void dispose() {
+    activityLogRevision.removeListener(_refresh);
+    _bloc.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => BlocProvider.value(
+        value: _bloc,
         child: BlocBuilder<TrackBloc, TrackState>(
             builder: (context, state) => TrackOverview(state: state)),
       );
@@ -64,9 +100,7 @@ class TrackOverview extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final data = state.userActivity.data;
     final parts = data.loggedActivities.totalTime.split(':');
-    final minutes = parts.length == 2
-        ? (int.tryParse(parts[0]) ?? 0) * 60 + (int.tryParse(parts[1]) ?? 0)
-        : 0;
+    final minutes = parts.length == 2 ? int.tryParse(parts[0]) ?? 0 : 0;
     final streak = data.loginDates.streak;
     final loginDates = streak.isNotEmpty && streak.first['loginDates'] is List
         ? List<String>.from(streak.first['loginDates'])
@@ -106,9 +140,10 @@ class TrackOverview extends StatelessWidget {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Text('$minutes',
+                    key: const ValueKey('practice-minutes'),
                     style: text.headlineMedium?.copyWith(
                         color: colors.onPrimary, fontWeight: FontWeight.w600)),
-                Text('total minutes of practice',
+                Text('minutes of practice today',
                     style: text.bodyMedium?.copyWith(color: colors.onPrimary)),
               ],
             ),
@@ -125,6 +160,14 @@ class TrackOverview extends StatelessWidget {
                 label: const Text('View all activities')),
           ])),
       const SizedBox(height: 20),
+      Text('Your week',
+          style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
+      const SizedBox(height: 8),
+      Text('A little practice, one day at a time.',
+          style: text.bodyMedium?.copyWith(color: colors.onSurfaceVariant)),
+      const SizedBox(height: 16),
+      YourWeekCard(key: ObjectKey(data)),
+      const SizedBox(height: 24),
       Text('Your consistency',
           style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
       const SizedBox(height: 8),

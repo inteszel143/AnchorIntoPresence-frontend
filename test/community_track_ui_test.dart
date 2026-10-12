@@ -69,7 +69,12 @@ void main() {
               child: child!),
           home: TrackOverview(state: TrackLoadedState(summary))));
       await tester.pumpAndSettle();
-      expect(find.text('84'), findsOneWidget);
+      // The API returns mm:ss: 01:24 is one minute, not 84 minutes.
+      expect(
+          tester
+              .widget<Text>(find.byKey(const ValueKey('practice-minutes')))
+              .data,
+          '1');
       await tester.scrollUntilVisible(find.byTooltip('Previous month'), 250,
           scrollable: find.byType(Scrollable).first);
       await tester.pumpAndSettle();

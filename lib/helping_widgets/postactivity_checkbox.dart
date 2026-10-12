@@ -1,15 +1,12 @@
-import 'package:mindfully_evolve_app/utils/fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../screens/activity_details/activity_bloc/post_activity_bloc.dart';
 import '../screens/activity_details/activity_bloc/post_activity_event.dart';
 import '../screens/activity_details/activity_bloc/post_activity_state.dart';
-import '../utils/color_constants.dart';
 import '../utils/string_constants.dart';
-import 'checkbox_cubic.dart';
 
-class MarkAsCompleteCheckbox extends StatelessWidget {
+class MarkAsCompleteCheckbox extends StatefulWidget {
   final String activityId;
   final String videoTimestamp;
   final String totalVideoTime;
@@ -26,89 +23,76 @@ class MarkAsCompleteCheckbox extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return BlocListener<PostActivityBloc, PostActivityState>(
-      listener: (context, state) {
-        if (state is PostActivitySuccess && state.isCompleted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                Strings.markedAsComplete,
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-              ),
-              backgroundColor: ColorCodes.settingDarkContainer,
-            ),
-          );
-        } else if (state is PostActivityFailure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Failed: ${state.error}"),
-              backgroundColor: ColorCodes.buttoncolor,
-            ),
-          );
-        }
-      },
-      child: BlocBuilder<CheckboxCubit, Set<String>>(
-        builder: (context, completedSet) {
-          final bool isComplete =
-              completedSet.contains(activityId) || isChecked;
+  State<MarkAsCompleteCheckbox> createState() => _MarkAsCompleteCheckboxState();
+}
 
-          return Row(
-            children: [
-              Transform.scale(
-                scale: 1.1,
-                child: Theme(
-                  data: Theme.of(context).copyWith(
-                    unselectedWidgetColor: ColorCodes.greyColor,
-                  ),
-                  child: Checkbox(
-                    visualDensity:
-                        const VisualDensity(horizontal: -4, vertical: -4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    side: BorderSide(
-                      color: Theme.of(context).colorScheme.outline,
-                      width: 1.5,
-                    ),
-                    activeColor: Theme.of(context).colorScheme.primary,
-                    checkColor: Theme.of(context).colorScheme.onPrimary,
-                    value: isComplete,
-                    onChanged: !enabled
-                        ? null
-                        : (value) {
-                            context
-                                .read<CheckboxCubit>()
-                                .toggleCheckbox(activityId, value!);
+class _MarkAsCompleteCheckboxState extends State<MarkAsCompleteCheckbox> {
+  bool _saved = false;
+  bool _saving = false;
 
-                            if (value) {
-                              context.read<PostActivityBloc>().add(
-                                    MarkActivityComplete(
-                                      activityId: activityId,
-                                      videoTimestamp: videoTimestamp,
-                                      totalVideoTime: totalVideoTime,
-                                      isCompleted: true,
-                                    ),
-                                  );
-                            }
-                          },
-                  ),
-                ),
-              ),
-              Expanded(
-                  child: Text(
-                isComplete ? Strings.markedAsComplete : Strings.markAsComplete,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
-                  fontFamily: Fonts.body,
-                ),
-              )),
-            ],
-          );
+  @override
+  Widget build(BuildContext context) =>
+      BlocConsumer<PostActivityBloc, PostActivityState>(
+        listener: (context, state) {
+          if (!_saving) return;
+          if (state is PostActivitySuccess &&
+              state.isCompleted &&
+              state.response.data.activityId == widget.activityId) {
+            setState(() {
+              _saved = true;
+              _saving = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text('Practice saved. You can find it in Track.')),
+            );
+          } else if (state is PostActivityFailure && state.isCompletion) {
+            setState(() => _saving = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content:
+                      Text('Could not save your practice: ${state.error}')),
+            );
+          }
         },
-      ),
-    );
-  }
+        builder: (context, state) {
+          final complete = _saved || widget.isChecked;
+          return Row(children: [
+            Checkbox(
+              value: complete,
+              onChanged: !widget.enabled ||
+                      complete ||
+                      _saving ||
+                      state is PostActivitySubmitting
+                  ? null
+                  : (value) {
+                      if (value != true) return;
+                      setState(() => _saving = true);
+                      context.read<PostActivityBloc>().add(MarkActivityComplete(
+                            activityId: widget.activityId,
+                            videoTimestamp: widget.videoTimestamp,
+                            totalVideoTime: widget.totalVideoTime,
+                            isCompleted: true,
+                          ));
+                    },
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6)),
+              activeColor: Theme.of(context).colorScheme.primary,
+              checkColor: Theme.of(context).colorScheme.onPrimary,
+            ),
+            Expanded(
+                child: Text(
+              _saving
+                  ? 'Saving your practice…'
+                  : complete
+                      ? Strings.markedAsComplete
+                      : Strings.markAsComplete,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(fontWeight: FontWeight.w500),
+            )),
+          ]);
+        },
+      );
 }

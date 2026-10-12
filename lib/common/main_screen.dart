@@ -36,7 +36,7 @@ class _MainScreenState extends State<MainScreen> {
         HomePage(onLibrary: () => _onItemTapped(1)),
         const MeditateScreen(),
         CommunityScreen(),
-        TrackScreen(),
+        TrackScreen(isActive: _selectedIndex == 3),
         SettingScreen(isTab: true),
       ];
 

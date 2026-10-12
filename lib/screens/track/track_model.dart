@@ -22,11 +22,13 @@ class Data {
   final LoggedActivities loggedActivities;
   final Map<String, dynamic> categoryDistribution;
   final LoginDates loginDates;
+  final List<CompletedActivity> completedActivities;
 
   Data({
     required this.loggedActivities,
     required this.categoryDistribution,
     required this.loginDates,
+    this.completedActivities = const [],
   });
 
   factory Data.fromJson(Map<String, dynamic> json) {
@@ -35,6 +37,9 @@ class Data {
       categoryDistribution:
           Map<String, dynamic>.from(json['categoryDistribution']),
       loginDates: LoginDates.fromJson(json['loginDates']),
+      completedActivities: (json['completedActivities'] as List? ?? [])
+          .map((entry) => CompletedActivity.fromJson(entry))
+          .toList(),
     );
   }
 }
@@ -68,4 +73,18 @@ class LoginDates {
       streak: List<dynamic>.from(json['streak']),
     );
   }
+}
+
+class CompletedActivity {
+  final String name;
+  final DateTime? completedAt;
+  final String duration;
+
+  CompletedActivity({required this.name, this.completedAt, required this.duration});
+
+  factory CompletedActivity.fromJson(Map<String, dynamic> json) => CompletedActivity(
+    name: json['name'] as String? ?? 'Meditation',
+    completedAt: DateTime.tryParse(json['completedAt'] as String? ?? '')?.toLocal(),
+    duration: json['totalVideoTime'] as String? ?? '',
+  );
 }

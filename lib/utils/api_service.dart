@@ -164,7 +164,7 @@ class ApiService {
           "totalVideoTime": totalVideoTime,
           "isCompleted": isCompleted,
         }),
-      );
+      ).timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
