@@ -22,7 +22,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  late int _selectedIndex;
+  int _selectedIndex = 0;
   final Set<int> _visited = {};
 
   @override
