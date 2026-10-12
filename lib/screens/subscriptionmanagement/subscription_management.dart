@@ -261,9 +261,6 @@ class _SubscriptionManagementScreenState
                 );
               }
             } else if (state is SubscriptionRestored) {
-              if (_hasNavigated) return;
-              _hasNavigated = true;
-
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text("Purchase restored!")),
               );
@@ -391,6 +388,20 @@ class _SubscriptionManagementScreenState
                                                 .onSurfaceVariant)),
                                     const SizedBox(height: 16),
                                     _buildPlansTab(state),
+                                    if (Platform.isAndroid) ...[
+                                      const SizedBox(height: 12),
+                                      TextButton.icon(
+                                        onPressed: () {
+                                          _bloc.add(const RestorePurchasesEvent());
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(const SnackBar(
+                                            content: Text('Checking your Google Play purchases…'),
+                                          ));
+                                        },
+                                        icon: const Icon(Icons.restore_rounded),
+                                        label: const Text('Restore purchases'),
+                                      ),
+                                    ],
                                   ],
                                 ],
                               ),

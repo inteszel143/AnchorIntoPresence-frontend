@@ -1076,33 +1076,40 @@ class ApiService {
     required String planType,
     required String currencySymbol,
     String? extraToken,
+    String? platform,
+    String? purchaseToken,
+    http.Client? client,
   }) async {
     final url = Urls.postPurchase;
+    final milliseconds = int.tryParse(purchaseDate);
 
     final Map<String, dynamic> data = {
       'productId': productId,
       'purchaseId': purchaseId,
       'amount': amount,
-      'purchaseDate': purchaseDate,
+      'purchaseDate': milliseconds == null
+          ? purchaseDate
+          : DateTime.fromMillisecondsSinceEpoch(milliseconds, isUtc: true)
+              .toIso8601String(),
       'planType': planType,
-      'currencySymbol': currencySymbol
+      'currencySymbol': currencySymbol,
+      if (platform != null) 'platform': platform,
+      if (purchaseToken != null) 'purchaseToken': purchaseToken,
     };
 
-    try {
-      final token = await LocalStorage.getToken() ?? extraToken;
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: json.encode(data),
-      );
+    final token = await LocalStorage.getToken() ?? extraToken;
+    final response = await (client?.post ?? http.post)(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: json.encode(data),
+    ).timeout(const Duration(seconds: 30));
 
-      if (response.statusCode != 201) {
-        throw Exception("Failed to send purchase: ${response.statusCode}");
-      }
-    } catch (e) {}
+    if (response.statusCode != 201) {
+      throw Exception("Could not save your purchase. Please try Restore Purchases.");
+    }
   }
 
   static Future<List<UserPurchase>> fetchUserPurchases() async {

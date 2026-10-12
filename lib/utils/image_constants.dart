@@ -1,6 +1,6 @@
 class ImageConstants {
   static const imagePath = 'assets/images/';
-  static const mainPageImage = '${imagePath}mainpage_image.png';
+  static const mainPageImage = '${imagePath}mainpage_image_clean.png';
   static const userProfile = '${imagePath}user_profile.png';
   static const bellIcon = '${imagePath}roundbell_icon.svg';
   static const filterIcon = '${imagePath}search_side.png';

@@ -54,11 +54,13 @@ class OtpVerificationBloc
         await ApiService.sendPurchase(
           productId: purchaseData["productId"],
           purchaseId: purchaseData["purchaseId"],
-          amount: purchaseData["amount"],
+          amount: (purchaseData["amount"] as num).toInt(),
           purchaseDate: purchaseData["purchaseDate"],
           planType: purchaseData["planType"],
           currencySymbol: purchaseData["currencySymbol"],
           extraToken: token,
+          platform: purchaseData["platform"],
+          purchaseToken: purchaseData["purchaseToken"],
         );
         globals.isSubscribed = true;
         // If no exception thrown → success

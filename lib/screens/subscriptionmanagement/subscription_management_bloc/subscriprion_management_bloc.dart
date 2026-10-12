@@ -9,6 +9,7 @@ import 'package:mindfully_evolve_app/screens/subscriptionmanagement/subscription
 import 'package:mindfully_evolve_app/screens/subscriptionmanagement/subscription_management_bloc/subscriprion_management_state.dart';
 
 import '../purchase_feedback.dart';
+import '../purchase_reporting.dart';
 import '../../../common/local_storage.dart';
 import '../../../utils/api_service.dart';
 import '../../../utils/global.dart' as globals;
@@ -230,6 +231,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
     for (final purchaseDetails in purchaseDetailsList) {
       if (isClosed) return;
 
+      final reporting = purchaseReportingFields(purchaseDetails);
       final productId = purchaseDetails.productID;
       final purchaseId = purchaseDetails.purchaseID ?? '';
       final purchaseDate = purchaseDetails.transactionDate ??
@@ -294,6 +296,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
               "purchaseDate": purchaseDate,
               "planType": planType,
               "currencySymbol": currencyCode,
+              ...reporting,
               // Send offer ID to your backend so it can record which
               // campaign the user came from
               if (redeemedOfferId != null) "offerId": redeemedOfferId,
@@ -307,6 +310,8 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
                 purchaseDate: purchaseDate,
                 planType: planType,
                 currencySymbol: currencyCode,
+                platform: reporting['platform'],
+                purchaseToken: reporting['purchaseToken'],
               );
             } else {
               await LocalStorage.savePurchase(purchaseData);
@@ -354,6 +359,8 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
                 purchaseDate: purchaseDate,
                 planType: planType,
                 currencySymbol: currencyCode,
+                platform: reporting['platform'],
+                purchaseToken: reporting['purchaseToken'],
               );
             } else {
               // No token yet — save locally for later sync
@@ -364,6 +371,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
                 "purchaseDate": purchaseDate,
                 "planType": planType,
                 "currencySymbol": currencyCode,
+                ...reporting,
               });
               await LocalStorage.saveBool(true);
             }

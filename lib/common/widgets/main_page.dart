@@ -14,6 +14,7 @@ class MainPage extends StatelessWidget {
         child: Image.asset(
           ImageConstants.mainPageImage,
           fit: BoxFit.cover,
+          filterQuality: FilterQuality.high,
         ),
       ),
     );
