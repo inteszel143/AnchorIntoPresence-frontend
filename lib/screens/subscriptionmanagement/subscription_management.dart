@@ -116,7 +116,7 @@ class _SubscriptionManagementScreenState
                   Expanded(
                     child: Text('Confirm your plan',
                         style: theme.textTheme.headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.w600)),
+                            ?.copyWith(fontWeight: FontWeight.w500)),
                   ),
                   const SizedBox(width: 8),
                   IconButton(
@@ -143,7 +143,7 @@ class _SubscriptionManagementScreenState
                   children: [
                     Text(_cleanPlanTitle(plan.title),
                         style: theme.textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w600)),
+                            ?.copyWith(fontWeight: FontWeight.w500)),
                     const SizedBox(height: 12),
                     Wrap(
                       spacing: 8,
@@ -151,8 +151,10 @@ class _SubscriptionManagementScreenState
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Text(priceInfo.displayPrice,
-                            style: theme.textTheme.headlineMedium
-                                ?.copyWith(fontWeight: FontWeight.w700)),
+                            style: theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.w400,
+                                letterSpacing: 0,
+                                height: 1.3)),
                         Text(
                             plan.id.contains('month')
                                 ? 'per month'
@@ -302,9 +304,9 @@ class _SubscriptionManagementScreenState
                                   Text(Strings.subscriptionManagement,
                                       style: Theme.of(context)
                                           .textTheme
-                                          .headlineLarge
+                                          .headlineMedium
                                           ?.copyWith(
-                                              fontWeight: FontWeight.w600)),
+                                              fontWeight: FontWeight.w500)),
                                   const SizedBox(height: 8),
                                   Text(
                                       'A little more space for your daily practice.',

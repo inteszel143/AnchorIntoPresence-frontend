@@ -47,7 +47,7 @@ class SubscriptionPlanCard extends StatelessWidget {
             children: [
               Text(title,
                   style: theme.textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w600, height: 1.3)),
+                      ?.copyWith(fontWeight: FontWeight.w500, height: 1.3)),
               if (isActive || isFounding)
                 Container(
                   padding:
@@ -58,7 +58,7 @@ class SubscriptionPlanCard extends StatelessWidget {
                   child: Text(isActive ? 'Current plan' : 'Founding member',
                       style: theme.textTheme.labelMedium?.copyWith(
                           color: colors.onSurface,
-                          fontWeight: FontWeight.w600)),
+                          fontWeight: FontWeight.w500)),
                 ),
             ],
           ),
@@ -69,10 +69,10 @@ class SubscriptionPlanCard extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Text(price,
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -.8,
-                      height: 1.2)),
+                  style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 0,
+                      height: 1.3)),
               Text(period,
                   style: theme.textTheme.bodyMedium
                       ?.copyWith(color: colors.onSurfaceVariant)),
