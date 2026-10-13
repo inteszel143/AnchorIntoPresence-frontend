@@ -92,8 +92,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         child: BlocConsumer<PostBloc, PostState>(
           listener: (context, state) {
             if (state is PostCreated) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Post created successfully!')));
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                  content:
+                      Text('Your post has been shared with the community.')));
               Navigator.pop(context, true);
             } else if (state is PostError) {
               ScaffoldMessenger.of(context)
@@ -106,222 +107,254 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             final busy = state is PostCreating;
             final avatar = userImage;
             return PopScope(
-                canPop: !busy,
-                child: AppScaffold(
-                  body: ScrollTitlePage(
-                      title: 'Create post',
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 600),
-                          child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              child: Column(children: [
-                                IgnorePointer(
-                                    ignoring: busy,
-                                    child: CustomAppbar(
-                                        headingTxt: '',
-                                        onTap: () => Navigator.pop(context))),
-                                Expanded(
-                                    child: ListView(
-                                        keyboardDismissBehavior:
-                                            ScrollViewKeyboardDismissBehavior
-                                                .onDrag,
-                                        padding: const EdgeInsets.only(
-                                            top: 24, bottom: 24),
-                                        children: [
-                                      Text('Create post',
-                                          style: text.headlineLarge?.copyWith(
-                                              fontWeight: FontWeight.w600)),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                          'Share a moment with your community.',
-                                          style: text.bodyLarge?.copyWith(
-                                              color: colors.onSurfaceVariant)),
-                                      const SizedBox(height: 28),
-                                      Container(
-                                          padding: const EdgeInsets.all(20),
-                                          decoration: BoxDecoration(
-                                              color: colors
-                                                  .surfaceContainerHighest,
-                                              borderRadius:
-                                                  BorderRadius.circular(24)),
+              canPop: !busy,
+              child: AppScaffold(
+                body: ScrollTitlePage(
+                  title: 'Create post',
+                  child: Center(
+                      child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 600),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(children: [
+                        IgnorePointer(
+                            ignoring: busy,
+                            child: CustomAppbar(
+                                headingTxt: '',
+                                onTap: () => Navigator.pop(context))),
+                        Expanded(
+                            child: ListView(
+                          keyboardDismissBehavior:
+                              ScrollViewKeyboardDismissBehavior.onDrag,
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          children: [
+                            Text('Create post',
+                                style: text.headlineMedium
+                                    ?.copyWith(fontWeight: FontWeight.w600)),
+                            const SizedBox(height: 6),
+                            Text(
+                                'A small moment can start a meaningful connection.',
+                                style: text.bodyMedium
+                                    ?.copyWith(color: colors.onSurfaceVariant)),
+                            const SizedBox(height: 20),
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                  color: colors.surfaceContainerHighest,
+                                  borderRadius: BorderRadius.circular(24)),
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(children: [
+                                      ClipOval(
+                                          child: avatar != null &&
+                                                  avatar.isNotEmpty
+                                              ? Image.network(
+                                                  avatar.startsWith('http')
+                                                      ? avatar
+                                                      : '${Urls.baseUrlimages}$avatar',
+                                                  width: 44,
+                                                  height: 44,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (_, __, ___) =>
+                                                      _avatar(colors))
+                                              : _avatar(colors)),
+                                      const SizedBox(width: 12),
+                                      Expanded(
                                           child: Column(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: [
-                                                Row(children: [
-                                                  ClipOval(
-                                                      child: avatar != null &&
-                                                              avatar.isNotEmpty
-                                                          ? Image.network(
-                                                              avatar.startsWith(
-                                                                      'http')
-                                                                  ? avatar
-                                                                  : '${Urls.baseUrlimages}$avatar',
-                                                              width: 48,
-                                                              height: 48,
-                                                              fit: BoxFit.cover,
-                                                              errorBuilder: (_,
-                                                                      __,
-                                                                      ___) =>
-                                                                  _avatar(
-                                                                      colors))
-                                                          : _avatar(colors)),
-                                                  const SizedBox(width: 12),
-                                                  Expanded(
-                                                      child: Text(userName,
-                                                          style: text
-                                                              .titleMedium
-                                                              ?.copyWith(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w700))),
-                                                ]),
-                                                const SizedBox(height: 24),
-                                                Text('Your message',
-                                                    style: text.titleSmall
-                                                        ?.copyWith(
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .w600)),
-                                                const SizedBox(height: 12),
-                                                TextField(
-                                                    controller: _message,
-                                                    enabled: !busy,
-                                                    minLines: 6,
-                                                    maxLines: 12,
-                                                    maxLength: 500,
-                                                    style: text.bodyLarge
-                                                        ?.copyWith(height: 1.6),
-                                                    decoration: InputDecoration(
-                                                      hintText:
-                                                          'Share your thoughts, reflections, or questions with the community…',
-                                                      hintStyle: text.bodyLarge
+                                            Text(
+                                                userName.trim().isEmpty
+                                                    ? 'You'
+                                                    : userName,
+                                                style: text.titleMedium),
+                                            const SizedBox(height: 3),
+                                            Text('Sharing with the community',
+                                                style: text.bodySmall?.copyWith(
+                                                    color: colors
+                                                        .onSurfaceVariant)),
+                                          ])),
+                                    ]),
+                                    const SizedBox(height: 20),
+                                    TextField(
+                                      controller: _message,
+                                      enabled: !busy,
+                                      textCapitalization:
+                                          TextCapitalization.sentences,
+                                      keyboardType: TextInputType.multiline,
+                                      minLines: 5,
+                                      maxLines: 10,
+                                      maxLength: 500,
+                                      style:
+                                          text.bodyLarge?.copyWith(height: 1.5),
+                                      decoration: InputDecoration(
+                                        labelText: 'Your message',
+                                        alignLabelWithHint: true,
+                                        hintText: 'What’s on your mind today?',
+                                        filled: true,
+                                        fillColor: colors.surface,
+                                        contentPadding:
+                                            const EdgeInsets.all(16),
+                                        border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(16)),
+                                        enabledBorder: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(16),
+                                            borderSide: BorderSide(
+                                                color: colors.outlineVariant)),
+                                      ),
+                                    ),
+                                    ValueListenableBuilder<TextEditingValue>(
+                                      valueListenable: _message,
+                                      builder: (context, value, _) => value
+                                              .text.isEmpty
+                                          ? Padding(
+                                              padding: const EdgeInsets.only(
+                                                  top: 8, bottom: 12),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text('Need a starting point?',
+                                                      style: text.bodySmall
                                                           ?.copyWith(
                                                               color: colors
-                                                                  .onSurfaceVariant,
-                                                              height: 1.6),
-                                                      filled: true,
-                                                      fillColor: Theme.of(
-                                                              context)
-                                                          .scaffoldBackgroundColor,
-                                                      contentPadding:
-                                                          const EdgeInsets.all(
-                                                              16),
-                                                      border:
-                                                          OutlineInputBorder(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          18),
-                                                              borderSide:
-                                                                  BorderSide
-                                                                      .none),
-                                                      enabledBorder:
-                                                          OutlineInputBorder(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          18),
-                                                              borderSide:
-                                                                  BorderSide
-                                                                      .none),
-                                                      focusedBorder:
-                                                          OutlineInputBorder(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          18),
-                                                              borderSide: BorderSide(
-                                                                  color: colors
-                                                                      .primary)),
-                                                    )),
-                                              ])),
-                                      const SizedBox(height: 16),
-                                      Material(
-                                          color: colors.surfaceContainerHighest,
+                                                                  .onSurfaceVariant)),
+                                                  const SizedBox(height: 8),
+                                                  Wrap(
+                                                      spacing: 8,
+                                                      runSpacing: 8,
+                                                      children: [
+                                                        for (final prompt
+                                                            in const [
+                                                          (
+                                                            'A small win',
+                                                            'A small win for me today was '
+                                                          ),
+                                                          (
+                                                            'Feeling grateful',
+                                                            'Today I’m grateful for '
+                                                          ),
+                                                          (
+                                                            'Say hello',
+                                                            'Hello everyone! '
+                                                          ),
+                                                        ])
+                                                          ActionChip(
+                                                              label: Text(
+                                                                  prompt.$1),
+                                                              onPressed: busy
+                                                                  ? null
+                                                                  : () {
+                                                                      _message.value = TextEditingValue(
+                                                                          text: prompt
+                                                                              .$2,
+                                                                          selection:
+                                                                              TextSelection.collapsed(offset: prompt.$2.length));
+                                                                    }),
+                                                      ]),
+                                                ],
+                                              ))
+                                          : const SizedBox.shrink(),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    if (_photo != null) ...[
+                                      ClipRRect(
                                           borderRadius:
-                                              BorderRadius.circular(24),
-                                          child: ListTile(
-                                              enabled: !busy,
-                                              contentPadding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 20,
-                                                      vertical: 12),
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          24)),
-                                              leading:
-                                                  Icon(Icons.add_photo_alternate_outlined,
-                                                      color: colors.primary),
-                                              title: Text('Add photo',
-                                                  style: text.titleMedium?.copyWith(
-                                                      fontWeight:
-                                                          FontWeight.w600)),
-                                              subtitle: const Text(
-                                                  'Share an image with your post'),
-                                              trailing: const Icon(Icons.chevron_right_rounded),
-                                              onTap: _choosePhoto)),
-                                      if (_photo != null) ...[
-                                        const SizedBox(height: 16),
-                                        Stack(children: [
-                                          ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(24),
-                                              child: Image.file(File(_photo!),
-                                                  width: double.infinity,
-                                                  height: 220,
-                                                  fit: BoxFit.cover)),
-                                          Positioned(
-                                              top: 8,
-                                              right: 8,
-                                              child: IconButton.filled(
-                                                  tooltip: 'Remove photo',
-                                                  onPressed: busy
-                                                      ? null
-                                                      : () => setState(
-                                                          () => _photo = null),
-                                                  icon: const Icon(
-                                                      Icons.close_rounded))),
-                                        ]),
-                                      ],
-                                    ])),
-                                Padding(
-                                    padding: const EdgeInsets.only(
-                                        top: 12, bottom: 16),
-                                    child: SizedBox(
-                                        width: double.infinity,
-                                        child: FilledButton(
-                                          style: FilledButton.styleFrom(
-                                              backgroundColor: colors.primary,
-                                              foregroundColor: colors.onPrimary,
-                                              minimumSize: const Size(0, 56),
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          18))),
-                                          onPressed: busy
-                                              ? null
-                                              : () => _submit(context),
-                                          child: busy
-                                              ? SizedBox(
-                                                  width: 22,
-                                                  height: 22,
+                                              BorderRadius.circular(16),
+                                          child: Image.file(File(_photo!),
+                                              width: double.infinity,
+                                              height: 200,
+                                              fit: BoxFit.contain,
+                                              errorBuilder: (_, __, ___) =>
+                                                  const Padding(
+                                                      padding:
+                                                          EdgeInsets.all(20),
+                                                      child: Text(
+                                                          'Photo preview unavailable. Try choosing another photo.')))),
+                                      const SizedBox(height: 8),
+                                      Wrap(spacing: 8, children: [
+                                        TextButton.icon(
+                                            onPressed:
+                                                busy ? null : _choosePhoto,
+                                            icon: const Icon(
+                                                Icons.photo_library_outlined),
+                                            label: const Text('Change photo')),
+                                        TextButton.icon(
+                                            onPressed: busy
+                                                ? null
+                                                : () => setState(
+                                                    () => _photo = null),
+                                            icon:
+                                                const Icon(Icons.close_rounded),
+                                            label: const Text('Remove photo')),
+                                      ]),
+                                    ] else
+                                      OutlinedButton.icon(
+                                          onPressed: busy ? null : _choosePhoto,
+                                          icon: const Icon(Icons
+                                              .add_photo_alternate_outlined),
+                                          label: const Text('Add photo')),
+                                    if (_photo == null) ...[
+                                      const SizedBox(height: 6),
+                                      Text(
+                                          'Optional · A message, a photo, or both.',
+                                          style: text.bodySmall?.copyWith(
+                                              color: colors.onSurfaceVariant)),
+                                    ],
+                                  ]),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                                'Share with kindness. There’s no perfect way to begin.',
+                                style: text.bodyMedium
+                                    ?.copyWith(color: colors.onSurfaceVariant)),
+                            if (state is PostError) ...[
+                              const SizedBox(height: 12),
+                              Semantics(
+                                  liveRegion: true,
+                                  child: Text(
+                                      'Your post couldn’t be shared. Your draft is still here—please try again.',
+                                      style: text.bodyMedium
+                                          ?.copyWith(color: colors.error))),
+                            ],
+                          ],
+                        )),
+                        Padding(
+                            padding: const EdgeInsets.only(top: 8, bottom: 12),
+                            child: SizedBox(
+                                width: double.infinity,
+                                child: FilledButton(
+                                  style: FilledButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 20, vertical: 16),
+                                      minimumSize: const Size(0, 52)),
+                                  onPressed:
+                                      busy ? null : () => _submit(context),
+                                  child: busy
+                                      ? const Wrap(
+                                          spacing: 12,
+                                          crossAxisAlignment:
+                                              WrapCrossAlignment.center,
+                                          children: [
+                                              SizedBox.square(
+                                                  dimension: 18,
                                                   child:
                                                       CircularProgressIndicator(
-                                                          strokeWidth: 2,
-                                                          color: colors
-                                                              .onSurfaceVariant,
-                                                          semanticsLabel:
-                                                              'Posting'))
-                                              : const Text('Post'),
-                                        ))),
-                              ])),
-                        ),
-                      )),
-                ));
+                                                          strokeWidth: 2)),
+                                              Text('Sharing…'),
+                                            ])
+                                      : const Text('Share post'),
+                                ))),
+                      ]),
+                    ),
+                  )),
+                ),
+              ),
+            );
           },
         ),
       );

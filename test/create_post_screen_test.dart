@@ -19,9 +19,14 @@ void main() {
               child: child!),
           home: const CreatePostScreen()));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Post'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Share post'));
       await tester.pumpAndSettle();
       expect(find.text('Please add a message or photo'), findsOneWidget);
+      await tester.ensureVisible(find.text('A small win'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('A small win'));
+      await tester.pumpAndSettle();
+      expect(find.text('A small win for me today was '), findsOneWidget);
       await tester.enterText(find.byType(TextField), 'A quiet moment today.');
       tester.testTextInput.hide();
       await tester.scrollUntilVisible(find.text('Add photo'), 250,

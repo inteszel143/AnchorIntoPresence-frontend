@@ -8,6 +8,40 @@ import 'package:mindfully_evolve_app/common/app_theme.dart';
 import 'package:mindfully_evolve_app/common/widgets/app_tab_bar.dart';
 
 void main() {
+  testWidgets('Community stays on one line with large text on narrow phones',
+      (tester) async {
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    for (final width in [320.0, 360.0, 390.0]) {
+      tester.view.physicalSize = Size(width, 800);
+      for (final scale in [1.0, 1.5, 2.0, 3.0]) {
+        var tapped = -1;
+        await tester.pumpWidget(MaterialApp(
+            theme: AppTheme.light,
+            home: MediaQuery(
+              data: MediaQueryData(textScaler: TextScaler.linear(scale)),
+              child: Scaffold(
+                  bottomNavigationBar: AppTabBar(
+                      selectedIndex: 2, onTap: (index) => tapped = index)),
+            )));
+        await tester.pumpAndSettle();
+        final label =
+            tester.renderObject<RenderParagraph>(find.text('Community'));
+        final boxes = label.getBoxesForSelection(
+            const TextSelection(baseOffset: 0, extentOffset: 9));
+        expect(boxes.map((box) => box.top).toSet().length, 1);
+        expect(label.didExceedMaxLines, isFalse);
+        final tab = find.ancestor(
+            of: find.text('Community'), matching: find.byType(InkWell));
+        expect(tester.getSize(tab).height, greaterThanOrEqualTo(48));
+        await tester.tap(find.text('Community'));
+        expect(tapped, 2);
+        expect(tester.takeException(), isNull);
+      }
+    }
+  });
+
   testWidgets('tabs select their existing destinations and fit small screens',
       (tester) async {
     tester.view.devicePixelRatio = 1;

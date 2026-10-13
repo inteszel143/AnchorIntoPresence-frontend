@@ -25,9 +25,10 @@ class _YourWeekCardState extends State<YourWeekCard> {
   }
 
   Future<TotalMeditationDataResponse> _load() async {
-    final response =
-        await (widget.load ?? ApiService.fetchTotalMeditationData)()
-            .timeout(const Duration(seconds: 30));
+    final response = await (widget.load ??
+            () =>
+                ApiService.fetchTotalMeditationData(weekStartsOnSunday: true))()
+        .timeout(const Duration(seconds: 30));
     if (!response.status) throw StateError('Weekly practice is unavailable');
     return response;
   }
@@ -75,7 +76,7 @@ class _YourWeekCardState extends State<YourWeekCard> {
                     ),
                   ]);
             }
-            const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             final values = {
               for (final day in snapshot.data!.data.week)
                 day.day: math.max(0, day.value),
@@ -86,7 +87,7 @@ class _YourWeekCardState extends State<YourWeekCard> {
             return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Monday–Sunday · Daily minutes',
+                  Text('Sunday–Saturday · Daily minutes',
                       style: text.bodySmall
                           ?.copyWith(color: colors.onSurfaceVariant)),
                   const SizedBox(height: 20),

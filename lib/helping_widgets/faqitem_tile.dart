@@ -27,7 +27,7 @@ class FAQItemTile extends StatelessWidget {
               style: TextStyle(
                   color: colors.onSurface,
                   fontSize: 16,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                   height: 1.4)),
           children: [
             Divider(height: 1, color: colors.outlineVariant),
@@ -37,7 +37,7 @@ class FAQItemTile extends StatelessWidget {
                 child: Text(answer,
                     style: TextStyle(
                         color: colors.onSurfaceVariant,
-                        fontSize: 15,
+                        fontSize: 16,
                         height: 1.6))),
           ],
         ),

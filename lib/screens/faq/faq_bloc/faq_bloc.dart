@@ -8,7 +8,9 @@ import 'faq_event.dart';
 import 'faq_state.dart';
 
 class FaqBloc extends Bloc<FaqEvent, FaqState> {
-  FaqBloc() : super(FaqInitial()) {
+  final Future<Map<String, dynamic>> Function(int, int, String) _fetch;
+  FaqBloc({Future<Map<String, dynamic>> Function(int, int, String)? fetch})
+      : _fetch = fetch ?? ApiService.fetchFAQ, super(FaqInitial()) {
     on<FetchFaqs>(_onFetchFaqs);
   }
 
@@ -20,20 +22,17 @@ class FaqBloc extends Bloc<FaqEvent, FaqState> {
   ) async {
     final int currentRequestId = ++_requestId;
 
-    // Only show the full-screen loader for the first request.
-    if (state is! FaqLoaded) {
-      emit(FaqLoading());
-    }
+    emit(FaqLoading());
 
     try {
-      final jsonData = await ApiService.fetchFAQ(
+      final jsonData = await _fetch(
         event.page,
         event.limit,
         event.searchQuery,
-      );
+      ).timeout(const Duration(seconds: 20));
 
       // Ignore an old response if a newer search has already started.
-      if (currentRequestId != _requestId) {
+      if (isClosed || currentRequestId != _requestId) {
         return;
       }
 
@@ -51,7 +50,7 @@ class FaqBloc extends Bloc<FaqEvent, FaqState> {
         FaqLoaded(faqs),
       );
     } on SocketException {
-      if (currentRequestId != _requestId) {
+      if (isClosed || currentRequestId != _requestId) {
         return;
       }
 
@@ -61,16 +60,13 @@ class FaqBloc extends Bloc<FaqEvent, FaqState> {
         ),
       );
     } catch (e) {
-      if (currentRequestId != _requestId) {
+      if (isClosed || currentRequestId != _requestId) {
         return;
       }
 
-      final errorMessage = e is Exception
-          ? e.toString().replaceFirst('Exception: ', '')
-          : e.toString();
       emit(
         FaqError(
-          '$errorMessage}',
+          'Questions couldn’t load. Please try again.',
         ),
       );
     }

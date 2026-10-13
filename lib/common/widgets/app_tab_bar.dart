@@ -66,15 +66,24 @@ class AppTabBar extends StatelessWidget {
                                     Icon(_items[index].$1,
                                         size: 27, color: color),
                                     const SizedBox(height: 5),
-                                    Text(_items[index].$2,
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                            fontSize: 11,
-                                            height: 1.25,
-                                            fontWeight: active
-                                                ? FontWeight.w700
-                                                : FontWeight.w500,
-                                            color: color)),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 2),
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(_items[index].$2,
+                                            maxLines: 1,
+                                            softWrap: false,
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                                fontSize: 11,
+                                                height: 1.25,
+                                                fontWeight: active
+                                                    ? FontWeight.w700
+                                                    : FontWeight.w500,
+                                                color: color)),
+                                      ),
+                                    ),
                                   ]),
                             ),
                           ),

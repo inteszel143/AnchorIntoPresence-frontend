@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mindfully_evolve_app/utils/string_constants.dart';
 
 import '../../common/widgets/information_page.dart';
+import '../../common/widgets/loading_skeleton.dart';
+import '../contact_support/contact_supportscreen.dart';
 import '../../helping_widgets/faqitem_tile.dart';
 import 'faq_bloc/faq_bloc.dart';
 import 'faq_bloc/faq_event.dart';
@@ -12,12 +14,14 @@ import 'faq_bloc/faq_state.dart';
 import 'faq_model.dart';
 
 class FrequentlyAskedQuestionsScreen extends StatelessWidget {
-  const FrequentlyAskedQuestionsScreen({super.key});
+  const FrequentlyAskedQuestionsScreen({super.key, this.createBloc});
+
+  final FaqBloc Function()? createBloc;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => FaqBloc()
+      create: (_) => (createBloc?.call() ?? FaqBloc())
         ..add(
           FetchFaqs(
             searchQuery: '',
@@ -99,6 +103,22 @@ class _FaqScreenBodyState extends State<_FaqScreenBody> {
       title: Strings.faqs,
       slivers: [
         SliverToBoxAdapter(
+            child: Padding(
+          padding: const EdgeInsets.only(bottom: 20),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('How can we help?',
+                style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 8),
+            Text(
+                'Find answers about using the app and making time for yourself.',
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: colors.onSurfaceVariant)),
+          ]),
+        )),
+        SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.only(bottom: 20),
             child: TextField(
@@ -106,7 +126,8 @@ class _FaqScreenBodyState extends State<_FaqScreenBody> {
               onChanged: _onSearchChanged,
               textInputAction: TextInputAction.search,
               decoration: InputDecoration(
-                hintText: Strings.searchHelp,
+                labelText: 'Search FAQs',
+                hintText: 'Try subscriptions or reminders',
                 prefixIcon: const Icon(Icons.search_rounded),
                 suffixIcon: ValueListenableBuilder<TextEditingValue>(
                   valueListenable: _searchController,
@@ -133,31 +154,113 @@ class _FaqScreenBodyState extends State<_FaqScreenBody> {
         ),
         BlocBuilder<FaqBloc, FaqState>(builder: (context, state) {
           if (state is FaqLoading) {
-            return const SliverFillRemaining(
-                hasScrollBody: false,
-                child: Center(child: CircularProgressIndicator()));
+            return SliverToBoxAdapter(
+                child: LoadingSkeleton(
+              label: 'Loading questions',
+              child: Column(
+                  children: List.generate(
+                      4,
+                      (_) => const Padding(
+                            padding: EdgeInsets.only(bottom: 12),
+                            child: SkeletonBlock(height: 72),
+                          ))),
+            ));
           }
           if (state is FaqError) {
-            return SliverFillRemaining(
-                hasScrollBody: false,
-                child: Center(
-                    child: Text(state.message,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: colors.error, height: 1.5))));
+            return SliverToBoxAdapter(
+                child: _notice(
+              icon: Icons.wifi_off_rounded,
+              title: 'Questions couldn’t load',
+              message: 'Check your connection and try again.',
+              action: 'Try again',
+              onPressed: () => context.read<FaqBloc>().add(FetchFaqs(
+                  searchQuery: _searchController.text.trim(),
+                  page: 1,
+                  limit: 10)),
+            ));
           }
           if (state is FaqLoaded) return _buildFaqList(state.faqs);
           return const SliverToBoxAdapter(child: SizedBox.shrink());
         }),
+        SliverToBoxAdapter(
+            child: Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: colors.primary.withValues(alpha: .07),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: colors.primary.withValues(alpha: .15)),
+            ),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Icon(Icons.support_agent_rounded,
+                  color: colors.primary, size: 28),
+              const SizedBox(height: 12),
+              Text('Still need a hand?',
+                  style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 6),
+              Text('Send us a message. We’re here to help.',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(color: colors.onSurfaceVariant)),
+              const SizedBox(height: 16),
+              SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const ContactSupportscreen())),
+                    child: const Text('Contact Support'),
+                  )),
+            ]),
+          ),
+        )),
       ],
+    );
+  }
+
+  Widget _notice(
+      {required IconData icon,
+      required String title,
+      required String message,
+      String? action,
+      VoidCallback? onPressed}) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 12),
+      child: Column(children: [
+        Icon(icon, size: 32, color: theme.colorScheme.onSurfaceVariant),
+        const SizedBox(height: 12),
+        Text(title,
+            textAlign: TextAlign.center, style: theme.textTheme.titleMedium),
+        const SizedBox(height: 8),
+        Text(message,
+            textAlign: TextAlign.center, style: theme.textTheme.bodyMedium),
+        if (action != null) ...[
+          const SizedBox(height: 12),
+          TextButton(onPressed: onPressed, child: Text(action)),
+        ],
+      ]),
     );
   }
 
   Widget _buildFaqList(List<Faq> faqs) {
     if (faqs.isEmpty) {
-      return const SliverFillRemaining(
-          hasScrollBody: false,
-          child: Center(
-              child: Text('No FAQs found', textAlign: TextAlign.center)));
+      final searching = _searchController.text.trim().isNotEmpty;
+      return SliverToBoxAdapter(
+          child: _notice(
+        icon: Icons.search_off_rounded,
+        title:
+            searching ? 'No matching questions' : 'No questions available yet',
+        message: searching
+            ? 'Try a shorter phrase or a different keyword.'
+            : 'You can contact our support team below.',
+        action: searching ? 'Clear search' : null,
+        onPressed: searching ? _clearSearch : null,
+      ));
     }
     return SliverList(
         delegate: SliverChildBuilderDelegate((context, index) {
