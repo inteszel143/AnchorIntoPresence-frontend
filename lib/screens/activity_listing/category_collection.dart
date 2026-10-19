@@ -52,10 +52,10 @@ class _CategoryCollectionState extends State<CategoryCollection> {
     final theme = Theme.of(context);
     return CollectionPage(
       title:
-          widget.isPause ? 'A moment to pause' : 'Your daily recommendations',
+          widget.isPause ? 'Daily Pauses' : 'Guided Meditations',
       description: widget.isPause
-          ? 'Small reminders to slow down and return to this moment.'
-          : 'Make a little room for yourself with a daily practice.',
+          ? 'Words of encouragement, reflection, and presence.'
+          : 'Explore meditations to support your journey.',
       onRefresh: _fetch,
       topPadding: widget.isPause ? 0 : 24,
       slivers: [
@@ -72,7 +72,7 @@ class _CategoryCollectionState extends State<CategoryCollection> {
             },
             decoration: InputDecoration(
               hintText:
-                  widget.isPause ? 'Search moments' : 'Search meditations',
+                  widget.isPause ? 'Search Daily Pauses' : 'Search meditations',
               isDense: true,
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -267,13 +267,32 @@ class PauseCollectionCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 child: _image(context),
               ),
-            if (showLibraryActions &&
-                !{'daily pause', 'daily pauses', ''}
-                    .contains(activity.name.trim().toLowerCase()))
+            if (showLibraryActions)
               Padding(
                   padding: const EdgeInsets.all(18),
-                  child:
-                      Text(activity.name, style: theme.textTheme.titleMedium)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Daily Pause',
+                          style: theme.textTheme.labelMedium?.copyWith(
+                              color: theme.colorScheme.primary,
+                              fontWeight: FontWeight.w700)),
+                      if (!{
+                        'daily pause',
+                        'daily pauses',
+                        'take a moment',
+                        'take a moment.',
+                        ''
+                      }.contains(activity.name.trim().toLowerCase())) ...[
+                        const SizedBox(height: 6),
+                        Text(activity.name, style: theme.textTheme.titleMedium),
+                      ],
+                      const SizedBox(height: 6),
+                      Text('Carry this with you.',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant)),
+                    ],
+                  )),
           ]),
         ),
       ),

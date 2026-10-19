@@ -306,7 +306,7 @@ class SettingScreen extends StatelessWidget {
                                         ?.copyWith(
                                             fontWeight: FontWeight.w600)),
                                 const SizedBox(height: 8),
-                                Text('A little space to make this yours.',
+                                Text('Personalize your experience.',
                                     style: TextStyle(
                                         fontSize: 15,
                                         color: colors.onSurfaceVariant)),

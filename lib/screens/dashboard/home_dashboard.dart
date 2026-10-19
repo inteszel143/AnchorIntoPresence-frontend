@@ -149,9 +149,11 @@ class HomeDashboard extends StatelessWidget {
     }
 
     Widget pauseContent(ActivityData item) {
-      final title = item.name.trim();
-      final showTitle = title.isNotEmpty &&
-          !{'daily pause', 'daily pauses'}.contains(title.toLowerCase());
+      final name = item.name.trim();
+      final title = {'daily pause', 'daily pauses'}.contains(name.toLowerCase())
+          ? 'Carry this with you.'
+          : name;
+      final showTitle = title.isNotEmpty;
       final showTags = item.tagName?.isNotEmpty == true;
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -229,8 +231,8 @@ class HomeDashboard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             anchor
-                ? 'The guided meditation for today'
-                : 'An inspiration to carry with you today',
+                ? "Today's guided meditation"
+                : 'A gentle reminder to carry with you.',
             style: Theme.of(context)
                 .textTheme
                 .bodySmall
@@ -443,7 +445,7 @@ class HomeDashboard extends StatelessWidget {
                           .titleLarge
                           ?.copyWith(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 6),
-                  Text('A little space to come back to yourself.',
+                  Text('Begin with what feels true for you.',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: colors.onSurfaceVariant, height: 1.5)),
                   const SizedBox(height: 20),

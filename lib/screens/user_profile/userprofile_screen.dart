@@ -17,7 +17,7 @@ class UserprofileScreen extends StatelessWidget {
         child: BlocBuilder<UserProfileBloc, UserProfileState>(
           builder: (context, state) => CollectionPage(
             title: 'Profile',
-            description: 'A little about you and your account.',
+            description: 'Manage your personal information.',
             slivers: [
               if (state is UserProfileLoaded)
                 SliverToBoxAdapter(
@@ -90,11 +90,6 @@ class ProfileDetails extends StatelessWidget {
       const SizedBox(height: 18),
       Text(user.name.trim().isEmpty ? 'Your profile' : user.name,
           textAlign: TextAlign.center, style: theme.textTheme.headlineSmall),
-      const SizedBox(height: 8),
-      Text('Your space to grow, one moment at a time.',
-          textAlign: TextAlign.center,
-          style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant, height: 1.5)),
       const SizedBox(height: 32),
       Text('Account details', style: theme.textTheme.titleMedium),
       const SizedBox(height: 14),

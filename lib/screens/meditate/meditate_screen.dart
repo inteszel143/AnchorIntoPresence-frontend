@@ -127,7 +127,7 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                                 .headlineLarge
                                 ?.copyWith(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 8),
-                        Text('Find a little space to return to yourself.',
+                        Text('Your collection of meditations and reflections.',
                             style: TextStyle(
                                 color: colors.onSurfaceVariant,
                                 fontSize: 15,
@@ -170,7 +170,6 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                                 'All',
                                 'Daily Anchors',
                                 'Daily Pauses',
-                                'Favorites'
                               ])
                                 Padding(
                                   padding: const EdgeInsets.only(right: 8),

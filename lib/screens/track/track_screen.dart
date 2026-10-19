@@ -66,7 +66,7 @@ class TrackOverview extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     return TabContentPage(
         title: 'Track',
-        subtitle: 'Every moment of presence counts.',
+        subtitle: 'Honor the time you give yourself.',
         slivers: [
           if (state is TrackLoadedState)
             SliverPadding(
@@ -163,7 +163,7 @@ class TrackOverview extends StatelessWidget {
       Text('Your week',
           style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
       const SizedBox(height: 8),
-      Text('A little practice, one day at a time.',
+      Text('Your meditation activity at a glance.',
           style: text.bodyMedium?.copyWith(color: colors.onSurfaceVariant)),
       const SizedBox(height: 16),
       YourWeekCard(key: ObjectKey(data)),
@@ -171,7 +171,7 @@ class TrackOverview extends StatelessWidget {
       Text('Your consistency',
           style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
       const SizedBox(height: 8),
-      Text('A little presence, one day at a time.',
+      Text('See how your practice unfolds over time.',
           style: text.bodyMedium?.copyWith(color: colors.onSurfaceVariant)),
       const SizedBox(height: 16),
       Container(
