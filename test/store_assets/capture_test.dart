@@ -328,14 +328,14 @@ const captions = [
 ];
 
 Widget handheldPoster(int index, Uint8List screenshot,
-    {String? headline, String? supportingCopy}) {
+    {String? headline, String? supportingCopy, double canvasWidth = 440}) {
   final bottomTitle = index.isOdd;
   final artWidth = bottomTitle ? 606.0 : 640.0;
   return ColoredBox(
       color: cream,
       child: Stack(children: [
         Positioned(
-          left: (440 - artWidth) / 2,
+          left: (canvasWidth - artWidth) / 2,
           top: bottomTitle ? -25 : 172,
           width: artWidth,
           height: artWidth * 1.5,

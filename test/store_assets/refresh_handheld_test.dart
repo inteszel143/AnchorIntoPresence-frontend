@@ -7,7 +7,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mindfully_evolve_app/common/app_theme.dart';
 import 'capture_test.dart' as layout;
 
-const root = '../output/app-store-handheld';
+const android = bool.fromEnvironment('ANDROID_STORE');
+const sourceRoot = '../output/app-store-handheld';
+const root = android ? '../output/play-store-handheld' : sourceRoot;
 const shots = [
   ('01-daily-practice', 'Your daily ritual for grounding,\nmeditation, and presence.', 'Your daily anchor, your moment to pause.'),
   ('02-guided-meditations', 'Make room\nfor yourself.', 'Explore guided meditations in your Library.'),
@@ -20,7 +22,8 @@ const shots = [
 void main() {
   testWidgets('export handheld posters from supplied iPhone captures', (tester) async {
     if (!const bool.fromEnvironment('CAPTURE_STORE')) return;
-    layout.handArtwork = File('$root/assets/hand-phone.png').readAsBytesSync();
+    Directory('$root/screenshots').createSync(recursive: true);
+    layout.handArtwork = File('$sourceRoot/assets/hand-phone.png').readAsBytesSync();
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
@@ -33,14 +36,15 @@ void main() {
     final posters = <Uint8List>[];
     for (var i = 0; i < shots.length; i++) {
       final shot = shots[i];
-      final raw = File('$root/raw/${shot.$1}.png').readAsBytesSync();
-      tester.view.physicalSize = const Size(440, 956);
+      final raw = File('$sourceRoot/raw/${shot.$1}.png').readAsBytesSync();
+      tester.view.physicalSize = android ? const Size(540, 960) : const Size(440, 956);
       final key = GlobalKey();
       await tester.pumpWidget(MaterialApp(
         theme: AppTheme.light,
         home: RepaintBoundary(key: key, child: DefaultTextStyle(
           style: const TextStyle(fontFamily: 'DM Sans', decoration: TextDecoration.none),
-          child: layout.handheldPoster(i, raw, headline: shot.$2, supportingCopy: shot.$3),
+          child: layout.handheldPoster(i, raw, headline: shot.$2, supportingCopy: shot.$3,
+              canvasWidth: android ? 540 : 440),
         )),
       ));
       await tester.runAsync(() async {
@@ -49,14 +53,14 @@ void main() {
       });
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
-      posters.add(await layout.save(tester, key, '$root/screenshots/${shot.$1}.png', 3));
+      posters.add(await layout.save(tester, key, '$root/screenshots/${shot.$1}.png', android ? 2 : 3));
       await tester.pumpWidget(const SizedBox());
     }
-    tester.view.physicalSize = const Size(1320, 1912);
+    tester.view.physicalSize = android ? const Size(1350, 1600) : const Size(1320, 1912);
     final key = GlobalKey();
     await tester.pumpWidget(MaterialApp(home: RepaintBoundary(key: key,
       child: ColoredBox(color: layout.cream, child: GridView.count(
-        crossAxisCount: 3, childAspectRatio: 440 / 956,
+        crossAxisCount: 3, childAspectRatio: android ? 9 / 16 : 440 / 956,
         children: [for (final bytes in posters) Image.memory(bytes)],
       )),
     )));
