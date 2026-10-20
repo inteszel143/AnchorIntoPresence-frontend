@@ -289,7 +289,7 @@ Widget community() => tab(
 const captions = [
   (
     '01-daily-practice',
-    'A little presence.\nEvery day.',
+    'Your daily ritual for grounding,\nmeditation, and presence.',
     'Your daily anchor, your moment to pause.'
   ),
   (
@@ -327,7 +327,8 @@ const captions = [
   ('10-daily-pauses', 'Space to pause.\nRoom to reflect.', 'Explore visual reflections in your Library.'),
 ];
 
-Widget handheldPoster(int index, Uint8List screenshot) {
+Widget handheldPoster(int index, Uint8List screenshot,
+    {String? headline, String? supportingCopy}) {
   final bottomTitle = index.isOdd;
   final artWidth = bottomTitle ? 606.0 : 640.0;
   return ColoredBox(
@@ -384,17 +385,17 @@ Widget handheldPoster(int index, Uint8List screenshot) {
                           letterSpacing: 2.3,
                           color: ink)),
                   const SizedBox(height: 16),
-                  Text(captions[index].$2,
+                  Text(headline ?? captions[index].$2,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           fontFamily: 'Manrope',
-                          fontSize: 37,
+                          fontSize: index == 0 ? 29 : 37,
                           letterSpacing: -1.6,
                           fontWeight: FontWeight.w700,
                           height: 1.12,
                           color: ink)),
                   const SizedBox(height: 12),
-                  Text(captions[index].$3,
+                  Text(supportingCopy ?? captions[index].$3,
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 13, height: 1.4, color: ink)),
                 ])),
@@ -443,7 +444,7 @@ Widget poster(int index, Uint8List screenshot) {
               Text(captions[index].$2,
                   style: TextStyle(
                       fontFamily: 'Manrope',
-                      fontSize: 39,
+                      fontSize: index == 0 ? 29 : 39,
                       letterSpacing: -1.8,
                       fontWeight: FontWeight.w600,
                       height: 1.12,
