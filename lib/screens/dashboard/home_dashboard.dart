@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/physics.dart';
 import '../../utils/urls.dart';
 import 'dashboard_bloc/home_state.dart';
 import 'dashboard_bloc/recently_played_model.dart';
@@ -242,8 +243,11 @@ class HomeDashboard extends StatelessWidget {
           LayoutBuilder(builder: (context, constraints) {
             final stacked = constraints.maxWidth < 260 ||
                 MediaQuery.textScalerOf(context).scale(16) > 24;
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+            return _PracticeScroll(
+              showIndicator: items.length > 1,
+              category: category,
+              itemCount: items.length,
+              pageExtent: constraints.maxWidth + 12,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -504,4 +508,128 @@ class HomeDashboard extends StatelessWidget {
       ),
     ));
   }
+}
+
+class _PracticeScroll extends StatefulWidget {
+  const _PracticeScroll({
+    required this.showIndicator,
+    required this.category,
+    required this.itemCount,
+    required this.pageExtent,
+    required this.child,
+  });
+
+  final bool showIndicator;
+  final String category;
+  final int itemCount;
+  final double pageExtent;
+  final Widget child;
+
+  @override
+  State<_PracticeScroll> createState() => _PracticeScrollState();
+}
+
+class _PracticeScrollState extends State<_PracticeScroll> {
+  final _controller = ScrollController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scrollView = SingleChildScrollView(
+      controller: _controller,
+      scrollDirection: Axis.horizontal,
+      physics: widget.showIndicator
+          ? _PracticePagePhysics(pageExtent: widget.pageExtent)
+          : null,
+      child: widget.child,
+    );
+    if (!widget.showIndicator) return scrollView;
+
+    final colors = Theme.of(context).colorScheme;
+    return Column(
+      children: [
+        scrollView,
+        const SizedBox(height: 12),
+        AnimatedBuilder(
+          animation: _controller,
+          builder: (context, _) {
+            final extent = _controller.hasClients &&
+                    _controller.position.hasContentDimensions
+                ? _controller.position.maxScrollExtent
+                : 0.0;
+            final active = extent > 0
+                ? ((_controller.offset / extent) * (widget.itemCount - 1))
+                    .round()
+                    .clamp(0, widget.itemCount - 1)
+                : 0;
+            return Semantics(
+              key: ValueKey(
+                  '${widget.category.toLowerCase().replaceAll(' ', '-')}-scroll-indicator'),
+              label: '${widget.category} ${active + 1} of ${widget.itemCount}',
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (var index = 0; index < widget.itemCount; index++)
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: index == active
+                            ? colors.primary
+                            : colors.outlineVariant,
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+/// Snap full-width practice cards while preserving their natural content height.
+class _PracticePagePhysics extends ScrollPhysics {
+  const _PracticePagePhysics({required this.pageExtent, super.parent});
+
+  final double pageExtent;
+
+  @override
+  _PracticePagePhysics applyTo(ScrollPhysics? ancestor) =>
+      _PracticePagePhysics(
+          pageExtent: pageExtent, parent: buildParent(ancestor));
+
+  @override
+  Simulation? createBallisticSimulation(ScrollMetrics position, double velocity) {
+    if ((velocity <= 0 && position.pixels <= position.minScrollExtent) ||
+        (velocity >= 0 && position.pixels >= position.maxScrollExtent)) {
+      return super.createBallisticSimulation(position, velocity);
+    }
+    final tolerance = toleranceFor(position);
+    var page = position.pixels / pageExtent;
+    if (velocity < -tolerance.velocity) {
+      page -= 0.5;
+    } else if (velocity > tolerance.velocity) {
+      page += 0.5;
+    }
+    final target = (page.round() * pageExtent)
+        .clamp(position.minScrollExtent, position.maxScrollExtent)
+        .toDouble();
+    if (target == position.pixels) return null;
+    return ScrollSpringSimulation(spring, position.pixels, target, velocity,
+        tolerance: tolerance);
+  }
+
+  @override
+  bool get allowImplicitScrolling => false;
 }

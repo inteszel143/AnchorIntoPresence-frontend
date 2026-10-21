@@ -63,6 +63,75 @@ HomePageLoadedState fixture(
     );
 
 void main() {
+  for (final category in ['Daily Anchor', 'Daily Pause']) {
+  testWidgets('$category indicator appears only for multiple items and follows swipes',
+      (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(390, 1200);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    for (final theme in [AppTheme.light, AppTheme.dark]) {
+      for (final count in [1, 3]) {
+        final state = fixture(recent: false);
+        final anchors = state.homePageData.data[category]!.activities;
+        while (anchors.length < count) anchors.add(anchors.first);
+        await tester.pumpWidget(MaterialApp(
+          theme: theme,
+          home: Scaffold(body: HomeDashboard(
+            state: state,
+            onProfile: () {},
+            onSearch: () {},
+            onRecent: () {},
+            onNotifications: () {},
+            onActivity: (_) {},
+            onCategory: (_) {},
+            onResume: (_) {},
+          )),
+        ));
+        await tester.pumpAndSettle();
+        final indicator = find.byKey(ValueKey('${category.toLowerCase().replaceAll(' ', '-')}-scroll-indicator'));
+        if (count == 1) {
+          expect(indicator, findsNothing);
+        } else {
+          expect(indicator, findsOneWidget);
+          expect(tester.widget<Semantics>(indicator).properties.label,
+              '$category 1 of 3');
+          expect(find.descendant(of: indicator, matching: find.byType(AnimatedContainer)),
+              findsNWidgets(3));
+          final rail = find.byWidgetPredicate((widget) =>
+              widget is SingleChildScrollView &&
+              widget.scrollDirection == Axis.horizontal).at(category == 'Daily Anchor' ? 0 : 1);
+          await tester.ensureVisible(rail);
+          await tester.pumpAndSettle();
+          await tester.drag(rail, const Offset(-280, 0));
+          await tester.pumpAndSettle();
+          expect(tester.widget<Semantics>(indicator).properties.label,
+              '$category 2 of 3');
+          final controller = tester.widget<SingleChildScrollView>(rail).controller!;
+          final pageExtent = tester.getSize(rail).width + 12;
+          expect(controller.offset, closeTo(pageExtent, 0.1));
+          await tester.drag(rail, const Offset(-280, 0));
+          await tester.pumpAndSettle();
+          expect(controller.offset, closeTo(pageExtent * 2, 0.1));
+          expect(tester.widget<Semantics>(indicator).properties.label,
+              '$category 3 of 3');
+          await tester.drag(rail, const Offset(280, 0));
+          await tester.pumpAndSettle();
+          expect(controller.offset, closeTo(pageExtent, 0.1));
+          expect(tester.widget<Semantics>(indicator).properties.label,
+              '$category 2 of 3');
+        }
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      }
+    }
+  });
+
+  }
+
   testWidgets('five recent activities scroll and resume the selected item',
       (tester) async {
     tester.view.devicePixelRatio = 1;

@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mindfully_evolve_app/common/main_screen.dart';
 import 'package:mindfully_evolve_app/common/widgets/app_tab_bar.dart';
+import 'package:mindfully_evolve_app/common/widgets/membership_banner.dart';
+import 'package:mindfully_evolve_app/screens/subscriptionmanagement/subscription_management.dart';
 import 'package:mindfully_evolve_app/common/widgets/subscription_tab_page.dart';
 import 'package:mindfully_evolve_app/screens/dashboard/dashboard_bloc/home_bloc.dart';
 import 'package:mindfully_evolve_app/screens/track/track_bloc/track_bloc.dart';
@@ -13,6 +15,52 @@ import 'package:mindfully_evolve_app/utils/global.dart' as globals;
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
+  testWidgets('membership banner opens pricing and stays dismissed across tabs',
+      (tester) async {
+    final previous = globals.isSubscribed;
+    globals.isSubscribed = false;
+    addTearDown(() => globals.isSubscribed = previous);
+    final observer = _RouteObserver();
+    await tester.pumpWidget(MaterialApp(
+        navigatorObservers: [observer], home: const MainScreen()));
+    expect(find.byType(MembershipBanner), findsOneWidget);
+    expect(tester.getBottomLeft(find.byType(MembershipBanner)).dy,
+        lessThanOrEqualTo(tester.getTopLeft(find.byType(AppTabBar)).dy));
+    await tester.tap(find.widgetWithText(FilledButton, 'Explore'));
+    final route = observer.latest as MaterialPageRoute<void>;
+    final screen = route.builder(tester.element(find.byType(MainScreen)))
+        as SubscriptionManagementScreen;
+    expect(screen.isSubscribed, isFalse);
+    // Inspect the destination without starting live store-product requests.
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(const MaterialApp(home: MainScreen()));
+    await tester.tap(find.byTooltip('Dismiss membership banner'));
+    await tester.pump();
+    expect(find.byType(MembershipBanner), findsNothing);
+    tester.widget<AppTabBar>(find.byType(AppTabBar)).onTap(1);
+    await tester.pump();
+    expect(find.byType(MembershipBanner), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('membership banner fits a small screen with large text',
+      (tester) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    var explored = false;
+    await tester.pumpWidget(MaterialApp(home: MediaQuery(
+      data: const MediaQueryData(textScaler: TextScaler.linear(2)),
+      child: Scaffold(bottomNavigationBar: MembershipBanner(
+        onExplore: () => explored = true,
+        onDismiss: () {},
+      )),
+    )));
+    await tester.tap(find.text('Explore'));
+    expect(explored, isTrue);
+    expect(tester.takeException(), isNull);
+  });
   testWidgets('nonmembers can navigate the four gated tabs without a modal',
       (tester) async {
     final previous = globals.isSubscribed;
@@ -96,4 +144,13 @@ void main() {
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
   });
+}
+
+class _RouteObserver extends NavigatorObserver {
+  Route<dynamic>? latest;
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    latest = route;
+  }
 }
