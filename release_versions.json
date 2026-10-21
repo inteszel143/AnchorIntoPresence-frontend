@@ -44,6 +44,11 @@
       "version": "1.0.17",
       "build": 21,
       "status": "built"
+    },
+    {
+      "version": "1.0.18",
+      "build": 22,
+      "status": "built"
     }
   ],
   "android": [
