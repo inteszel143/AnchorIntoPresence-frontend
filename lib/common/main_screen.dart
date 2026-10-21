@@ -1,6 +1,5 @@
 import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import 'widgets/app_tab_bar.dart';
-import 'widgets/membership_banner.dart';
 
 import 'package:flutter/material.dart';
 import 'widgets/subscription_tab_page.dart';
@@ -25,7 +24,6 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   final Set<int> _visited = {};
-  bool _membershipBannerDismissed = false;
 
   @override
   void initState() {
@@ -75,20 +73,9 @@ class _MainScreenState extends State<MainScreen> {
                     : pages[index])
                 : const SizedBox.shrink()),
       ),
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (!globals.isSubscribed && !_membershipBannerDismissed)
-            MembershipBanner(
-              onExplore: _openSubscriptionPlans,
-              onDismiss: () =>
-                  setState(() => _membershipBannerDismissed = true),
-            ),
-          AppTabBar(
-            selectedIndex: _selectedIndex,
-            onTap: _onItemTapped,
-          ),
-        ],
+      bottomNavigationBar: AppTabBar(
+        selectedIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
     );
   }
