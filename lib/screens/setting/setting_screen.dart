@@ -1,3 +1,4 @@
+import '../profile/my_profile_preview.dart';
 import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import '../../common/widgets/scroll_title_page.dart';
 import 'package:flutter/material.dart';
@@ -57,6 +58,10 @@ class SettingScreen extends StatelessWidget {
 
   void _handleSettingTap(BuildContext context, String option) {
     switch (option) {
+      case 'View my profile':
+        Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const MyProfilePreview()));
+        break;
       case Strings.notificationAlert:
         break;
       case Strings.favouriteActivities:
@@ -173,6 +178,7 @@ class SettingScreen extends StatelessWidget {
       {"icon": ImageConstants.faqIcon, "option": Strings.faqs},
       {"icon": ImageConstants.deleteIcon, "option": Strings.deleteAccount},
       {"icon": ImageConstants.logoutIcon, "option": Strings.logout},
+      {"icon": ImageConstants.recentActivityIcon, "option": 'View my profile'},
     ];
 
     return MultiBlocProvider(
@@ -216,6 +222,7 @@ class SettingScreen extends StatelessWidget {
             'Find answers to common questions',
             'Permanently remove your account',
             'Sign out of this account',
+            'Personal stats, streaks, skills & badges · Coming soon',
           ];
 
           Widget tile(int index) {
@@ -311,6 +318,7 @@ class SettingScreen extends StatelessWidget {
                                         fontSize: 15,
                                         color: colors.onSurfaceVariant)),
                                 const SizedBox(height: 28),
+                                section('My profile', [11]),
                                 section('Your practice', [1, 2, 3]),
                                 section('Preferences', [0]),
                                 section('Membership', [4]),

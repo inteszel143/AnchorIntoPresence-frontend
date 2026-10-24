@@ -1,4 +1,5 @@
-import '../../common/widgets/custom_appbar.dart';
+import 'library_practice_card.dart';
+import '../activity_listing/getactivity_model.dart';
 import 'meditate_loading.dart';
 import '../activity_listing/category_collection.dart';
 import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
@@ -32,6 +33,7 @@ class MeditationLibrary extends StatefulWidget {
 class _MeditationLibraryState extends State<MeditationLibrary> {
   final _search = TextEditingController();
   String _filter = 'All';
+  bool _searchOpen = false;
   bool get _favoritesOnly => _filter == 'Favorites';
   String? _tag;
 
@@ -69,10 +71,29 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
             child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
           child: Column(children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: CustomAppbar(
-                  headingTxt: '', showBackButton: false, topPadding: 8),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+              child: Row(children: [
+                const SizedBox(width: 48),
+                Expanded(
+                    child: Text('Library',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleLarge
+                            ?.copyWith(fontWeight: FontWeight.w600))),
+                IconButton.filledTonal(
+                  tooltip: _searchOpen ? 'Close search' : 'Search Library',
+                  onPressed: () => setState(() {
+                    _searchOpen = !_searchOpen;
+                    if (!_searchOpen) _search.clear();
+                  }),
+                  icon: Icon(
+                      _searchOpen ? Icons.close_rounded : Icons.search_rounded),
+                  constraints:
+                      const BoxConstraints(minWidth: 48, minHeight: 48),
+                ),
+              ]),
             ),
             Expanded(
                 child: BlocConsumer<ActivityBloc, ActivityState>(
@@ -107,6 +128,11 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                         (!_favoritesOnly || item.isFavorite) &&
                         (_filter != 'Daily Anchors' || item.isDailyAnchor) &&
                         (_filter != 'Daily Pauses' || item.isDailyPause) &&
+                        (['All', 'Favorites', 'Daily Anchors', 'Daily Pauses']
+                                .contains(_filter) ||
+                            item.categoryLabel == _filter ||
+                            (_filter == 'More practices' &&
+                                item.categoryLabel.isEmpty)) &&
                         (selectedTag == null ||
                             item.tags.contains(selectedTag)) &&
                         '${item.name} ${item.description} ${item.categoryLabel} ${item.tags.join(' ')}'
@@ -121,48 +147,39 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 8),
-                        Text('Library',
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineLarge
-                                ?.copyWith(fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 8),
-                        Text('Your collection of meditations and reflections.',
-                            style: TextStyle(
-                                color: colors.onSurfaceVariant,
-                                fontSize: 15,
-                                height: 1.5)),
-                        const SizedBox(height: 24),
-                        TextField(
-                          controller: _search,
-                          style: const TextStyle(fontSize: 14),
-                          onChanged: (_) => setState(() {}),
-                          decoration: InputDecoration(
-                            hintText: 'Search Library',
-                            isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 10),
-                            prefixIconConstraints: const BoxConstraints(
-                                minWidth: 44, minHeight: 44),
-                            suffixIconConstraints: const BoxConstraints(
-                                minWidth: 44, minHeight: 44),
-                            prefixIcon:
-                                const Icon(Icons.search_rounded, size: 20),
-                            suffixIcon: _search.text.isEmpty
-                                ? null
-                                : IconButton(
-                                    tooltip: 'Clear search',
-                                    icon: const Icon(Icons.close_rounded,
-                                        size: 18),
-                                    onPressed: () => setState(_search.clear)),
-                            filled: true,
-                            fillColor: colors.surfaceContainerHighest,
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(14),
-                                borderSide: BorderSide.none),
+                        if (_searchOpen) ...[
+                          TextField(
+                            controller: _search,
+                            autofocus: true,
+                            style: const TextStyle(fontSize: 14),
+                            onChanged: (_) => setState(() {}),
+                            decoration: InputDecoration(
+                              hintText: 'Search Library',
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 10),
+                              prefixIconConstraints: const BoxConstraints(
+                                  minWidth: 44, minHeight: 44),
+                              suffixIconConstraints: const BoxConstraints(
+                                  minWidth: 44, minHeight: 44),
+                              prefixIcon:
+                                  const Icon(Icons.search_rounded, size: 20),
+                              suffixIcon: _search.text.isEmpty
+                                  ? null
+                                  : IconButton(
+                                      tooltip: 'Clear search',
+                                      icon: const Icon(Icons.close_rounded,
+                                          size: 18),
+                                      onPressed: () => setState(_search.clear)),
+                              filled: true,
+                              fillColor: colors.surfaceContainerHighest,
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide.none),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
+                          const SizedBox(height: 16),
+                        ],
                         SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child: Row(children: [
@@ -170,6 +187,14 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                                 'All',
                                 'Daily Anchors',
                                 'Daily Pauses',
+                                'Favorites',
+                                if (![
+                                  'All',
+                                  'Favorites',
+                                  'Daily Anchors',
+                                  'Daily Pauses'
+                                ].contains(_filter))
+                                  _filter,
                               ])
                                 Padding(
                                   padding: const EdgeInsets.only(right: 8),
@@ -187,6 +212,19 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                                           ? colors.onSecondaryContainer
                                           : inactiveTabForeground,
                                     ),
+                                    avatar: Icon(
+                                        switch (filter) {
+                                          'Daily Anchors' =>
+                                            Icons.self_improvement_rounded,
+                                          'Daily Pauses' => Icons.spa_outlined,
+                                          'Favorites' =>
+                                            Icons.favorite_border_rounded,
+                                          _ => Icons.grid_view_rounded,
+                                        },
+                                        size: 18,
+                                        color: _filter == filter
+                                            ? colors.onSecondaryContainer
+                                            : inactiveTabForeground),
                                     label: Text(filter),
                                     selected: _filter == filter,
                                     onSelected: (_) =>
@@ -194,7 +232,10 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                                   ),
                                 ),
                             ])),
-                        if (tags.isNotEmpty) ...[
+                        if (tags.isNotEmpty &&
+                            (_searchOpen ||
+                                _filter != 'All' ||
+                                _tag != null)) ...[
                           const SizedBox(height: 12),
                           SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
@@ -228,7 +269,7 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                             ]),
                           ),
                         ],
-                        SizedBox(height: _filter == 'Daily Pauses' ? 8 : 20),
+                        const SizedBox(height: 28),
                       ],
                     )),
                   ),
@@ -269,6 +310,27 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
                               textAlign: TextAlign.center,
                               style: TextStyle(color: colors.onSurfaceVariant)),
                         )))
+                  else if (_filter == 'All' &&
+                      query.isEmpty &&
+                      selectedTag == null)
+                    SliverList.list(children: [
+                      for (final category
+                          in filtered.map((item) => item.categoryLabel).toSet())
+                        _collectionRow(
+                          context,
+                          title: category == 'Daily Anchor'
+                              ? 'Daily Anchors'
+                              : category == 'Daily Pause'
+                                  ? 'Daily Pauses'
+                                  : category.isEmpty
+                                      ? 'More practices'
+                                      : category,
+                          items: filtered
+                              .where((item) => item.categoryLabel == category)
+                              .toList(),
+                        ),
+                      const SizedBox(height: 24),
+                    ])
                   else
                     SliverPadding(
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
@@ -303,6 +365,50 @@ class _MeditationLibraryState extends State<MeditationLibrary> {
           ]),
         )),
       ),
+    );
+  }
+
+  Widget _collectionRow(BuildContext context,
+      {required String title, required List<Activity> items}) {
+    final width = MediaQuery.sizeOf(context).width.clamp(0.0, 600.0);
+    final cardWidth = (width * .43).clamp(152.0, 230.0);
+    final scale = MediaQuery.textScalerOf(context).scale(20) / 20;
+    final cardHeight = cardWidth * 1.56 + (scale - 1).clamp(0.0, 2.0) * 80;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 32),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(children: [
+            Expanded(
+                child: Text(title,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleLarge
+                        ?.copyWith(fontWeight: FontWeight.w600))),
+            TextButton(
+              onPressed: () => setState(() => _filter = title),
+              child: const Text('View all'),
+            ),
+          ]),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: cardHeight,
+          child: ListView.separated(
+            key: PageStorageKey('library-$title'),
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            itemCount: items.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 16),
+            itemBuilder: (_, index) => SizedBox(
+              width: cardWidth,
+              child: LibraryPracticeCard(
+                  key: ValueKey(items[index].id), activity: items[index]),
+            ),
+          ),
+        ),
+      ]),
     );
   }
 }

@@ -347,3 +347,36 @@ layout remain intact. Dark mode keeps its previous asset. No actionable P0/P1/P2
 finding. All 7 onboarding tests passed, including theme-specific asset selection.
 
 final result: passed
+
+---
+
+# Library browse layout — 2026-10-24
+
+Scope: adapt the user-attached Explore screenshot to the existing native Flutter
+Library. The user explicitly selected Anchor's current light/dark theme. Keep
+Daily Anchors, Daily Pauses, existing navigation, and real API content; omit the
+reference app's promotion and unrelated destinations.
+
+Rendered evidence: ../output/library-preview/light.png and dark.png, 828 × 1792
+pixels (414 × 896 logical points). Rendered production widgets with sample records
+and existing Anchor artwork served by the test image adapter. These are widget
+renders, not screenshots of a logged-in production device.
+
+Review: centered Library header and circular search control; horizontally
+scrolling category chips; portrait artwork cards in horizontal rows with a
+partial next card; category badges, favourite controls, readable title scrims,
+and View all actions. Adjusted badge type from 10 to 9 logical pixels after the
+first render wrapped Daily Anchor. Recaptured with actual DM Sans, Manrope, and
+MaterialIcons fonts; badge fits on one line at the standard viewport. Both
+light and dark renders inspected. Existing full category lists remain available
+through View all and filtering.
+
+Validation: eight widget tests pass, including favourites feedback, search,
+combined filters, horizontal browsing, View all, large text at 320 × 568,
+light/dark themes, and pause preview. Targeted Flutter analysis passes.
+
+Remaining visual validation: the source attachment has no local image path for
+a normalized combined comparison, and a full running-device capture has not
+been performed. No pixel-for-pixel or production-device fidelity pass claimed.
+
+final result: blocked

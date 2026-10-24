@@ -159,6 +159,8 @@ void main() {
     ));
     await tester.pumpAndSettle();
     expect(find.text('Library'), findsWidgets);
+    await tester.tap(find.byTooltip('Search Library'));
+    await tester.pumpAndSettle();
     expect(find.text('Search Library'), findsOneWidget);
     expect(find.byTooltip('Back'), findsNothing);
     await tester.enterText(find.byType(TextField), 'Evening');
@@ -225,11 +227,13 @@ void main() {
     await choose('Daily Pauses');
     expect(find.byType(ActivityItemTile), findsNothing);
     expect(find.byType(PauseCollectionCard), findsOneWidget);
-    expect(find.text('Daily Pause'), findsNothing);
+    expect(find.text('Daily Pause'), findsOneWidget);
     expect(find.text('Take a moment'), findsNothing);
     expect(find.byTooltip('Save practice'), findsOneWidget);
     expect(find.byIcon(Icons.schedule_rounded), findsNothing);
     expect(find.text('--:--'), findsNothing);
+    await tester.tap(find.byTooltip('Search Library'));
+    await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'Morning');
     await tester.pumpAndSettle();
     expect(find.text('No practices match your search.'), findsOneWidget);
