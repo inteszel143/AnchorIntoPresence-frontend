@@ -59,7 +59,7 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
         emit(SignupFailure(
           error: responseData.message.isNotEmpty
               ? responseData.message
-              : 'Login failed',
+              : 'Unable to create your account. Please try again.',
           name: event.name,
           email: event.email,
           password: event.password,

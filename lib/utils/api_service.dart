@@ -951,29 +951,57 @@ class ApiService {
     String? name,
     required String email,
     required String password,
+    http.Client? client,
   }) async {
     final url = Uri.parse(Urls.register);
-
+    late http.Response response;
     try {
-      final response = await http.post(
+      response = await (client?.post ?? http.post)(
         url,
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
-          if (name != null && name.trim().isNotEmpty)
-            'name': name.replaceAll(' ', ''),
-          'email': email.replaceAll(' ', ''),
+          if (name != null && name.trim().isNotEmpty) 'name': name.trim(),
+          'email': email.trim(),
           'password': password,
         }),
-      );
-
-      final jsonResponse = json.decode(response.body);
-      final data = SignupResponseModel.fromJson(jsonResponse);
-      return data;
+      ).timeout(const Duration(seconds: 30));
+    } on TimeoutException {
+      throw Exception('Account creation took too long. Please try again.');
     } on SocketException {
-      throw Exception('Please check your internet connection');
-    } catch (e) {
-      throw Exception('Please check your internet connection');
+      throw Exception('Unable to reach the signup server. Please check your internet connection and try again.');
+    } on http.ClientException {
+      throw Exception('Unable to connect to the signup server. Please try again.');
     }
+
+    Map<String, dynamic>? body;
+    try {
+      final decoded = json.decode(response.body);
+      if (decoded is Map<String, dynamic>) body = decoded;
+    } on FormatException {
+      // Proxies and server errors can return HTML or an empty body.
+    }
+    final message = body?['message'];
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      return SignupResponseModel(
+        status: false,
+        message: message is String && message.trim().isNotEmpty
+            ? message
+            : response.statusCode >= 500
+                ? 'Account creation is temporarily unavailable. Please try again later.'
+                : 'Unable to create your account. Please check your details and try again.',
+        data: {},
+      );
+    }
+    if (body == null || body['status'] is! bool) {
+      throw Exception('The signup server returned an unexpected response. Please try again later.');
+    }
+    return SignupResponseModel(
+      status: body['status'] == true,
+      message: message is String ? message : '',
+      data: body['data'] is Map<String, dynamic>
+          ? body['data'] as Map<String, dynamic>
+          : {},
+    );
   }
 
   static Future<SignupResponseModel> socialSignup({
