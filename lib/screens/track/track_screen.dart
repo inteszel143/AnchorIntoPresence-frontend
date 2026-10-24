@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import '../../common/widgets/activity_calendar.dart';
 export '../../common/widgets/activity_calendar.dart';
@@ -101,6 +102,8 @@ class TrackOverview extends StatelessWidget {
     final data = state.userActivity.data;
     final parts = data.loggedActivities.totalTime.split(':');
     final minutes = parts.length == 2 ? int.tryParse(parts[0]) ?? 0 : 0;
+    final seconds = parts.length == 2 ? int.tryParse(parts[1]) ?? 0 : 0;
+    final showSeconds = minutes == 0 && seconds > 0;
     final streak = data.loginDates.streak;
     final loginDates = streak.isNotEmpty && streak.first['loginDates'] is List
         ? List<String>.from(streak.first['loginDates'])
@@ -139,11 +142,11 @@ class TrackOverview extends StatelessWidget {
               spacing: 10,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Text('$minutes',
+                Text('${showSeconds ? seconds : minutes}',
                     key: const ValueKey('practice-minutes'),
                     style: text.headlineMedium?.copyWith(
                         color: colors.onPrimary, fontWeight: FontWeight.w600)),
-                Text('minutes of practice today',
+                Text(showSeconds ? 'seconds of practice today' : 'minutes of practice today',
                     style: text.bodyMedium?.copyWith(color: colors.onPrimary)),
               ],
             ),
@@ -160,6 +163,50 @@ class TrackOverview extends StatelessWidget {
                 label: const Text('View all activities')),
           ])),
       const SizedBox(height: 20),
+      Text('Completed practices',
+          style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
+      const SizedBox(height: 8),
+      Text('Your 20 most recent completed practices.',
+          style: text.bodyMedium?.copyWith(color: colors.onSurfaceVariant)),
+      const SizedBox(height: 16),
+      Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: colors.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: data.completedActivities.isEmpty
+            ? Text('Mark a practice as complete to see it here.',
+                style: text.bodyMedium?.copyWith(color: colors.onSurfaceVariant))
+            : Column(
+                children: [
+                  for (var index = 0; index < data.completedActivities.length; index++) ...[
+                    if (index > 0) const Divider(height: 28),
+                    Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Icon(Icons.check_circle_outline_rounded,
+                          color: colors.primary, size: 24),
+                      const SizedBox(width: 12),
+                      Expanded(child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(data.completedActivities[index].name,
+                              style: text.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 4),
+                          Text(
+                            data.completedActivities[index].completedAt == null
+                                ? 'Completed'
+                                : 'Completed · ${DateFormat.yMMMd().add_jm().format(data.completedActivities[index].completedAt!)}',
+                            style: text.bodySmall?.copyWith(color: colors.onSurfaceVariant),
+                          ),
+                        ],
+                      )),
+                    ]),
+                  ],
+                ],
+              ),
+      ),
+      const SizedBox(height: 24),
       Text('Your week',
           style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
       const SizedBox(height: 8),

@@ -2,6 +2,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mindfully_evolve_app/screens/signin/signin_model.dart';
 
 void main() {
+  test('welcome eligibility requires an explicit first-sign-in flag', () {
+    for (final value in [true, false, null]) {
+      final result = SocialSigninResponseModel.fromJson({'isFirst': value});
+      expect(result.isFirst, value == true);
+    }
+    expect(SocialSigninResponseModel.fromJson({}).isFirst, isFalse);
+  });
+
   test('a rejected social login preserves its message without user data', () {
     final result = SocialSigninResponseModel.fromJson({
       'message': 'This email is already registered with password login',

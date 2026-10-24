@@ -44,11 +44,13 @@ class SigninData {
 
 
 class SocialSigninResponseModel {
+  final bool isFirst;
   final String message;
   final SocialSigninData? data;
   final String token;
 
   SocialSigninResponseModel({
+    this.isFirst = false,
     required this.message,
     required this.data,
     required this.token,
@@ -56,6 +58,7 @@ class SocialSigninResponseModel {
 
   factory SocialSigninResponseModel.fromJson(Map<String, dynamic> json) {
     return SocialSigninResponseModel(
+      isFirst: json['isFirst'] == true,
       message: json['message'] ?? '',
       data: json['data'] != null ? SocialSigninData.fromJson(json['data']) : null,
       token: json['data']?['token'] ?? json['token'] ?? '',  // token is inside data in the response

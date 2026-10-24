@@ -14,12 +14,13 @@ class SigninSuccess extends SigninState {
   SigninSuccess(this.token, this.name, this.image, this.isFirst);
 }
 class SocialSigninSuccess extends SigninState {
+  final bool isFirst;
   final String token;
   final String? name;
   final String? image;
 
 
-   SocialSigninSuccess(this.token, this.name, this.image);
+   SocialSigninSuccess(this.token, this.name, this.image, {this.isFirst = false});
 }
 class SigninFailure extends SigninState {
   final String errorMessage;

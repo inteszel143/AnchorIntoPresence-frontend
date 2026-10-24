@@ -71,6 +71,11 @@ class _SigninScreenState extends State<SigninScreen> {
                         MaterialPageRoute(
                             builder: (_) => MainScreen(
                                   initialIndex: 0,
+                                  welcomeToken: state is SigninSuccess
+                                      ? (state.isFirst == true ? state.token : null)
+                                      : state is SocialSigninSuccess && state.isFirst
+                                          ? state.token
+                                          : null,
                                 )),
                         (route) => false,
                       );

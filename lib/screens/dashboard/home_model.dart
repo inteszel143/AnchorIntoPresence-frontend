@@ -135,7 +135,7 @@ class ProfileDataModel {
   factory ProfileDataModel.fromJson(Map<String, dynamic> json) {
     return ProfileDataModel(
       id: json['_id'],
-      name: json['name'],
+      name: json['name'] ?? '',
       email: json['email'],
       provider: json['provider'],
       isVerified: json['isVerified'],

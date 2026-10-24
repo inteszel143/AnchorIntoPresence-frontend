@@ -1,3 +1,4 @@
+import 'widgets/new_user_welcome.dart';
 import 'package:mindfully_evolve_app/common/widgets/app_scaffold.dart';
 import 'widgets/app_tab_bar.dart';
 
@@ -14,8 +15,9 @@ import '../utils/global.dart' as globals;
 
 class MainScreen extends StatefulWidget {
   final int? initialIndex;
+  final String? welcomeToken;
 
-  const MainScreen({super.key, this.initialIndex});
+  const MainScreen({super.key, this.initialIndex, this.welcomeToken});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -30,6 +32,11 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     _selectedIndex = (widget.initialIndex ?? 0).clamp(0, _pages.length - 1);
     _visited.add(_selectedIndex);
+    if (widget.welcomeToken != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) showNewUserWelcome(context, widget.welcomeToken!);
+      });
+    }
   }
 
   List<Widget> get _pages => [

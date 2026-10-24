@@ -80,6 +80,7 @@ class SigninBloc extends Bloc<SigninEvent, SigninState> {
           data.token,
           data.data?.name,
           data.data?.image,
+          isFirst: data.isFirst,
         ));
       } else {
         emit(SigninFailure(data.message.isNotEmpty

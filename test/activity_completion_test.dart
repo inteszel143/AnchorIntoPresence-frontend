@@ -15,12 +15,12 @@ import 'package:mindfully_evolve_app/screens/track/track_bloc/track_event.dart';
 import 'package:mindfully_evolve_app/screens/track/track_bloc/track_state.dart';
 import 'package:mindfully_evolve_app/screens/track/track_screen.dart';
 
-http.Response summary(String title) => http.Response(
+http.Response summary(String title, {String totalTime = '10:30'}) => http.Response(
     jsonEncode({
       'status': true,
       'message': '',
       'data': {
-        'loggedActivities': {'totalTime': '10:30', 'thumbnails': []},
+        'loggedActivities': {'totalTime': totalTime, 'thumbnails': []},
         'categoryDistribution': {},
         'loginDates': {'streak': []},
         'completedActivities': [
@@ -90,7 +90,7 @@ void main() {
   testWidgets('Track refreshes on tab return and confirmed saves',
       (tester) async {
     var calls = 0;
-    final client = MockClient((_) async => summary('Practice ${++calls}'));
+    final client = MockClient((_) async => summary('Practice ${++calls}', totalTime: '00:09'));
     addTearDown(client.close);
     final bloc = TrackBloc(client: client);
     Future<void> show(bool active) async {
@@ -105,7 +105,8 @@ void main() {
         tester
             .widget<Text>(find.byKey(const ValueKey('practice-minutes')))
             .data,
-        '10');
+        '9');
+    expect(find.text('seconds of practice today'), findsOneWidget);
     await show(false);
     activityLogRevision.value++;
     await tester.pump();
