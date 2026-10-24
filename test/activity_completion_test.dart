@@ -116,8 +116,8 @@ void main() {
     activityLogRevision.value++;
     await tester.pumpAndSettle();
     expect(calls, 3);
-    await tester.ensureVisible(find.text('Practice 3'));
-    expect(find.text('Practice 3'), findsOneWidget);
+    expect(find.text('Recent log'), findsNothing);
+    expect(find.text('Your week'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
   test('older Track response cannot overwrite a refresh after completion',
