@@ -7,6 +7,7 @@ class SettingItemTile extends StatelessWidget {
   final String iconPath;
   final String option;
   final String? subtitle;
+  final String? badge;
   final bool destructive;
   final bool showToggle;
   final bool? toggleValue;
@@ -18,6 +19,7 @@ class SettingItemTile extends StatelessWidget {
     required this.iconPath,
     required this.option,
     this.subtitle,
+    this.badge,
     this.destructive = false,
     this.showToggle = false,
     this.toggleValue,
@@ -28,6 +30,7 @@ class SettingItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = colors.onSurface;
     return InkWell(
       onTap: showToggle && onToggle != null && toggleValue != null
@@ -47,12 +50,39 @@ class SettingItemTile extends StatelessWidget {
           Expanded(
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(option,
-                  style: TextStyle(
-                      fontFamily: Fonts.body,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: foreground)),
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(option,
+                      style: TextStyle(
+                          fontFamily: Fonts.body,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: foreground)),
+                  if (badge != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF1B3D2A)
+                            : const Color(0xFFE8F5E9),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(badge!,
+                          style: TextStyle(
+                            fontFamily: Fonts.body,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: isDark
+                                ? const Color(0xFF81C784)
+                                : const Color(0xFF2E7D32),
+                          )),
+                    ),
+                ],
+              ),
               if (subtitle != null) ...[
                 const SizedBox(height: 4),
                 Text(subtitle!,

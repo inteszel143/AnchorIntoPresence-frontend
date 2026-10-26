@@ -103,10 +103,19 @@ class TrackOverview extends StatelessWidget {
     final minutes = parts.length == 2 ? int.tryParse(parts[0]) ?? 0 : 0;
     final seconds = parts.length == 2 ? int.tryParse(parts[1]) ?? 0 : 0;
     final showSeconds = minutes == 0 && seconds > 0;
-    final streak = data.loginDates.streak;
-    final loginDates = streak.isNotEmpty && streak.first['loginDates'] is List
-        ? List<String>.from(streak.first['loginDates'])
-        : <String>[];
+    // Older servers can still supply recent completions until upgraded.
+    final practiceDates = data.practiceDates ??
+        data.completedActivities
+            .map((activity) => activity.completedAt)
+            .whereType<DateTime>()
+            .toList();
+    final loginDates = practiceDates
+        .map((date) {
+          final local = date.toLocal();
+          return '${local.year}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')}';
+        })
+        .toSet()
+        .toList();
     final now = DateTime.now();
     final loggedDays = loginDates
         .map(DateTime.tryParse)
@@ -145,7 +154,10 @@ class TrackOverview extends StatelessWidget {
                     key: const ValueKey('practice-minutes'),
                     style: text.headlineMedium?.copyWith(
                         color: colors.onPrimary, fontWeight: FontWeight.w600)),
-                Text(showSeconds ? 'seconds of practice today' : 'minutes of practice today',
+                Text(
+                    showSeconds
+                        ? 'seconds of practice today'
+                        : 'minutes of practice today',
                     style: text.bodyMedium?.copyWith(color: colors.onPrimary)),
               ],
             ),
@@ -176,10 +188,14 @@ class TrackOverview extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
         ),
         child: data.completedActivities.isEmpty
-            ? Text('Your completed practices will appear here after you mark a meditation as complete.',
-                style: text.bodyMedium?.copyWith(color: colors.onSurfaceVariant))
+            ? Text(
+                'Your completed practices will appear here after you mark a meditation as complete.',
+                style:
+                    text.bodyMedium?.copyWith(color: colors.onSurfaceVariant))
             : Column(children: [
-                for (var index = 0; index < data.completedActivities.length; index++) ...[
+                for (var index = 0;
+                    index < data.completedActivities.length;
+                    index++) ...[
                   if (index > 0) const Divider(height: 28),
                   Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Icon(Icons.check_circle_rounded,
@@ -189,18 +205,31 @@ class TrackOverview extends StatelessWidget {
                         size: 22,
                         semanticLabel: 'Completed'),
                     const SizedBox(width: 12),
-                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text(data.completedActivities[index].name,
-                          style: text.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 4),
-                      Text([
-                        if (data.completedActivities[index].completedAt != null)
-                          MaterialLocalizations.of(context).formatMediumDate(
-                              data.completedActivities[index].completedAt!.toLocal()),
-                        if (data.completedActivities[index].duration.isNotEmpty)
-                          'Duration: ${data.completedActivities[index].duration}',
-                      ].join(' · '), style: text.bodySmall?.copyWith(color: colors.onSurfaceVariant)),
-                    ])),
+                    Expanded(
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                          Text(data.completedActivities[index].name,
+                              style: text.titleSmall
+                                  ?.copyWith(fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 4),
+                          Text(
+                              [
+                                if (data.completedActivities[index]
+                                        .completedAt !=
+                                    null)
+                                  MaterialLocalizations.of(context)
+                                      .formatMediumDate(data
+                                          .completedActivities[index]
+                                          .completedAt!
+                                          .toLocal()),
+                                if (data.completedActivities[index].duration
+                                    .isNotEmpty)
+                                  'Duration: ${data.completedActivities[index].duration}',
+                              ].join(' · '),
+                              style: text.bodySmall
+                                  ?.copyWith(color: colors.onSurfaceVariant)),
+                        ])),
                   ]),
                 ],
               ]),
@@ -237,14 +266,14 @@ class TrackOverview extends StatelessWidget {
                       color: colors.primary, shape: BoxShape.circle)),
               const SizedBox(width: 8),
               Expanded(
-                  child: Text('Days you checked in',
+                  child: Text('Days you practiced',
                       style: text.bodySmall
                           ?.copyWith(color: colors.onSurfaceVariant)))
             ]),
             const SizedBox(height: 16),
             Divider(color: colors.outlineVariant.withValues(alpha: .4)),
             const SizedBox(height: 8),
-            Text('Missed days this month: $missedDays',
+            Text('Days without practice this month: $missedDays',
                 style:
                     text.bodyMedium?.copyWith(color: colors.onSurfaceVariant)),
           ])),

@@ -3,26 +3,104 @@ import 'package:provider/provider.dart';
 
 import '../../common/widgets/app_scaffold.dart';
 import '../../common/widgets/custom_appbar.dart';
+import '../../common/widgets/profile_avatar.dart';
+import '../../common/widgets/app_toast.dart';
+import '../../utils/api_service.dart';
+import '../edit_profile/edit_profile.dart';
+import '../user_profile/user_model.dart';
 import '../../helping_widgets/user_provider/user_provider.dart';
 
 /// A preview of upcoming profile features; no achievements or totals are implied.
-class MyProfilePreview extends StatelessWidget {
-  const MyProfilePreview({super.key});
+class MyProfilePreview extends StatefulWidget {
+  const MyProfilePreview({super.key, this.loadProfile});
+
+  final Future<UserModel> Function()? loadProfile;
+
+  @override
+  State<MyProfilePreview> createState() => _MyProfilePreviewState();
+}
+
+class _MyProfilePreviewState extends State<MyProfilePreview> {
+  bool _openingEditor = false;
+  UserModel? _profile;
+  bool _loadingProfile = true;
+  bool _profileError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<UserModel> _fetchProfile() =>
+      (widget.loadProfile ?? ApiService.fetchUserProfile)();
+
+  Future<void> _loadProfile() async {
+    setState(() {
+      _loadingProfile = true;
+      _profileError = false;
+    });
+    try {
+      final profile = await _fetchProfile();
+      if (!mounted) return;
+      context.read<UserProvider?>()?.setUser(profile.name, profile.image ?? '');
+      setState(() => _profile = profile);
+    } catch (_) {
+      if (mounted) setState(() => _profileError = true);
+    } finally {
+      if (mounted) setState(() => _loadingProfile = false);
+    }
+  }
+
+  Future<void> _editProfile() async {
+    setState(() => _openingEditor = true);
+    try {
+      final user = _profile ?? await _fetchProfile();
+      if (!mounted) return;
+      final updated = await Navigator.of(context).push<bool>(MaterialPageRoute(
+        builder: (_) => UserprofileEditScreen(
+            name: user.name, email: user.email, image: user.image),
+      ));
+      if (updated == true && mounted) await _loadProfile();
+    } catch (_) {
+      if (mounted) {
+        AppToast.show(context, 'Couldn’t load your profile. Please try again.',
+            isError: true);
+      }
+    } finally {
+      if (mounted) setState(() => _openingEditor = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final name = context.watch<UserProvider?>()?.name.trim() ?? '';
+    final user = context.watch<UserProvider?>();
+    final name = (user?.name ?? _profile?.name ?? '').trim();
+    final profileImage = user?.image ?? _profile?.image;
     return AppScaffold(
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 600),
             child: Column(children: [
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: CustomAppbar(headingTxt: 'My profile', topPadding: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: CustomAppbar(
+                  headingTxt: 'My profile',
+                  topPadding: 8,
+                  onOkTap: _openingEditor ? null : _editProfile,
+                  okimage: Tooltip(
+                    message: 'Edit profile',
+                    child: _openingEditor
+                        ? const SizedBox.square(
+                            dimension: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2))
+                        : const Icon(Icons.edit_outlined,
+                            semanticLabel: 'Edit profile'),
+                  ),
+                ),
               ),
               Expanded(
                 child: SingleChildScrollView(
@@ -33,18 +111,15 @@ class MyProfilePreview extends StatelessWidget {
                         Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              CircleAvatar(
-                                radius: 36,
-                                backgroundColor: colors.secondaryContainer,
-                                child: name.isEmpty
-                                    ? Icon(Icons.person_outline_rounded,
-                                        size: 34,
-                                        color: colors.onSecondaryContainer)
-                                    : Text(name.characters.first.toUpperCase(),
-                                        style: theme.textTheme.headlineLarge
-                                            ?.copyWith(
-                                                color: colors
-                                                    .onSecondaryContainer)),
+                              Semantics(
+                                button: true,
+                                label: 'Edit profile photo',
+                                child: InkWell(
+                                  onTap: _openingEditor ? null : _editProfile,
+                                  customBorder: const CircleBorder(),
+                                  child: ProfileAvatar(
+                                      image: profileImage, size: 80),
+                                ),
                               ),
                               const SizedBox(width: 18),
                               Expanded(
@@ -67,6 +142,22 @@ class MyProfilePreview extends StatelessWidget {
                                                     colors.onSurfaceVariant)),
                                   ])),
                             ]),
+                        if (_loadingProfile)
+                          const Padding(
+                            padding: EdgeInsets.only(top: 16),
+                            child: LinearProgressIndicator(
+                                semanticsLabel: 'Loading profile'),
+                          ),
+                        if (_profileError)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: TextButton.icon(
+                              onPressed: _loadProfile,
+                              icon: const Icon(Icons.refresh_rounded),
+                              label: const Text(
+                                  'Couldn’t refresh profile. Try again'),
+                            ),
+                          ),
                         const SizedBox(height: 24),
                         Text(
                             'A preview of your personal journey. These features are coming soon; your activity isn’t shown yet.',
@@ -88,55 +179,55 @@ class MyProfilePreview extends StatelessWidget {
                           title: 'Streak',
                           icon: Icons.local_fire_department_outlined,
                           description: 'A little consistency goes a long way.',
-                          child: _MetricPair(
-                            firstLabel: 'Current streak',
-                            firstIcon: Icons.bolt_rounded,
-                            secondLabel: 'Longest streak',
-                            secondIcon: Icons.local_fire_department_outlined,
-                          ),
+                          child: Column(children: [
+                            _MetricPair(
+                              firstLabel: 'Current streak',
+                              firstIcon: Icons.bolt_rounded,
+                              secondLabel: 'Longest streak',
+                              secondIcon: Icons.local_fire_department_outlined,
+                            ),
+                            SizedBox(height: 24),
+                            _StreakWeek(),
+                          ]),
                         ),
                         _FeatureCard(
                           title: 'Skills',
                           icon: Icons.spa_outlined,
                           description:
                               'Explore the qualities you’ll nurture through practice.',
-                          child: Wrap(spacing: 8, runSpacing: 8, children: [
-                            for (final skill in [
-                              'Awareness',
-                              'Focus',
-                              'Self-compassion'
-                            ])
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
-                                decoration: BoxDecoration(
-                                    color: colors.surface,
-                                    borderRadius: BorderRadius.circular(20)),
-                                child: Text(skill,
-                                    style: theme.textTheme.labelMedium),
-                              ),
+                          child: const Column(children: [
+                            _SkillRow(
+                                title: 'Awareness', icon: Icons.spa_rounded),
+                            SizedBox(height: 24),
+                            _SkillRow(
+                                title: 'Focus', icon: Icons.diamond_outlined),
+                            SizedBox(height: 24),
+                            _SkillRow(
+                                title: 'Self-compassion',
+                                icon: Icons.favorite_outline),
                           ]),
                         ),
-                        _FeatureCard(
+                        const _FeatureCard(
                           title: 'Badges',
                           icon: Icons.workspace_premium_outlined,
                           description:
-                              'Celebrate the little milestones along the way.',
-                          child: Row(children: [
-                            for (final icon in [
-                              Icons.eco_outlined,
-                              Icons.wb_sunny_outlined,
-                              Icons.auto_awesome_outlined
-                            ])
-                              Expanded(
-                                  child: ExcludeSemantics(
-                                      child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 6),
-                                child: Icon(icon,
-                                    size: 36, color: colors.onSurfaceVariant),
-                              ))),
-                          ]),
+                              'Milestones to look forward to. Not earned yet.',
+                          child: Wrap(
+                            spacing: 12,
+                            runSpacing: 20,
+                            alignment: WrapAlignment.spaceEvenly,
+                            children: [
+                              _Milestone(
+                                  title: 'First practice',
+                                  icon: Icons.spa_rounded),
+                              _Milestone(
+                                  title: '5 meditations',
+                                  icon: Icons.filter_5_rounded),
+                              _Milestone(
+                                  title: '10 meditations',
+                                  icon: Icons.workspace_premium_rounded),
+                            ],
+                          ),
                         ),
                       ]),
                 ),
@@ -257,5 +348,110 @@ class _MetricPair extends StatelessWidget {
         Expanded(child: second),
       ]));
     });
+  }
+}
+
+class _SkillRow extends StatelessWidget {
+  const _SkillRow({required this.title, required this.icon});
+  final String title;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Container(
+        width: 52,
+        height: 60,
+        decoration: BoxDecoration(
+          color: colors.secondaryContainer,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: colors.outlineVariant, width: 2),
+        ),
+        child: Icon(icon, size: 30, color: colors.onSurface),
+      ),
+      const SizedBox(width: 16),
+      Expanded(
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(title,
+            style: theme.textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.w600)),
+        const SizedBox(height: 6),
+        Text('Progress coming soon',
+            style: theme.textTheme.bodySmall
+                ?.copyWith(color: colors.onSurfaceVariant)),
+        const SizedBox(height: 14),
+        ExcludeSemantics(
+            child: LinearProgressIndicator(
+          value: 0,
+          minHeight: 5,
+          borderRadius: BorderRadius.circular(8),
+          backgroundColor: colors.outlineVariant.withValues(alpha: .45),
+        )),
+      ])),
+    ]);
+  }
+}
+
+class _Milestone extends StatelessWidget {
+  const _Milestone({required this.title, required this.icon});
+  final String title;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return SizedBox(
+        width: 92,
+        child: Column(children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: colors.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: colors.outlineVariant, width: 4),
+            ),
+            child: Icon(icon, size: 40, color: colors.onSurfaceVariant),
+          ),
+          const SizedBox(height: 12),
+          Text(title,
+              textAlign: TextAlign.center, style: theme.textTheme.labelMedium),
+          const SizedBox(height: 4),
+          Text('Locked',
+              style: theme.textTheme.labelSmall
+                  ?.copyWith(color: colors.onSurfaceVariant)),
+        ]));
+  }
+}
+
+class _StreakWeek extends StatelessWidget {
+  const _StreakWeek();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Semantics(
+      label: 'Weekly streak preview. Activity is not available yet.',
+      child: ExcludeSemantics(
+          child: Wrap(
+        spacing: 8,
+        runSpacing: 12,
+        children: [
+          for (final day in ['M', 'T', 'W', 'T', 'F', 'S', 'S'])
+            SizedBox(
+                width: 30,
+                child: Column(children: [
+                  Icon(Icons.circle_outlined,
+                      size: 28, color: colors.outlineVariant),
+                  const SizedBox(height: 8),
+                  Text(day, style: Theme.of(context).textTheme.labelSmall),
+                ])),
+        ],
+      )),
+    );
   }
 }

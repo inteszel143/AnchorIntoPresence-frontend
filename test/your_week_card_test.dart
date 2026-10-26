@@ -40,13 +40,23 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('25 minutes this week'), findsNothing);
       expect(
-          find.bySemanticsLabel('Mon: 10 minutes of practice'), findsOneWidget);
+          find.bySemanticsLabel('Mon: 10 minutes of practice, 0 completed'), findsOneWidget);
       expect(
-          find.bySemanticsLabel('Tue: 0 minutes of practice'), findsOneWidget);
+          find.bySemanticsLabel('Tue: 0 minutes of practice, 0 completed'), findsOneWidget);
       semantics.dispose();
       expect(tester.takeException(), isNull);
     });
   }
+  testWidgets('a completion is visible even without playback minutes', (tester) async {
+    await tester.pumpWidget(MaterialApp(home: Scaffold(body: YourWeekCard(
+      load: () async => response([{'day': 'Mon', 'value': 0, 'completions': 1}]),
+    ))));
+    await tester.pumpAndSettle();
+    expect(find.text('1 practice completed this week'), findsOneWidget);
+    expect(find.text('✓ 1'), findsOneWidget);
+    expect(find.text('No practice recorded this week yet.'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
   testWidgets('loading, failed request, retry, and empty week are distinct',
       (tester) async {
     final pending = Completer<TotalMeditationDataResponse>();

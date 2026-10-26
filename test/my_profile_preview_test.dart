@@ -7,12 +7,45 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mindfully_evolve_app/common/app_theme.dart';
+import 'package:mindfully_evolve_app/common/widgets/profile_avatar.dart';
 import 'package:mindfully_evolve_app/helping_widgets/user_provider/user_provider.dart';
 import 'package:mindfully_evolve_app/screens/profile/my_profile_preview.dart';
+import 'package:mindfully_evolve_app/screens/user_profile/user_model.dart';
 import 'package:mindfully_evolve_app/screens/setting/setting_screen.dart';
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  testWidgets('loads saved name and photo and places edit action in header',
+      (tester) async {
+    final provider = UserProvider();
+    await tester.pumpWidget(ChangeNotifierProvider.value(
+      value: provider,
+      child: MaterialApp(
+          theme: AppTheme.light,
+          home: MyProfilePreview(
+            loadProfile: () async => UserModel(
+                id: 'user-1',
+                name: 'Saved account',
+                email: 'test@example.com',
+                provider: 'email',
+                image: 'profile/saved.jpg'),
+          )),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text('Saved account'), findsOneWidget);
+    expect(tester.widget<ProfileAvatar>(find.byType(ProfileAvatar)).image,
+        'profile/saved.jpg');
+    expect(provider.name, 'Saved account');
+    expect(provider.image, 'profile/saved.jpg');
+    final edit = find.byTooltip('Edit profile');
+    expect(edit, findsOneWidget);
+    expect(tester.getCenter(edit).dx,
+        greaterThan(tester.getCenter(find.text('My profile')).dx));
+    expect(tester.getCenter(edit).dy,
+        lessThan(tester.getTopLeft(find.byType(ProfileAvatar)).dy));
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('Settings opens the profile preview and back returns to Settings',
       (tester) async {
@@ -24,9 +57,16 @@ void main() {
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('View my profile'));
     await tester.tap(find.text('View my profile'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
     expect(find.byType(MyProfilePreview), findsOneWidget);
     expect(find.text('Anchor Account'), findsOneWidget);
+    expect(find.byTooltip('Edit profile'), findsOneWidget);
+    expect(find.text('Edit profile'), findsNothing);
+    expect(find.byType(ProfileAvatar), findsOneWidget);
+    user.updateUserProfile('Updated name', '');
+    await tester.pump();
+    expect(find.text('Updated name'), findsOneWidget);
     expect(find.text('Coming soon'), findsNWidgets(4));
     await tester.tap(find.byTooltip('Back'));
     await tester.pumpAndSettle();
@@ -49,7 +89,9 @@ void main() {
               data: MediaQuery.of(context)
                   .copyWith(textScaler: const TextScaler.linear(2)),
               child: child!),
-          home: const MyProfilePreview()));
+          home: MyProfilePreview(
+              loadProfile: () async => UserModel(
+                  id: 'preview', name: '', email: '', provider: 'email'))));
       await tester.pumpAndSettle();
       expect(find.text('Your mindful journey'), findsOneWidget);
       for (final title in ['Personal stats', 'Streak', 'Skills', 'Badges']) {
@@ -83,7 +125,12 @@ void main() {
           child: MaterialApp(
               debugShowCheckedModeBanner: false,
               theme: theme,
-              home: const MyProfilePreview())));
+              home: MyProfilePreview(
+                  loadProfile: () async => UserModel(
+                      id: 'preview',
+                      name: '',
+                      email: '',
+                      provider: 'email')))));
       await tester.pumpAndSettle();
       for (final label in [
         'Total minutes',
@@ -98,6 +145,11 @@ void main() {
           tester.getTopLeft(find.text('Active days')).dy);
       expect(tester.takeException(), isNull);
       if (const bool.fromEnvironment('CAPTURE_PROFILE')) {
+        await tester.ensureVisible(find.text('Badges'));
+        await tester.pumpAndSettle();
+        await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 300)));
+        await tester.pump();
         await tester.runAsync(() async {
           final boundary =
               key.currentContext!.findRenderObject()! as RenderRepaintBoundary;

@@ -59,7 +59,8 @@ void main() {
         'data': {
           'loggedActivities': {'totalTime': '01:24', 'thumbnails': []},
           'categoryDistribution': {},
-          'loginDates': {'streak': []}
+          'loginDates': {'streak': []},
+          'practiceDates': [DateTime.now().toUtc().toIso8601String()],
         }
       });
       await tester.pumpWidget(MaterialApp(
@@ -78,6 +79,9 @@ void main() {
       await tester.scrollUntilVisible(find.byTooltip('Previous month'), 250,
           scrollable: find.byType(Scrollable).first);
       await tester.pumpAndSettle();
+      final now = DateTime.now();
+      expect(tester.widget<CalendarGrid>(find.byType(CalendarGrid)).loginDates,
+          contains('${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}'));
       final calendarBefore = tester
           .widgetList<Text>(find.descendant(
               of: find.byType(CalendarGrid), matching: find.byType(Text)))

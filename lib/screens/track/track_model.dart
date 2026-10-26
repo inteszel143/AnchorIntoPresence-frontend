@@ -22,12 +22,14 @@ class Data {
   final LoggedActivities loggedActivities;
   final Map<String, dynamic> categoryDistribution;
   final LoginDates loginDates;
+  final List<DateTime>? practiceDates;
   final List<CompletedActivity> completedActivities;
 
   Data({
     required this.loggedActivities,
     required this.categoryDistribution,
     required this.loginDates,
+    this.practiceDates,
     this.completedActivities = const [],
   });
 
@@ -37,6 +39,10 @@ class Data {
       categoryDistribution:
           Map<String, dynamic>.from(json['categoryDistribution']),
       loginDates: LoginDates.fromJson(json['loginDates']),
+      practiceDates: (json['practiceDates'] as List?)
+          ?.map((date) => DateTime.tryParse(date.toString())?.toLocal())
+          .whereType<DateTime>()
+          .toList(),
       completedActivities: (json['completedActivities'] as List? ?? [])
           .map((entry) => CompletedActivity.fromJson(entry))
           .toList(),
@@ -80,11 +86,14 @@ class CompletedActivity {
   final DateTime? completedAt;
   final String duration;
 
-  CompletedActivity({required this.name, this.completedAt, required this.duration});
+  CompletedActivity(
+      {required this.name, this.completedAt, required this.duration});
 
-  factory CompletedActivity.fromJson(Map<String, dynamic> json) => CompletedActivity(
-    name: json['name'] as String? ?? 'Meditation',
-    completedAt: DateTime.tryParse(json['completedAt'] as String? ?? '')?.toLocal(),
-    duration: json['totalVideoTime'] as String? ?? '',
-  );
+  factory CompletedActivity.fromJson(Map<String, dynamic> json) =>
+      CompletedActivity(
+        name: json['name'] as String? ?? 'Meditation',
+        completedAt:
+            DateTime.tryParse(json['completedAt'] as String? ?? '')?.toLocal(),
+        duration: json['totalVideoTime'] as String? ?? '',
+      );
 }

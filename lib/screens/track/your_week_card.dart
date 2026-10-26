@@ -81,6 +81,12 @@ class _YourWeekCardState extends State<YourWeekCard> {
               for (final day in snapshot.data!.data.week)
                 day.day: math.max(0, day.value),
             };
+            final completions = {
+              for (final day in snapshot.data!.data.week)
+                day.day: math.max(0, day.completions),
+            };
+            final completedTotal =
+                completions.values.fold<int>(0, (sum, n) => sum + n);
             final minutes = [for (final label in labels) values[label] ?? 0];
             final total = minutes.fold<int>(0, (sum, value) => sum + value);
             final maximum = minutes.fold<int>(1, math.max);
@@ -90,6 +96,10 @@ class _YourWeekCardState extends State<YourWeekCard> {
                   Text('Sunday–Saturday · Daily minutes',
                       style: text.bodySmall
                           ?.copyWith(color: colors.onSurfaceVariant)),
+                  const SizedBox(height: 8),
+                  Text(
+                      '$completedTotal ${completedTotal == 1 ? 'practice' : 'practices'} completed this week',
+                      style: text.titleSmall),
                   const SizedBox(height: 20),
                   LayoutBuilder(builder: (context, constraints) {
                     final width = math.max(constraints.maxWidth,
@@ -107,7 +117,7 @@ class _YourWeekCardState extends State<YourWeekCard> {
                                 Expanded(
                                     child: Semantics(
                                   label:
-                                      '${labels[index]}: ${minutes[index]} minutes of practice',
+                                      '${labels[index]}: ${minutes[index]} minutes of practice, ${completions[labels[index]] ?? 0} completed',
                                   child: ExcludeSemantics(
                                       child: Column(children: [
                                     Text('${minutes[index]}',
@@ -132,6 +142,11 @@ class _YourWeekCardState extends State<YourWeekCard> {
                                         )),
                                       ),
                                     ),
+                                    const SizedBox(height: 8),
+                                    if ((completions[labels[index]] ?? 0) > 0)
+                                      Text('✓ ${completions[labels[index]]}',
+                                          style: text.labelSmall?.copyWith(
+                                              color: colors.primary)),
                                     const SizedBox(height: 10),
                                     Text(labels[index], style: text.bodySmall),
                                   ])),
@@ -142,7 +157,10 @@ class _YourWeekCardState extends State<YourWeekCard> {
                   }),
                   if (total == 0) ...[
                     const SizedBox(height: 16),
-                    Text('No practice recorded this week yet.',
+                    Text(
+                        completedTotal > 0
+                            ? 'Completed practices are saved. Listening minutes appear when playback time is recorded.'
+                            : 'No practice recorded this week yet.',
                         style: text.bodyMedium
                             ?.copyWith(color: colors.onSurfaceVariant)),
                   ],

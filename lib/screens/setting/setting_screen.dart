@@ -251,6 +251,7 @@ class SettingScreen extends StatelessWidget {
               option: item['option']!,
               subtitle: descriptions[index],
               destructive: index == 9,
+              badge: item['option'] == 'View my profile' ? 'New' : null,
               onTap: () => _handleSettingTap(context, item['option']!),
             );
           }
@@ -299,7 +300,10 @@ class SettingScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CustomAppbar(headingTxt: '', showBackButton: !isTab, topPadding: 8),
+                        CustomAppbar(
+                            headingTxt: '',
+                            showBackButton: !isTab,
+                            topPadding: 8),
                         Expanded(
                           child: SingleChildScrollView(
                             padding: const EdgeInsets.only(top: 8, bottom: 28),

@@ -1035,7 +1035,10 @@ class ApiService {
 
   static Future<TotalMeditationDataResponse> fetchTotalMeditationData({bool weekStartsOnSunday = false}) async {
     final url = Uri.parse(Urls.totalMeditation).replace(queryParameters:
-        weekStartsOnSunday ? {'weekStartsOn': '0'} : null);
+        {
+          if (weekStartsOnSunday) 'weekStartsOn': '0',
+          'utcOffsetMinutes': '${DateTime.now().timeZoneOffset.inMinutes}',
+        });
     final token = await LocalStorage.getToken() ?? '';
     try {
       final response = await http.get(

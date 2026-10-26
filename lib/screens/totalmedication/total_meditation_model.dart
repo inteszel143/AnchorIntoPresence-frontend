@@ -35,8 +35,7 @@ class TotalMeditationData {
           (json['average'] is num) ? (json['average'] as num).toDouble() : 0.0,
       categories: (json['categories'] as List?)
               ?.whereType<Map<String, dynamic>>()
-              .map((category) =>
-                  Category.fromJson(category))
+              .map((category) => Category.fromJson(category))
               .toList() ??
           [],
       week: (json['week'] as List?)
@@ -71,15 +70,18 @@ class Category {
 class Day {
   final String day;
   final int value;
+  final int completions;
 
   Day({
     required this.day,
     required this.value,
+    this.completions = 0,
   });
 
   factory Day.fromJson(Map<String, dynamic> json) {
     return Day(
       day: json['day']?.toString() ?? '',
+      completions: (json['completions'] as num?)?.toInt() ?? 0,
       value: (json['value'] is int) ? json['value'] as int : 0,
     );
   }
