@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../../common/widgets/activity_calendar.dart';
 export '../../common/widgets/activity_calendar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../common/widgets/tab_content_page.dart';
+import '../../common/widgets/app_scaffold.dart';
+import '../../common/widgets/scroll_title_page.dart';
 import 'track_bloc/track_bloc.dart';
 import 'track_bloc/track_event.dart';
 import 'track_bloc/track_state.dart';
@@ -52,47 +53,84 @@ class _TrackScreenState extends State<TrackScreen> {
   Widget build(BuildContext context) => BlocProvider.value(
         value: _bloc,
         child: BlocBuilder<TrackBloc, TrackState>(
-            builder: (context, state) => TrackOverview(state: state)),
+            builder: (context, state) =>
+                TrackOverview(state: state, onRefresh: _refresh)),
       );
 }
 
 class TrackOverview extends StatelessWidget {
-  const TrackOverview({super.key, required this.state});
+  const TrackOverview({super.key, required this.state, this.onRefresh});
   final TrackState state;
+  final VoidCallback? onRefresh;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    return TabContentPage(
+    return AppScaffold(
+      body: ScrollTitlePage(
         title: 'Track',
-        subtitle: 'Honor the time you give yourself.',
-        slivers: [
-          if (state is TrackLoadedState)
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              sliver: SliverToBoxAdapter(
-                  child: _summary(context, state as TrackLoadedState)),
-            )
-          else if (state is TrackLoadingState || state is TrackInitialState)
-            const SliverPadding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              sliver: SliverToBoxAdapter(child: TrackLoadingSkeleton()),
-            )
-          else
-            SliverFillRemaining(
-                hasScrollBody: false,
-                child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Center(
-                        child: Text(
-                            state is TrackErrorState
-                                ? (state as TrackErrorState).error
-                                : 'No activity yet',
-                            textAlign: TextAlign.center,
-                            style: text.bodyLarge
-                                ?.copyWith(color: colors.onSurfaceVariant))))),
-        ]);
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Column(children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                child: Row(children: [
+                  const SizedBox(width: 48, height: 48),
+                  Expanded(
+                      child: Text(
+                    'Track',
+                    textAlign: TextAlign.center,
+                    style:
+                        text.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+                  )),
+                  IconButton.filledTonal(
+                    tooltip: 'Refresh progress',
+                    onPressed:
+                        state is TrackLoadingState || state is TrackInitialState
+                            ? null
+                            : onRefresh,
+                    icon: const Icon(Icons.refresh_rounded),
+                    constraints:
+                        const BoxConstraints(minWidth: 48, minHeight: 48),
+                  ),
+                ]),
+              ),
+              Expanded(
+                  child: CustomScrollView(slivers: [
+                if (state is TrackLoadedState)
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    sliver: SliverToBoxAdapter(
+                        child: _summary(context, state as TrackLoadedState)),
+                  )
+                else if (state is TrackLoadingState ||
+                    state is TrackInitialState)
+                  const SliverPadding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    sliver: SliverToBoxAdapter(child: TrackLoadingSkeleton()),
+                  )
+                else
+                  SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Center(
+                              child: Text(
+                                  state is TrackErrorState
+                                      ? (state as TrackErrorState).error
+                                      : 'No activity yet',
+                                  textAlign: TextAlign.center,
+                                  style: text.bodyLarge?.copyWith(
+                                      color: colors.onSurfaceVariant))))),
+                const SliverToBoxAdapter(child: SizedBox(height: 32)),
+              ])),
+            ]),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _summary(BuildContext context, TrackLoadedState state) {
@@ -117,61 +155,136 @@ class TrackOverview extends StatelessWidget {
         .toSet()
         .toList();
     final now = DateTime.now();
-    final loggedDays = loginDates
-        .map(DateTime.tryParse)
-        .whereType<DateTime>()
+    final completedDaysThisMonth = practiceDates
+        .map((date) => date.toLocal())
         .where((date) =>
             date.year == now.year &&
             date.month == now.month &&
-            date.day < now.day)
+            !DateTime(date.year, date.month, date.day)
+                .isAfter(DateTime(now.year, now.month, now.day)))
         .map((date) => date.day)
         .toSet()
         .length;
-    final missedDays = (now.day - 1 - loggedDays).clamp(0, now.day - 1);
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Container(
-          width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(20, 8, 12, 20),
+        decoration: BoxDecoration(
+          color: colors.primary,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Expanded(
+                child: Text('Your practice',
+                    style: text.titleMedium?.copyWith(
+                        color: colors.onPrimary, fontWeight: FontWeight.w600))),
+            IconButton(
+              tooltip: 'View all activities',
+              style: IconButton.styleFrom(foregroundColor: colors.onPrimary),
+              onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const TotalMeditationScreen())),
+              icon: const Icon(Icons.arrow_outward_rounded, size: 22),
+            ),
+          ]),
+          const SizedBox(height: 8),
+          LayoutBuilder(builder: (context, constraints) {
+            Widget metric(
+                    {required String value,
+                    required String unit,
+                    required String label,
+                    Key? valueKey}) =>
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Wrap(
+                      spacing: 6,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(value,
+                            key: valueKey,
+                            style: text.headlineMedium?.copyWith(
+                                color: colors.onPrimary,
+                                fontWeight: FontWeight.w600)),
+                        Text(unit,
+                            style: text.bodyMedium
+                                ?.copyWith(color: colors.onPrimary)),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(label,
+                        style:
+                            text.bodySmall?.copyWith(color: colors.onPrimary)),
+                  ],
+                );
+            final listening = metric(
+                value: '${showSeconds ? seconds : minutes}',
+                valueKey: const ValueKey('practice-minutes'),
+                unit: showSeconds ? 'sec' : 'min',
+                label: 'Listening today');
+            final completed = metric(
+                value: '$completedDaysThisMonth',
+                unit: completedDaysThisMonth == 1 ? 'day' : 'days',
+                label: 'Completed this month');
+            if (constraints.maxWidth < 280 ||
+                MediaQuery.textScalerOf(context).scale(14) > 21) {
+              return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [listening, const SizedBox(height: 16), completed]);
+            }
+            return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Expanded(child: listening),
+              const SizedBox(width: 20),
+              Expanded(child: completed),
+            ]);
+          }),
+        ]),
+      ),
+      const SizedBox(height: 24),
+      Text('Your week',
+          style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
+      const SizedBox(height: 8),
+      Text('Your meditation activity at a glance.',
+          style: text.bodyMedium?.copyWith(color: colors.onSurfaceVariant)),
+      const SizedBox(height: 16),
+      YourWeekCard(key: ObjectKey(data)),
+      const SizedBox(height: 24),
+      Text('Your consistency',
+          style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
+      const SizedBox(height: 8),
+      Text('See how your practice unfolds over time.',
+          style: text.bodyMedium?.copyWith(color: colors.onSurfaceVariant)),
+      const SizedBox(height: 16),
+      Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
           decoration: BoxDecoration(
-              color: colors.primary, borderRadius: BorderRadius.circular(28)),
+              color: colors.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(24)),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            CalendarGrid(loginDates: loginDates, large: true),
+            const SizedBox(height: 16),
             Row(children: [
-              Icon(Icons.self_improvement_rounded,
-                  size: 24, color: colors.onPrimary),
-              const SizedBox(width: 10),
+              Container(
+                  width: 9,
+                  height: 9,
+                  decoration: BoxDecoration(
+                      color: colors.primary, shape: BoxShape.circle)),
+              const SizedBox(width: 8),
               Expanded(
-                  child: Text('Time for yourself',
-                      style:
-                          text.titleMedium?.copyWith(color: colors.onPrimary))),
+                  child: Text('Days you completed a meditation',
+                      style: text.bodySmall
+                          ?.copyWith(color: colors.onSurfaceVariant)))
             ]),
+            const SizedBox(height: 16),
+            Divider(color: colors.outlineVariant.withValues(alpha: .4)),
             const SizedBox(height: 8),
-            Wrap(
-              spacing: 10,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Text('${showSeconds ? seconds : minutes}',
-                    key: const ValueKey('practice-minutes'),
-                    style: text.headlineMedium?.copyWith(
-                        color: colors.onPrimary, fontWeight: FontWeight.w600)),
-                Text(
-                    showSeconds
-                        ? 'seconds of practice today'
-                        : 'minutes of practice today',
-                    style: text.bodyMedium?.copyWith(color: colors.onPrimary)),
-              ],
-            ),
-            TextButton.icon(
-                style: TextButton.styleFrom(
-                    foregroundColor: colors.onPrimary,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    alignment: Alignment.centerLeft),
-                onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const TotalMeditationScreen())),
-                icon: const Icon(Icons.arrow_forward_rounded, size: 20),
-                label: const Text('View all activities')),
+            Text(
+                '$completedDaysThisMonth ${completedDaysThisMonth == 1 ? 'day' : 'days'} with a completed meditation this month',
+                style:
+                    text.bodyMedium?.copyWith(color: colors.onSurfaceVariant)),
           ])),
       const SizedBox(height: 20),
       Text('Completed practices',
@@ -234,49 +347,6 @@ class TrackOverview extends StatelessWidget {
                 ],
               ]),
       ),
-      const SizedBox(height: 24),
-      Text('Your week',
-          style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
-      const SizedBox(height: 8),
-      Text('Your meditation activity at a glance.',
-          style: text.bodyMedium?.copyWith(color: colors.onSurfaceVariant)),
-      const SizedBox(height: 16),
-      YourWeekCard(key: ObjectKey(data)),
-      const SizedBox(height: 24),
-      Text('Your consistency',
-          style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
-      const SizedBox(height: 8),
-      Text('See how your practice unfolds over time.',
-          style: text.bodyMedium?.copyWith(color: colors.onSurfaceVariant)),
-      const SizedBox(height: 16),
-      Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-          decoration: BoxDecoration(
-              color: colors.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(24)),
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            CalendarGrid(loginDates: loginDates, large: true),
-            const SizedBox(height: 16),
-            Row(children: [
-              Container(
-                  width: 9,
-                  height: 9,
-                  decoration: BoxDecoration(
-                      color: colors.primary, shape: BoxShape.circle)),
-              const SizedBox(width: 8),
-              Expanded(
-                  child: Text('Days you practiced',
-                      style: text.bodySmall
-                          ?.copyWith(color: colors.onSurfaceVariant)))
-            ]),
-            const SizedBox(height: 16),
-            Divider(color: colors.outlineVariant.withValues(alpha: .4)),
-            const SizedBox(height: 8),
-            Text('Days without practice this month: $missedDays',
-                style:
-                    text.bodyMedium?.copyWith(color: colors.onSurfaceVariant)),
-          ])),
     ]);
   }
 }
