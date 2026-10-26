@@ -7,6 +7,7 @@ class Activity {
   final String thumbnail;
   final String video;
   final bool isFavorite;
+  final bool isCompleted;
   final List<String> tags;
   final String categoryName;
 
@@ -25,6 +26,7 @@ class Activity {
     required this.thumbnail,
     required this.video,
     required this.isFavorite,
+    this.isCompleted = false,
     required this.tags,
     this.categoryName = '',
   });
@@ -52,6 +54,7 @@ class Activity {
       thumbnail: json['thumbnail'],
       video: json['video'] != null ? '$baseUrlimages ${json['video']}' : '',
       isFavorite: json['isFavorite'] ?? false,
+      isCompleted: json['isCompleted'] == true,
       tags: parsedTags,
     );
   }

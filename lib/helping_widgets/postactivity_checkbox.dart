@@ -77,8 +77,11 @@ class _MarkAsCompleteCheckboxState extends State<MarkAsCompleteCheckbox> {
                     },
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(6)),
-              activeColor: Theme.of(context).colorScheme.primary,
-              checkColor: Theme.of(context).colorScheme.onPrimary,
+              fillColor: WidgetStateProperty.resolveWith((states) =>
+                  states.contains(WidgetState.selected)
+                      ? const Color(0xFF2E7D32)
+                      : null),
+              checkColor: Colors.white,
             ),
             Expanded(
                 child: Text(

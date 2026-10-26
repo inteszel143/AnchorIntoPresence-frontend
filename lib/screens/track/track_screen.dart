@@ -162,6 +162,50 @@ class TrackOverview extends StatelessWidget {
                 label: const Text('View all activities')),
           ])),
       const SizedBox(height: 20),
+      Text('Completed practices',
+          style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
+      const SizedBox(height: 8),
+      Text('Your most recently completed meditations.',
+          style: text.bodyMedium?.copyWith(color: colors.onSurfaceVariant)),
+      const SizedBox(height: 16),
+      Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: colors.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: data.completedActivities.isEmpty
+            ? Text('Your completed practices will appear here after you mark a meditation as complete.',
+                style: text.bodyMedium?.copyWith(color: colors.onSurfaceVariant))
+            : Column(children: [
+                for (var index = 0; index < data.completedActivities.length; index++) ...[
+                  if (index > 0) const Divider(height: 28),
+                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Icon(Icons.check_circle_rounded,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? const Color(0xFF81C784)
+                            : const Color(0xFF2E7D32),
+                        size: 22,
+                        semanticLabel: 'Completed'),
+                    const SizedBox(width: 12),
+                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text(data.completedActivities[index].name,
+                          style: text.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 4),
+                      Text([
+                        if (data.completedActivities[index].completedAt != null)
+                          MaterialLocalizations.of(context).formatMediumDate(
+                              data.completedActivities[index].completedAt!.toLocal()),
+                        if (data.completedActivities[index].duration.isNotEmpty)
+                          'Duration: ${data.completedActivities[index].duration}',
+                      ].join(' · '), style: text.bodySmall?.copyWith(color: colors.onSurfaceVariant)),
+                    ])),
+                  ]),
+                ],
+              ]),
+      ),
+      const SizedBox(height: 24),
       Text('Your week',
           style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
       const SizedBox(height: 8),

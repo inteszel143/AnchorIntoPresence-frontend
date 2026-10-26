@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:mindfully_evolve_app/helping_widgets/activity_completion_control.dart';
+import 'package:mindfully_evolve_app/screens/activity_listing/getactivity_model.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -51,6 +53,66 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(
       () => FlutterSecureStorage.setMockInitialValues({'auth_token': 'test'}));
+  test('activity parses saved completion from the account response', () {
+    final data = {'_id': 'practice', 'name': 'Calm', 'description': '',
+      'thumbnail': '', 'tags': [], 'isCompleted': true};
+    expect(Activity.fromJson(data).isCompleted, true);
+    expect(Activity.fromJson({...data, 'isCompleted': false}).isCompleted, false);
+  });
+
+  testWidgets('completion is reloaded after leaving and reopening a practice', (tester) async {
+    var serverCompleted = false;
+    var reads = 0;
+    final bloc = PostActivityBloc(submit: (_) async {
+      serverCompleted = true;
+      return saved();
+    });
+    addTearDown(bloc.close);
+    Future<void> openPractice() async {
+      await tester.pumpWidget(MaterialApp(home: Scaffold(body: BlocProvider.value(
+        value: bloc,
+        child: ActivityCompletionControl(
+          activityId: 'practice', videoTimestamp: '10:00', totalVideoTime: '10:00',
+          loadCompletion: (_) async { reads++; return serverCompleted; },
+        ),
+      ))));
+      await tester.pumpAndSettle();
+    }
+    await openPractice();
+    expect(tester.widget<Checkbox>(find.byType(Checkbox)).value, false);
+    await tester.tap(find.byType(Checkbox));
+    await tester.pumpAndSettle();
+    expect(serverCompleted, true);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await openPractice();
+    expect(reads, 2);
+    expect(tester.widget<Checkbox>(find.byType(Checkbox)).value, true);
+    expect(tester.widget<Checkbox>(find.byType(Checkbox)).onChanged, isNull);
+  });
+
+  testWidgets('failed completion load offers retry instead of an unchecked control', (tester) async {
+    var fails = true;
+    final bloc = PostActivityBloc();
+    addTearDown(bloc.close);
+    await tester.pumpWidget(MaterialApp(home: Scaffold(body: BlocProvider.value(
+      value: bloc,
+      child: ActivityCompletionControl(
+        activityId: 'practice', videoTimestamp: '00:00', totalVideoTime: '10:00',
+        loadCompletion: (_) async {
+          if (fails) throw Exception('offline');
+          return true;
+        },
+      ),
+    ))));
+    await tester.pumpAndSettle();
+    expect(find.byType(Checkbox), findsNothing);
+    expect(find.text('Retry'), findsOneWidget);
+    fails = false;
+    await tester.tap(find.text('Retry'));
+    await tester.pumpAndSettle();
+    expect(tester.widget<Checkbox>(find.byType(Checkbox)).value, true);
+  });
+
   testWidgets('completion stays unchecked until saved; failure allows retry',
       (tester) async {
     var request = Completer<PostActivityResponseModel>();
@@ -116,9 +178,25 @@ void main() {
     activityLogRevision.value++;
     await tester.pumpAndSettle();
     expect(calls, 3);
-    expect(find.text('Recent log'), findsNothing);
+    expect(find.text('Completed practices'), findsOneWidget);
+    expect(find.text('Practice 3'), findsOneWidget);
+    expect(find.textContaining('Duration: 10:00'), findsOneWidget);
+    expect(find.text('Practice 1'), findsNothing);
     expect(find.text('Your week'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+  testWidgets('Track explains where completed practices will appear for a new account', (tester) async {
+    final client = MockClient((_) async {
+      final body = jsonDecode(summary('unused').body) as Map<String, dynamic>;
+      body['data']['completedActivities'] = [];
+      return http.Response(jsonEncode(body), 200);
+    });
+    addTearDown(client.close);
+    await tester.pumpWidget(MaterialApp(home: TrackScreen(createBloc: () => TrackBloc(client: client))));
+    await tester.pumpAndSettle();
+    expect(find.text('Completed practices'), findsOneWidget);
+    expect(find.text('Your completed practices will appear here after you mark a meditation as complete.'), findsOneWidget);
+    expect(find.text('unused'), findsNothing);
   });
   test('older Track response cannot overwrite a refresh after completion',
       () async {

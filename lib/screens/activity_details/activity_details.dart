@@ -7,7 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../common/custom_videoplayer.dart';
 import '../../common/widgets/custom_appbar.dart';
-import '../../helping_widgets/postactivity_checkbox.dart';
+import '../../helping_widgets/activity_completion_control.dart';
 import '../activity_listing/getactivity_bloc/getrecent_activities_bloc.dart';
 import '../activity_listing/getactivity_bloc/getrecent_activities_event.dart';
 import 'activity_bloc/post_activity_bloc.dart';
@@ -219,11 +219,10 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
                                 ValueListenableBuilder<Duration>(
                                     valueListenable: watchedDuration,
                                     builder: (context, position, _) =>
-                                        MarkAsCompleteCheckbox(
+                                        ActivityCompletionControl(
                                       activityId: widget.activityId,
                                       videoTimestamp: formatDuration(position),
                                       totalVideoTime: _duration,
-                                      isChecked: false,
                                       enabled: _duration.isNotEmpty &&
                                           _duration != '--:--',
                                     ),
