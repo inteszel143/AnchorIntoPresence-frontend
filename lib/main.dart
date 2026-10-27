@@ -58,6 +58,11 @@ class MyApp extends StatefulWidget with WidgetsBindingObserver {
 }
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) unawaited(syncPushToken());
+  }
+
   StreamSubscription<Uri>? _linkSubscription;
   bool _initialLinkHandled = false;
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
