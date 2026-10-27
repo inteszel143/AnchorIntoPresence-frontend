@@ -178,7 +178,7 @@ class SettingScreen extends StatelessWidget {
       {"icon": ImageConstants.faqIcon, "option": Strings.faqs},
       {"icon": ImageConstants.deleteIcon, "option": Strings.deleteAccount},
       {"icon": ImageConstants.logoutIcon, "option": Strings.logout},
-      {"icon": ImageConstants.recentActivityIcon, "option": 'View my profile'},
+      {"icon": ImageConstants.profileIcon, "option": 'View my profile'},
     ];
 
     return MultiBlocProvider(

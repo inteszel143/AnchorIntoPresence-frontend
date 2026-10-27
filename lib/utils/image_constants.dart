@@ -29,6 +29,7 @@ class ImageConstants {
   static const svgBackCircle = '${imagePath}back_circle.svg';
   static const svgCalenderIcon = '${imagePath}calender_icon.svg';
   static const notificationIcon = '${imagePath}notification_icon.svg';
+  static const profileIcon = '${imagePath}profile_icon.svg';
   static const recentActivityIcon = '${imagePath}recentactivity_icon.svg';
   static const reminderIcon = '${imagePath}reminder_icon.svg';
   static const termIcon = '${imagePath}term_icon.svg';

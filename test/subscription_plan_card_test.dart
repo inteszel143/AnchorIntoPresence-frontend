@@ -42,14 +42,14 @@ void main() {
     for (final active in [false, true]) {
       await tester.pumpWidget(MaterialApp(
           home: Scaffold(
-              body: SubscriptionPlanCard(
+              body: SingleChildScrollView(child: SubscriptionPlanCard(
         title: 'Monthly Membership',
         price: '\$9.99',
         period: 'per month',
         isActive: active,
         onChoose: () => chosen++,
-      ))));
-      await tester.tap(find.byType(FilledButton));
+      )))));
+      await tester.tap(find.byType(OutlinedButton));
       expect(chosen, 1);
       if (active) expect(find.text('Current plan'), findsOneWidget);
     }

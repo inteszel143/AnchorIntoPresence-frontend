@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// A compact comparison card using the store's localized price strings.
+/// A membership comparison card using the store's localized price strings.
 class SubscriptionPlanCard extends StatelessWidget {
   const SubscriptionPlanCard({
     super.key,
@@ -25,13 +25,15 @@ class SubscriptionPlanCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final annual = period.toLowerCase().contains('year');
+    final highlighted = annual || isFounding;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isActive
+        color: highlighted
             ? Color.alphaBlend(
-                colors.primary.withValues(alpha: .06), colors.surface)
-            : colors.surfaceContainerHighest,
+                colors.primary.withValues(alpha: .08), colors.surface)
+            : colors.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
             color: isActive ? colors.primary : colors.outlineVariant,
@@ -46,8 +48,8 @@ class SubscriptionPlanCard extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Text(title,
-                  style: theme.textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w500, height: 1.3)),
+                  style: theme.textTheme.headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.w600, height: 1.3)),
               if (isActive || isFounding)
                 Container(
                   padding:
@@ -62,17 +64,31 @@ class SubscriptionPlanCard extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
+          Text(
+              annual
+                  ? 'Make presence part of the year ahead.'
+                  : 'Find your rhythm, one month at a time.',
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(color: colors.onSurfaceVariant, height: 1.5)),
+          const SizedBox(height: 28),
           Wrap(
             spacing: 8,
             runSpacing: 4,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              Text(price,
-                  style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: 0,
-                      height: 1.3)),
+              SizedBox(
+                width: double.infinity,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(price,
+                      style: theme.textTheme.displaySmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -1,
+                          height: 1.2)),
+                ),
+              ),
               Text(period,
                   style: theme.textTheme.bodyMedium
                       ?.copyWith(color: colors.onSurfaceVariant)),
@@ -85,20 +101,86 @@ class SubscriptionPlanCard extends StatelessWidget {
                     color: colors.onSurfaceVariant,
                     decoration: TextDecoration.lineThrough)),
           ],
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
+          Text(annual ? 'Billed annually.' : 'Billed monthly.',
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: colors.onSurfaceVariant)),
+          const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
-            child: FilledButton(
-              onPressed: isActive ? null : onChoose,
-              style: FilledButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14))),
-              child: Text(isActive ? 'Your current plan' : 'Choose plan',
-                  textAlign: TextAlign.center),
-            ),
+            child: highlighted
+                ? FilledButton.icon(
+                    onPressed: isActive ? null : onChoose,
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 16),
+                      shape: const StadiumBorder(),
+                    ),
+                    icon: Icon(
+                        isActive
+                            ? Icons.check_rounded
+                            : Icons.arrow_forward_rounded,
+                        size: 20),
+                    iconAlignment: IconAlignment.end,
+                    label: Text(
+                        isActive ? 'Your current plan' : 'Choose annual',
+                        textAlign: TextAlign.center),
+                  )
+                : OutlinedButton.icon(
+                    onPressed: isActive ? null : onChoose,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: colors.onSurface,
+                      side: BorderSide(color: colors.outline),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 16),
+                      shape: const StadiumBorder(),
+                    ),
+                    icon: Icon(
+                        isActive
+                            ? Icons.check_rounded
+                            : Icons.arrow_forward_rounded,
+                        size: 20),
+                    iconAlignment: IconAlignment.end,
+                    label: Text(
+                        isActive ? 'Your current plan' : 'Choose monthly',
+                        textAlign: TextAlign.center),
+                  ),
           ),
+          const SizedBox(height: 28),
+          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Icon(Icons.auto_awesome_outlined, size: 22, color: colors.primary),
+            const SizedBox(width: 12),
+            Expanded(
+                child: Text(
+                    annual
+                        ? 'All monthly membership features:'
+                        : 'Everything in Free, plus:',
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w600))),
+          ]),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Divider(height: 1, color: colors.outlineVariant),
+          ),
+          for (final feature in const [
+            'Full access to Home and the practice Library',
+            'Daily Anchors and Daily Pauses',
+            'Save your favorite practices',
+            'Connect and share in the Community',
+            'Mood check-ins and progress tracking',
+          ])
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child:
+                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Icon(Icons.check_rounded, size: 22, color: colors.primary),
+                const SizedBox(width: 12),
+                Expanded(
+                    child: Text(feature,
+                        style:
+                            theme.textTheme.bodyMedium?.copyWith(height: 1.4))),
+              ]),
+            ),
         ],
       ),
     );
