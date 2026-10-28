@@ -23,28 +23,45 @@ class TrackScreen extends StatefulWidget {
 
 class _TrackScreenState extends State<TrackScreen> {
   late final TrackBloc _bloc;
+  int? _requestedRevision;
+  DateTime? _requestedDay;
 
   @override
   void initState() {
     super.initState();
     _bloc = widget.createBloc?.call() ?? TrackBloc();
-    activityLogRevision.addListener(_refresh);
+    activityLogRevision.addListener(_refreshIfNeeded);
+    _refreshIfNeeded();
+  }
+
+  void _refreshIfNeeded() {
+    if (!widget.isActive) return;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final unchanged = _requestedRevision == activityLogRevision.value &&
+        _requestedDay == today;
+    // Preserve both loaded content and an in-flight request on tab returns.
+    if (unchanged && _bloc.state is! TrackErrorState) return;
     _refresh();
   }
 
   void _refresh() {
-    if (widget.isActive) _bloc.add(TrackDataFetchEvent());
+    if (!widget.isActive) return;
+    final now = DateTime.now();
+    _requestedRevision = activityLogRevision.value;
+    _requestedDay = DateTime(now.year, now.month, now.day);
+    _bloc.add(TrackDataFetchEvent());
   }
 
   @override
   void didUpdateWidget(covariant TrackScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.isActive && !oldWidget.isActive) _refresh();
+    if (widget.isActive && !oldWidget.isActive) _refreshIfNeeded();
   }
 
   @override
   void dispose() {
-    activityLogRevision.removeListener(_refresh);
+    activityLogRevision.removeListener(_refreshIfNeeded);
     _bloc.close();
     super.dispose();
   }

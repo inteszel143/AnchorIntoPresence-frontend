@@ -149,7 +149,7 @@ void main() {
     expect(activityLogRevision.value, revision + 1);
     expect(calls, 2);
   });
-  testWidgets('Track refreshes on tab return and confirmed saves',
+  testWidgets('Track reuses tab data and refreshes after confirmed saves',
       (tester) async {
     var calls = 0;
     final client = MockClient((_) async => summary('Practice ${++calls}', totalTime: '00:09'));
@@ -168,7 +168,11 @@ void main() {
             .widget<Text>(find.byKey(const ValueKey('practice-minutes')))
             .data,
         '9');
-    expect(find.text('seconds of practice today'), findsOneWidget);
+    expect(find.text('sec'), findsOneWidget);
+    expect(find.text('Listening today'), findsOneWidget);
+    await show(false);
+    await show(true);
+    expect(calls, 1, reason: 'Unchanged tab returns reuse loaded progress');
     await show(false);
     activityLogRevision.value++;
     await tester.pump();
@@ -183,6 +187,9 @@ void main() {
     expect(find.textContaining('Duration: 10:00'), findsOneWidget);
     expect(find.text('Practice 1'), findsNothing);
     expect(find.text('Your week'), findsOneWidget);
+    await tester.tap(find.byTooltip('Refresh progress'));
+    await tester.pumpAndSettle();
+    expect(calls, 4, reason: 'Manual refresh still requests fresh progress');
     expect(tester.takeException(), isNull);
   });
   testWidgets('Track explains where completed practices will appear for a new account', (tester) async {

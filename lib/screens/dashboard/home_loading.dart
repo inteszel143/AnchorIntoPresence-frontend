@@ -73,40 +73,77 @@ class _HomeLoadingSkeletonState extends State<HomeLoadingSkeleton>
             borderRadius: BorderRadius.circular(radius),
           ),
         );
-    Widget practice() => Column(
+    final width = MediaQuery.sizeOf(context).width.clamp(0.0, 600.0);
+    final cardWidth = (width * .43).clamp(152.0, 230.0);
+    final scale = MediaQuery.textScalerOf(context).scale(20) / 20;
+    final cardHeight = cardWidth * 1.56 + (scale - 1).clamp(0.0, 2.0) * 80;
+
+    Widget practice({required bool anchor}) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [
-              block(32, 32, radius: 16),
-              const SizedBox(width: 10),
-              block(120, 18),
-            ]),
-            const SizedBox(height: 10),
-            block(220, 12),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                border: Border.all(color: colors.outlineVariant),
-                borderRadius: BorderRadius.circular(20),
-              ),
+            SizedBox(
+              height: 48,
               child: Row(children: [
-                block(80, 96, radius: 14),
-                const SizedBox(width: 14),
+                block(32, 32, radius: 16),
+                const SizedBox(width: 10),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      block(double.infinity, 18),
-                      const SizedBox(height: 10),
-                      block(90, 12),
-                      const SizedBox(height: 22),
-                      block(double.infinity, 16),
-                    ],
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: block(120, 18),
                   ),
                 ),
+                const SizedBox(width: 12),
+                block(44, 12),
               ]),
             ),
+            const SizedBox(height: 4),
+            block(220, 12),
+            const SizedBox(height: 12),
+            if (anchor)
+              SizedBox(
+                height: cardHeight,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: 3,
+                  separatorBuilder: (_, __) => const SizedBox(width: 16),
+                  itemBuilder: (_, __) => Container(
+                    width: cardWidth,
+                    padding: const EdgeInsets.fromLTRB(18, 14, 18, 20),
+                    decoration: BoxDecoration(
+                      color: colors.onSurface.withValues(alpha: .06),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        block(100, 30, radius: 30),
+                        const Spacer(),
+                        block(double.infinity, 20),
+                        const SizedBox(height: 8),
+                        block(cardWidth * .5, 20),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+            else ...[
+              AspectRatio(
+                aspectRatio: 16 / 10,
+                child: block(double.infinity, double.infinity, radius: 20),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    block(180, 18),
+                    const SizedBox(height: 8),
+                    block(120, 12),
+                  ],
+                ),
+              ),
+            ],
           ],
         );
     return Semantics(
@@ -144,9 +181,12 @@ class _HomeLoadingSkeletonState extends State<HomeLoadingSkeleton>
                   const SizedBox(height: 10),
                   block(double.infinity, 14),
                   const SizedBox(height: 24),
-                  practice(),
-                  const SizedBox(height: 40),
-                  practice(),
+                  practice(anchor: true),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    child: Divider(height: 1, color: colors.outlineVariant),
+                  ),
+                  practice(anchor: false),
                   const SizedBox(height: 32),
                   Align(alignment: Alignment.centerLeft, child: block(190, 24)),
                   const SizedBox(height: 20),

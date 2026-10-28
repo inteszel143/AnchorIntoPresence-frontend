@@ -11,7 +11,7 @@ class AppTabBar extends StatelessWidget {
 
   static const _items = [
     (Icons.pentagon_rounded, 'Home'),
-    (Icons.auto_stories_rounded, 'Library'),
+    (Icons.library_books_rounded, 'Library'),
     (Icons.groups_rounded, 'Community'),
     (Icons.insights_rounded, 'Track'),
     (Icons.settings_rounded, 'Settings'),
@@ -63,8 +63,24 @@ class AppTabBar extends StatelessWidget {
                               child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(_items[index].$1,
-                                        size: 27, color: color),
+                                    if (index == 1 || index == 3)
+                                      SizedBox.square(
+                                        dimension: 27,
+                                        child: Center(
+                                          child: SizedBox.square(
+                                            dimension: index == 1 ? 21 : 23,
+                                            child: CustomPaint(
+                                              painter: index == 1
+                                                  ? _LibraryIconPainter(color)
+                                                  : _CalendarCheckIconPainter(
+                                                      color),
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                    else
+                                      Icon(_items[index].$1,
+                                          size: 27, color: color),
                                     const SizedBox(height: 5),
                                     Padding(
                                       padding: const EdgeInsets.symmetric(
@@ -99,4 +115,80 @@ class AppTabBar extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Rounded square library mark, drawn on a 24-unit grid.
+class _LibraryIconPainter extends CustomPainter {
+  const _LibraryIconPainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.save();
+    canvas.scale(size.width / 24, size.height / 24);
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.2
+      ..strokeCap = StrokeCap.round
+      ..isAntiAlias = true;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(2, 2, 20, 20),
+        const Radius.circular(2.5),
+      ),
+      paint,
+    );
+    canvas.drawLine(const Offset(6.5, 6.5), const Offset(6.5, 17.5), paint);
+    canvas.drawLine(const Offset(11, 6.5), const Offset(11, 17.5), paint);
+    canvas.drawLine(const Offset(15, 6.5), const Offset(17.5, 17.5), paint);
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant _LibraryIconPainter oldDelegate) =>
+      oldDelegate.color != color;
+}
+
+/// Calendar with a completion check, matching the Library's outline style.
+class _CalendarCheckIconPainter extends CustomPainter {
+  const _CalendarCheckIconPainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.save();
+    canvas.scale(size.width / 24, size.height / 24);
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.2
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..isAntiAlias = true;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(3, 4, 18, 18),
+        const Radius.circular(2.5),
+      ),
+      paint,
+    );
+    canvas.drawLine(const Offset(8, 2), const Offset(8, 6), paint);
+    canvas.drawLine(const Offset(16, 2), const Offset(16, 6), paint);
+    canvas.drawLine(const Offset(3, 10), const Offset(21, 10), paint);
+    canvas.drawPath(
+      Path()
+        ..moveTo(8, 16)
+        ..lineTo(11, 19)
+        ..lineTo(16, 14),
+      paint,
+    );
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant _CalendarCheckIconPainter oldDelegate) =>
+      oldDelegate.color != color;
 }
