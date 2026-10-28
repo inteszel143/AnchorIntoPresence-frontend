@@ -12,7 +12,7 @@ import 'otp_state.dart';
 class OtpVerificationBloc
     extends Bloc<OtpVerificationEvent, OtpVerificationState> {
   Timer? _timer;
-  int _remainingSeconds = 30;
+  int _remainingSeconds = 120;
 
   OtpVerificationBloc() : super(OtpVerificationInitial()) {
     on<VerifyOtpSubmitted>(_onVerifyOtpSubmitted);
@@ -101,7 +101,7 @@ class OtpVerificationBloc
 
   void _onStartTimer(
       StartResendOtpTimer event, Emitter<OtpVerificationState> emit) {
-    _remainingSeconds = 30;
+    _remainingSeconds = 120;
     _timer?.cancel();
     emit(OtpResendTimerRunning(_remainingSeconds));
 
