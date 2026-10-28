@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/physics.dart';
 import '../../utils/urls.dart';
+import '../../common/widgets/practice_artwork_card.dart';
 import 'dashboard_bloc/home_state.dart';
 import 'dashboard_bloc/recently_played_model.dart';
 import 'home_model.dart';
@@ -195,9 +195,6 @@ class HomeDashboard extends StatelessWidget {
 
     Widget practiceCard(List<ActivityData> items, {required bool anchor}) {
       final category = anchor ? 'Daily Anchor' : 'Daily Pause';
-      final tint = Color.alphaBlend(
-          colors.primaryContainer.withValues(alpha: anchor ? .18 : .07),
-          colors.surface);
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -241,8 +238,32 @@ class HomeDashboard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           LayoutBuilder(builder: (context, constraints) {
-            final stacked = constraints.maxWidth < 260 ||
-                MediaQuery.textScalerOf(context).scale(16) > 24;
+            if (anchor) {
+              final width = MediaQuery.sizeOf(context).width.clamp(0.0, 600.0);
+              final cardWidth = (width * .43).clamp(152.0, 230.0);
+              final scale = MediaQuery.textScalerOf(context).scale(20) / 20;
+              final cardHeight =
+                  cardWidth * 1.56 + (scale - 1).clamp(0.0, 2.0) * 80;
+              return SizedBox(
+                height: cardHeight,
+                child: ListView.separated(
+                  key: const PageStorageKey('home-daily-anchors'),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: items.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 16),
+                  itemBuilder: (_, index) => SizedBox(
+                    width: cardWidth,
+                    child: PracticeArtworkCard(
+                      key: ValueKey(items[index].id),
+                      title: items[index].name,
+                      categoryLabel: category,
+                      imageUrl: imageUrl(items[index].thumbnail),
+                      onTap: () => onActivity(items[index]),
+                    ),
+                  ),
+                ),
+              );
+            }
             return _PracticeScroll(
               showIndicator: items.length > 1,
               category: category,
@@ -256,99 +277,14 @@ class HomeDashboard extends StatelessWidget {
                     SizedBox(
                       width: constraints.maxWidth,
                       child: Material(
-                        color: anchor ? tint : Colors.transparent,
+                        color: Colors.transparent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
-                          side: anchor
-                              ? BorderSide(color: colors.outlineVariant)
-                              : BorderSide.none,
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: InkWell(
                           onTap: () => onActivity(items[index]),
-                          child: !anchor
-                              ? pauseContent(items[index])
-                              : Padding(
-                                  padding: const EdgeInsets.all(14),
-                                  child: Flex(
-                                    direction: stacked
-                                        ? Axis.vertical
-                                        : Axis.horizontal,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(14),
-                                        child: _image(
-                                            context, items[index].thumbnail,
-                                            width: stacked
-                                                ? constraints.maxWidth - 28
-                                                : 80,
-                                            height: stacked ? 120 : 96,
-                                            fit: BoxFit.cover),
-                                      ),
-                                      SizedBox(
-                                          width: stacked ? 0 : 14,
-                                          height: stacked ? 14 : 0),
-                                      Flexible(
-                                        flex: stacked ? 0 : 1,
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(items[index].name,
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .titleMedium
-                                                    ?.copyWith(
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                        height: 1.35)),
-                                            if (items[index]
-                                                    .tagName
-                                                    ?.isNotEmpty ==
-                                                true) ...[
-                                              const SizedBox(height: 6),
-                                              Text(
-                                                  items[index]
-                                                      .tagName!
-                                                      .join(' · '),
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .bodySmall
-                                                      ?.copyWith(
-                                                          color: colors
-                                                              .onSurfaceVariant)),
-                                            ],
-                                            const SizedBox(height: 14),
-                                            Row(children: [
-                                              if (anchor) ...[
-                                                Icon(
-                                                    Icons
-                                                        .play_circle_filled_rounded,
-                                                    size: 24,
-                                                    color: colors.primary),
-                                                const SizedBox(width: 8),
-                                              ],
-                                              Expanded(
-                                                child: Text(
-                                                    anchor
-                                                        ? 'Begin practice'
-                                                        : 'Take a pause',
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .labelLarge
-                                                        ?.copyWith(
-                                                            color: colors
-                                                                .primary)),
-                                              ),
-                                            ]),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                          child: pauseContent(items[index]),
                         ),
                       ),
                     ),
@@ -605,12 +541,12 @@ class _PracticePagePhysics extends ScrollPhysics {
   final double pageExtent;
 
   @override
-  _PracticePagePhysics applyTo(ScrollPhysics? ancestor) =>
-      _PracticePagePhysics(
-          pageExtent: pageExtent, parent: buildParent(ancestor));
+  _PracticePagePhysics applyTo(ScrollPhysics? ancestor) => _PracticePagePhysics(
+      pageExtent: pageExtent, parent: buildParent(ancestor));
 
   @override
-  Simulation? createBallisticSimulation(ScrollMetrics position, double velocity) {
+  Simulation? createBallisticSimulation(
+      ScrollMetrics position, double velocity) {
     if ((velocity <= 0 && position.pixels <= position.minScrollExtent) ||
         (velocity >= 0 && position.pixels >= position.maxScrollExtent)) {
       return super.createBallisticSimulation(position, velocity);
