@@ -29,7 +29,7 @@ class ReleaseVersionTests(unittest.TestCase):
         self.assertEqual([call[2] for call in self.calls], ['appbundle', 'ipa'])
         for call in self.calls:
             self.assertIn('--build-number=81', call)
-            self.assertIn('--dart-define=API_BASE_URL=https://admin.anchorintopresence.net', call)
+            self.assertIn('--dart-define=API_BASE_URL=https://admin.anchorintopresence.com', call)
 
     def test_subsequent_build_increments_and_new_version_is_explicit(self):
         module.build_release(self.root, 'android', run=self.run_build)
@@ -73,11 +73,11 @@ class ReleaseVersionTests(unittest.TestCase):
         module.build_release(self.root, 'ios', run=self.run_build)
         self.assertIn('--build-number=14', self.calls[-1])
 
-    def test_ios_reads_flutter_version_fields(self):
+    def test_ios_reads_xcode_version_fields(self):
         path = Path(__file__).parents[1] / 'ios/Runner/Info.plist'
         info = plistlib.loads(path.read_bytes())
-        self.assertEqual(info['CFBundleShortVersionString'], '$(FLUTTER_BUILD_NAME)')
-        self.assertEqual(info['CFBundleVersion'], '$(FLUTTER_BUILD_NUMBER)')
+        self.assertEqual(info['CFBundleShortVersionString'], '$(MARKETING_VERSION)')
+        self.assertEqual(info['CFBundleVersion'], '$(CURRENT_PROJECT_VERSION)')
 
 
 if __name__ == '__main__':

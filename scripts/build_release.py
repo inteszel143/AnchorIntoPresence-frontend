@@ -48,7 +48,7 @@ def build_release(root, target, version=None, flutter="flutter", run=subprocess.
                 print(f"Reserved {platform} {entry['version']} ({entry['build']})", flush=True)
                 run([flutter, 'build', artifact, '--release',
                      f"--build-name={entry['version']}", f"--build-number={entry['build']}",
-                     '--dart-define=API_BASE_URL=https://admin.anchorintopresence.net'],
+                     '--dart-define=API_BASE_URL=https://admin.anchorintopresence.com'],
                     cwd=root, check=True)
                 entry['status'] = 'built'
                 save_records()
@@ -77,7 +77,7 @@ def build_release(root, target, version=None, flutter="flutter", run=subprocess.
         for artifact in targets:
             run([flutter, 'build', artifact, '--release',
                  f'--build-name={version}', f'--build-number={number}',
-                 '--dart-define=API_BASE_URL=https://admin.anchorintopresence.net'],
+                 '--dart-define=API_BASE_URL=https://admin.anchorintopresence.com'],
                 cwd=root, check=True)
 
 

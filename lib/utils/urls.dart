@@ -2,7 +2,7 @@ class Urls {
   static const String logout = '$baseUrl/api/auth/logout';
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://admin.anchorintopresence.net',
+    defaultValue: 'https://admin.anchorintopresence.com',
   );
   static const String baseUrlimages = String.fromEnvironment(
     'ASSET_BASE_URL',
