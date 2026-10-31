@@ -322,7 +322,7 @@ class SettingScreen extends StatelessWidget {
                                         fontSize: 15,
                                         color: colors.onSurfaceVariant)),
                                 const SizedBox(height: 28),
-                                section('My profile', [11]),
+                                // Temporarily hide the profile preview entry.
                                 section('Your practice', [1, 2, 3]),
                                 section('Preferences', [0]),
                                 section('Membership', [4]),

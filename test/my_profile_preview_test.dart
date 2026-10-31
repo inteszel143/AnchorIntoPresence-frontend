@@ -47,7 +47,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Settings opens the profile preview and back returns to Settings',
+  testWidgets('Settings temporarily hides the profile preview entry',
       (tester) async {
     final user = UserProvider()..setUser('Anchor Account', '');
     await tester.pumpWidget(ChangeNotifierProvider.value(
@@ -55,23 +55,10 @@ void main() {
         child: MaterialApp(
             theme: AppTheme.light, home: SettingScreen(isTab: true))));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('View my profile'));
-    await tester.tap(find.text('View my profile'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
-    expect(find.byType(MyProfilePreview), findsOneWidget);
-    expect(find.text('Anchor Account'), findsOneWidget);
-    expect(find.byTooltip('Edit profile'), findsOneWidget);
-    expect(find.text('Edit profile'), findsNothing);
-    expect(find.byType(ProfileAvatar), findsOneWidget);
-    user.updateUserProfile('Updated name', '');
-    await tester.pump();
-    expect(find.text('Updated name'), findsOneWidget);
-    expect(find.text('Coming soon'), findsNWidgets(4));
-    await tester.tap(find.byTooltip('Back'));
-    await tester.pumpAndSettle();
     expect(find.byType(MyProfilePreview), findsNothing);
-    expect(find.text('View my profile'), findsOneWidget);
+    expect(find.text('View my profile'), findsNothing);
+    expect(find.text('My profile'), findsNothing);
+    expect(find.text('Your practice'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
